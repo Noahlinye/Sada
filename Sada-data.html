@@ -1,0 +1,3357 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sada 全球包运营数据看板原型</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --panel-soft: #f9fbfd;
+      --ink: #162033;
+      --muted: #667085;
+      --line: #d8e0ea;
+      --line-soft: #e8edf3;
+      --blue: #2f6fbb;
+      --blue-dark: #1f4e79;
+      --green: #16875f;
+      --red: #c2413a;
+      --amber: #b7791f;
+      --teal: #1d7f8c;
+      --violet: #6a5acd;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --radius: 8px;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid var(--line);
+      padding: 20px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #1f4e79;
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand-title {
+      min-width: 0;
+    }
+
+    .brand-title strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .brand-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav button {
+      border: 0;
+      background: transparent;
+      color: #344054;
+      border-radius: 7px;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px;
+      text-align: left;
+    }
+
+    .nav button:hover {
+      background: #f2f6fb;
+    }
+
+    .nav button.active {
+      background: #e8f1fb;
+      color: var(--blue-dark);
+      font-weight: 700;
+    }
+
+    .ico {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      color: currentColor;
+    }
+
+    .sidebar-note {
+      margin-top: 22px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .topbar {
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 14px 24px;
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      min-height: 26px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 999px;
+      padding: 3px 9px;
+      color: #475467;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.9fr) repeat(5, minmax(120px, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .field label {
+      color: #475467;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      height: 36px;
+      background: #ffffff;
+    }
+
+    .segmented button {
+      border: 0;
+      background: #ffffff;
+      border-right: 1px solid var(--line);
+      color: #344054;
+      padding: 0 8px;
+    }
+
+    .segmented button:last-child {
+      border-right: 0;
+    }
+
+    .segmented button.active {
+      background: var(--blue-dark);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    select,
+    input[type="search"],
+    input[type="date"],
+    input[type="month"] {
+      width: 100%;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 0 10px;
+      outline: none;
+    }
+
+    select:focus,
+    input[type="search"]:focus,
+    input[type="date"]:focus,
+    input[type="month"]:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(47, 111, 187, 0.14);
+    }
+
+    .date-picker-shell {
+      position: relative;
+    }
+
+    .date-trigger {
+      width: 100%;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .date-picker-popover {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 8px);
+      z-index: 40;
+      width: 292px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 16px 36px rgba(16, 24, 40, 0.16);
+      overflow: hidden;
+    }
+
+    .date-picker-head {
+      height: 44px;
+      padding: 0 12px;
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr) 32px;
+      align-items: center;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .date-picker-head strong {
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .date-picker-head button {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      background: transparent;
+      border-radius: 6px;
+      color: #344054;
+      font-size: 18px;
+    }
+
+    .date-picker-head button:hover,
+    .date-picker-grid button:hover,
+    .quick-row button:hover {
+      background: #eef5ff;
+    }
+
+    .date-mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .date-mode-tabs button,
+    .quick-row button {
+      height: 30px;
+      border: 0;
+      border-radius: 6px;
+      background: #f4f6f8;
+      color: #344054;
+    }
+
+    .date-mode-tabs button.active,
+    .quick-row button.active,
+    .date-picker-grid button.active {
+      background: #1f64ff;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .quick-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 10px 12px 0;
+    }
+
+    .date-picker-grid {
+      display: grid;
+      gap: 6px;
+      padding: 12px;
+    }
+
+    .date-picker-grid.months {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .date-picker-grid.days {
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .date-picker-grid button {
+      height: 30px;
+      border: 0;
+      border-radius: 6px;
+      background: #f2f4f7;
+      color: #344054;
+    }
+
+    .date-picker-grid button.in-range {
+      background: #dbeafe;
+      color: #1f4e79;
+      font-weight: 700;
+    }
+
+    .date-picker-hidden {
+      display: none;
+    }
+
+    .content {
+      padding: 20px 24px 40px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .page-heading {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .page-heading h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .page-heading p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      max-width: 820px;
+    }
+
+    .page-context {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 13px 14px;
+      min-height: 132px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .kpi-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .metric-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .metric-label > span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .help-btn {
+      width: 17px;
+      height: 17px;
+      border: 1px solid #b9c6d7;
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--blue-dark);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .help-btn:hover,
+    .help-btn.active {
+      background: #e8f1fb;
+      border-color: var(--blue);
+    }
+
+    .tooltip-popover {
+      position: fixed;
+      z-index: 60;
+      width: min(320px, calc(100vw - 24px));
+      background: #162033;
+      color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 14px 34px rgba(16, 24, 40, 0.28);
+      padding: 10px 11px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .tooltip-popover::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 14px;
+      width: 12px;
+      height: 12px;
+      background: #162033;
+      transform: rotate(45deg);
+    }
+
+    .tooltip-popover strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+    }
+
+    .chart-value-tip {
+      position: fixed;
+      z-index: 55;
+      min-width: 128px;
+      background: #162033;
+      color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(16, 24, 40, 0.24);
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.45;
+      pointer-events: none;
+    }
+
+    .chart-value-tip strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .delta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .delta.up {
+      color: var(--green);
+    }
+
+    .delta.down {
+      color: var(--red);
+    }
+
+    .spark {
+      width: 100%;
+      height: 34px;
+      display: block;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .health-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .health-card {
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: #fbfdff;
+      min-height: 118px;
+      padding: 12px;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .health-card strong {
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .health-card p {
+      margin: 0;
+      color: #475467;
+      font-size: 12px;
+    }
+
+    .status {
+      width: max-content;
+      max-width: 100%;
+      min-height: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status.good {
+      color: #116149;
+      background: #e7f6ef;
+    }
+
+    .status.watch {
+      color: #915c00;
+      background: #fff4d8;
+    }
+
+    .status.risk {
+      color: #a13b32;
+      background: #fdecea;
+    }
+
+    .status.info {
+      color: #1f4e79;
+      background: #e8f1fb;
+    }
+
+    .compare-line {
+      display: grid;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .compare-line span {
+      color: #475467;
+      font-size: 12px;
+    }
+
+    .compare-line b {
+      color: var(--ink);
+    }
+
+    .action-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .action-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 11px 12px;
+    }
+
+    .action-copy {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .action-copy strong {
+      font-size: 13px;
+    }
+
+    .action-copy span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .action-item button {
+      height: 30px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--blue-dark);
+      border-radius: 7px;
+      padding: 0 9px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .action-item button:hover {
+      background: #e8f1fb;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .panel-head {
+      min-height: 54px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .panel-title strong {
+      font-size: 15px;
+    }
+
+    .panel-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .icon-btn,
+    .text-btn {
+      height: 32px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 7px;
+      color: #344054;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 9px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      padding: 0;
+    }
+
+    .icon-btn:hover,
+    .text-btn:hover {
+      background: #f2f6fb;
+    }
+
+    .panel-body {
+      padding: 14px 16px 16px;
+    }
+
+    .chart-wrap {
+      height: 330px;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+    }
+
+    th,
+    td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--line-soft);
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th {
+      color: #475467;
+      font-size: 12px;
+      font-weight: 800;
+      background: #f8fafc;
+      position: sticky;
+      top: 0;
+    }
+
+    tbody tr:hover {
+      background: #f7fbff;
+    }
+
+    #regionTable tr,
+    tr[data-region] {
+      cursor: pointer;
+    }
+
+    tbody tr.active-row {
+      background: #e8f1fb;
+    }
+
+    .bar-cell {
+      min-width: 140px;
+    }
+
+    .bar {
+      height: 8px;
+      background: #e9eef5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--teal);
+      border-radius: inherit;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 8px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .tabs button {
+      height: 34px;
+      border: 0;
+      background: transparent;
+      border-radius: 7px;
+      color: #475467;
+      padding: 0 12px;
+      font-weight: 700;
+    }
+
+    .tabs button.active {
+      background: #e8f1fb;
+      color: var(--blue-dark);
+    }
+
+    .module-panel.focused .panel-body {
+      padding-top: 18px;
+    }
+
+    .module-panel.focused .tabs {
+      display: none;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .chart-card {
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: #ffffff;
+      min-width: 0;
+    }
+
+    .chart-card.full-span {
+      grid-column: 1 / -1;
+    }
+
+    .chart-card-head {
+      min-height: 48px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .chart-card-head strong {
+      font-size: 14px;
+    }
+
+    .chart-card-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .chart-card-body {
+      height: 260px;
+      padding: 12px 14px 14px;
+    }
+
+    .chart-card-body.large {
+      height: 340px;
+      padding-top: 16px;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.55fr);
+      gap: 16px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 12px;
+      display: grid;
+      gap: 4px;
+      min-height: 86px;
+    }
+
+    .mini-card span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .mini-card strong {
+      font-size: 20px;
+      line-height: 1.15;
+    }
+
+    .revenue-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .revenue-summary .mini-card {
+      min-height: 78px;
+    }
+
+    .revenue-summary .mini-card strong {
+      font-size: 22px;
+    }
+
+    .pager {
+      min-height: 46px;
+      border-top: 1px solid var(--line-soft);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #667085;
+      font-size: 12px;
+    }
+
+    .pager-actions {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .pager button {
+      height: 30px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 7px;
+      color: #344054;
+      padding: 0 10px;
+    }
+
+    .pager button:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    .rule-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .rule {
+      display: grid;
+      grid-template-columns: 132px minmax(0, 1fr);
+      gap: 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 12px;
+    }
+
+    .rule strong {
+      color: var(--blue-dark);
+    }
+
+    .rule span {
+      color: #344054;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #162033;
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 24px rgba(16, 24, 40, 0.22);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+      z-index: 30;
+      max-width: min(360px, calc(100vw - 40px));
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .mobile-nav {
+      display: none;
+    }
+
+    @media (max-width: 1180px) {
+      .summary-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .filters .field:first-child {
+        grid-column: 1 / -1;
+      }
+
+      .grid-2,
+      .module-grid,
+      .insight-grid,
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .health-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app {
+        display: block;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .mobile-nav {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 8px 16px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mobile-nav button {
+        height: 34px;
+        border: 1px solid var(--line);
+        background: #ffffff;
+        border-radius: 7px;
+        white-space: nowrap;
+        padding: 0 10px;
+      }
+
+      .mobile-nav button.active {
+        background: var(--blue-dark);
+        color: #ffffff;
+      }
+
+      .topbar {
+        padding: 14px 16px;
+      }
+
+      .topbar-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .page-heading {
+        grid-template-columns: 1fr;
+      }
+
+      .page-context {
+        justify-content: flex-start;
+      }
+
+      .meta {
+        justify-content: flex-start;
+      }
+
+      .filters {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .summary-row,
+      .mini-grid,
+      .revenue-summary,
+      .health-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-wrap {
+        height: 260px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .date-control {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 19px;
+      }
+
+      .rule {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div class="brand-title">
+          <strong>Sada 全球包</strong>
+          <span>运营数据看板</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="主导航">
+        <button class="active" data-view="overview"><span class="ico">⌁</span>总览</button>
+        <button data-view="users"><span class="ico">◌</span>用户增长</button>
+        <button data-view="rooms"><span class="ico">▦</span>房间互动</button>
+        <button data-view="gifts"><span class="ico">◇</span>礼物消耗</button>
+        <button data-view="revenue"><span class="ico">◍</span>充值营收</button>
+        <button data-view="prd"><span class="ico">☷</span>产品需求</button>
+      </nav>
+    </aside>
+
+    <main>
+      <div class="mobile-nav" aria-label="移动端导航">
+        <button class="active" data-view="overview">总览</button>
+        <button data-view="users">用户</button>
+        <button data-view="rooms">房间</button>
+        <button data-view="gifts">礼物</button>
+        <button data-view="revenue">营收</button>
+        <button data-view="prd">需求</button>
+      </div>
+
+      <header class="topbar">
+        <div class="topbar-row">
+          <div>
+            <h1>Sada 全球包运营数据看板</h1>
+          </div>
+          <div class="meta">
+            <span class="chip">统计时区 UTC+8</span>
+            <span class="chip">金额 USD</span>
+            <span class="chip">T+1 刷新</span>
+            <span class="chip">评审版</span>
+            <span class="chip" id="updatedAt">最近更新 --</span>
+          </div>
+        </div>
+
+        <section class="filters" aria-label="全局筛选">
+          <div class="field">
+            <label for="datePickerTrigger">日期（UTC+8）</label>
+            <div class="date-picker-shell">
+              <button class="date-trigger" id="datePickerTrigger" type="button" aria-expanded="false">
+                <span id="datePickerLabel">昨日 · 2026-05-05</span>
+                <span>▾</span>
+              </button>
+              <div class="date-picker-popover hidden" id="datePickerPanel">
+                <div class="date-picker-head">
+                  <button type="button" data-date-nav="-1" aria-label="上一年">‹</button>
+                  <strong id="datePickerTitle">2026</strong>
+                  <button type="button" data-date-nav="1" aria-label="下一年">›</button>
+                </div>
+                <div class="date-mode-tabs">
+                  <button type="button" data-date-mode="month">按月</button>
+                  <button class="active" type="button" data-date-mode="day">按日</button>
+                </div>
+                <div class="quick-row">
+                  <button class="active" type="button" data-range="yesterday">昨日</button>
+                  <button type="button" data-range="today">今日</button>
+                  <button type="button" data-range="7d">近 7 天</button>
+                </div>
+                <div class="date-picker-grid months hidden" id="monthGrid"></div>
+                <div class="date-picker-grid days" id="dayGrid"></div>
+              </div>
+              <input class="date-picker-hidden" id="monthPicker" type="month" value="2026-05" />
+              <input class="date-picker-hidden" id="rangeStartPicker" type="date" value="2026-05-05" />
+              <input class="date-picker-hidden" id="rangeEndPicker" type="date" value="2026-05-05" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="regionSelect">运营区域</label>
+            <select id="regionSelect"></select>
+          </div>
+          <div class="field">
+            <label for="countrySelect">国家/地区</label>
+            <select id="countrySelect"></select>
+          </div>
+          <div class="field">
+            <label for="platformSelect">平台</label>
+            <select id="platformSelect">
+              <option value="all">全部平台</option>
+              <option value="ios">iOS</option>
+              <option value="android">Android</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="channelSelect">渠道</label>
+            <select id="channelSelect">
+              <option value="all">全部渠道</option>
+              <option value="organic">自然量</option>
+              <option value="paid">投放渠道</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="userTypeSelect">用户类型</label>
+            <select id="userTypeSelect">
+              <option value="all">全部用户</option>
+              <option value="new">新用户</option>
+              <option value="old">老用户</option>
+            </select>
+          </div>
+        </section>
+      </header>
+
+      <section class="content">
+        <section class="page-heading hidden" id="pageHeading"></section>
+
+        <section class="summary-row overview-section" id="kpiGrid"></section>
+
+        <section class="insight-grid overview-section" id="insightGrid"></section>
+
+        <section class="grid-2 overview-section" id="overviewAnalytics">
+          <article class="panel">
+            <div class="panel-head">
+              <div class="panel-title">
+                <strong id="trendTitle">核心趋势</strong>
+                <span id="trendSub">近 7 天，按当前筛选口径</span>
+              </div>
+              <div class="panel-actions">
+                <button class="text-btn active-metric" data-metric="dau">DAU</button>
+                <button class="text-btn" data-metric="revenue">充值</button>
+                <button class="text-btn" data-metric="rooms">房间</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="chart-wrap">
+                <canvas id="trendChart" width="960" height="420"></canvas>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div class="panel-title">
+                <strong>运营区域对比</strong>
+                <span>DAU / 充值 / 付费率</span>
+              </div>
+              <button class="icon-btn" id="resetRegion" title="重置区域筛选">↺</button>
+            </div>
+            <div class="panel-body table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th><span class="metric-label"><span>运营区域</span><button class="help-btn" type="button" data-tip="运营区域" aria-label="查看运营区域定义">?</button></span></th>
+                    <th><span class="metric-label"><span>DAU</span><button class="help-btn" type="button" data-tip="DAU" aria-label="查看DAU定义">?</button></span></th>
+                    <th><span class="metric-label"><span>总充值金额</span><button class="help-btn" type="button" data-tip="总充值金额" aria-label="查看总充值金额定义">?</button></span></th>
+                    <th class="bar-cell"><span class="metric-label"><span>平台直充付费率</span><button class="help-btn" type="button" data-tip="平台直充付费率" aria-label="查看平台直充付费率定义">?</button></span></th>
+                  </tr>
+                </thead>
+                <tbody id="regionTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <article class="panel module-panel" id="modulePanel">
+          <div class="tabs" role="tablist">
+            <button class="active" data-view="overview">总览摘要</button>
+            <button data-view="users">用户增长</button>
+            <button data-view="rooms">房间互动</button>
+            <button data-view="gifts">礼物消耗</button>
+            <button data-view="revenue">充值营收</button>
+            <button data-view="prd">产品需求</button>
+          </div>
+          <div class="panel-body" id="moduleBody"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="tooltip-popover hidden" id="metricTooltip" role="tooltip"></div>
+  <div class="chart-value-tip hidden" id="chartValueTip"></div>
+
+  <script>
+    const regions = [
+      { id: "all", name: "全部运营区域", countries: ["全部国家/地区"] },
+      { id: "middle-east", name: "中东", countries: ["沙特阿拉伯", "阿联酋", "科威特", "卡塔尔", "约旦", "埃及"] },
+      { id: "north-america", name: "北美", countries: ["美国", "加拿大", "墨西哥"] },
+      { id: "latin-america", name: "拉美", countries: ["巴西", "阿根廷", "智利", "哥伦比亚"] },
+      { id: "europe", name: "欧洲", countries: ["英国", "法国", "德国", "西班牙", "意大利"] },
+      { id: "cis", name: "独联体", countries: ["俄罗斯", "哈萨克斯坦", "乌兹别克斯坦"] },
+      { id: "africa", name: "非洲", countries: ["尼日利亚", "南非", "肯尼亚", "摩洛哥"] },
+      { id: "south-asia", name: "南亚", countries: ["印度", "巴基斯坦", "孟加拉"] },
+      { id: "southeast-asia", name: "东南亚", countries: ["印度尼西亚", "菲律宾", "越南", "泰国"] },
+      { id: "east-asia", name: "东亚", countries: ["日本", "韩国", "中国台湾"] },
+      { id: "oceania", name: "大洋洲", countries: ["澳大利亚", "新西兰"] },
+      { id: "other", name: "其他", countries: ["其他国家/地区"] }
+    ];
+
+    const regionSeed = {
+      "middle-east": 1.18,
+      "north-america": 0.92,
+      "latin-america": 1.04,
+      "europe": 0.88,
+      "cis": 0.64,
+      "africa": 0.76,
+      "south-asia": 1.22,
+      "southeast-asia": 1.34,
+      "east-asia": 0.72,
+      "oceania": 0.38,
+      "other": 0.42
+    };
+
+    const state = {
+      range: "yesterday",
+      month: "2026-05",
+      rangeStart: "2026-05-05",
+      rangeEnd: "2026-05-05",
+      region: "all",
+      country: "all",
+      platform: "all",
+      channel: "all",
+      userType: "all",
+      view: "overview",
+      trendMetric: "dau",
+      giftPage: 1,
+      datePickerMode: "day",
+      datePickerYear: 2026,
+      pendingDateStart: null
+    };
+
+    const fmt = {
+      num: n => Math.round(n).toLocaleString("zh-CN"),
+      money: n => "$" + Math.round(n).toLocaleString("zh-CN"),
+      pct: n => (n * 100).toFixed(1) + "%",
+      dec: n => n.toFixed(2)
+    };
+
+    const metricDefinitions = {
+      "DAU": "统计日内已登录用户发生启动/登录行为的去重用户数。进房、发言、上麦、送礼、充值不单独作为 DAU 统计事件。",
+      "WAU": "近 7 天已登录用户发生启动/登录行为的去重用户数，滚动窗口包含统计日。",
+      "MAU": "近 30 天已登录用户发生启动/登录行为的去重用户数，滚动窗口包含统计日。",
+      "新注册用户": "统计日内完成账号注册的去重用户数。App 不提供游客模式，因此不设置游客相关统计。",
+      "总用户数": "截至统计日累计正式注册用户数，剔除测试、内部、封禁账号；注销账号不计入当前总用户。",
+      "次日留存": "注册后第 1 天仍有启动/登录行为的用户数 / 当天注册用户数。按 UTC+8 自然日计算。",
+      "7日留存": "注册后第 7 天仍有启动/登录行为的用户数 / 当天注册用户数。按 UTC+8 自然日计算。",
+      "15日留存": "注册后第 15 天仍有启动/登录行为的用户数 / 当天注册用户数。按 UTC+8 自然日计算。",
+      "30日留存": "注册后第 30 天仍有启动/登录行为的用户数 / 当天注册用户数。按 UTC+8 自然日计算。",
+      "人均使用时长": "统计日内活跃用户总在线时长 / DAU。跨天会话按 UTC+8 切分，异常长会话截断。",
+      "活跃房间": "统计日内至少有 1 名非房主用户有效进入，且房间内累计上麦时长不低于 5 分钟的去重房间数。",
+      "活跃房间数": "统计日内至少有 1 名非房主用户有效进入，且房间内累计上麦时长不低于 5 分钟的去重房间数。",
+      "新建房间数": "统计日内创建成功的房间数；房间创建后不可删除，同一房主多次创建分别计数。",
+      "上麦人数": "统计日内成功上麦的去重用户数；断线重连不重复计人数。",
+      "上麦次数": "统计日内成功上麦事件总次数。重复上麦重复计数，5 分钟内重连不重复计数。",
+      "人均进房次数": "总进房人次 / DAU。同一用户多次进入重复计数，5 分钟内刷新重连不重复计数。",
+      "人均停留时长": "房间总停留时长 / 进房人次。缺失离房事件时，以最后心跳后 5 分钟作为离房时间。",
+      "总充值金额": "总充值金额 = 币商充值 + 普通用户充值。退款金额单独展示，净充值可按总充值金额 - 退款金额计算。",
+      "退款金额": "统计周期内支付成功后发生退款或拒付的金额，统一折算 USD 展示。",
+      "净充值金额": "净充值金额 = 总充值金额 - 退款金额，用于观察扣除退款拒付后的实际充值留存金额。",
+      "币商充值": "币商向平台充值进货的金额。币商后续向用户售卖金币属于平台外分销链路，平台收入只按币商充值进平台的金额确认。",
+      "币商充值占比": "币商充值金额 / 总充值金额，用于观察平台收入中来自币商进货的比例。",
+      "普通用户充值": "普通用户充值 = 普通用户内购充值 + 普通用户第三方充值，仅指用户通过平台官方链路直充的金额。",
+      "普通用户内购充值": "普通用户通过 App Store / Google Play 等应用商店内购完成的充值金额。",
+      "普通用户第三方充值": "普通用户通过第三方支付渠道完成的充值金额。",
+      "币商充值人数": "统计日内发生币商充值的去重币商账号数。",
+      "普通用户充值人数": "统计日内通过内购或第三方直充成功充值的去重普通用户数。",
+      "币商购币用户": "统计日内通过币商购币的去重普通用户数。",
+      "综合付费人数": "平台直充用户与币商购币用户合并去重后的普通用户数；同一用户同时内购和找币商购币只计 1 人。",
+      "平台直充付费率": "通过内购或第三方直充的普通用户充值人数 / DAU。",
+      "综合付费率（含币商）": "综合付费人数 / DAU，综合付费人数按平台直充用户和币商购币用户合并去重计算。",
+      "普通用户 ARPU": "平台官方直充普通用户充值金额 / DAU，不包含币商分销给终端用户的金额。",
+      "普通用户 ARPPU": "平台官方直充普通用户充值金额 / 平台直充普通用户充值人数。充值人数为 0 时展示 --。",
+      "首充人数": "普通用户中，统计日完成历史首次充值的去重用户数。",
+      "复充人数": "普通用户充值人数 - 首充人数。",
+      "用户活跃": "当前筛选口径下已登录启动/登录用户规模，对应 DAU。",
+      "房间生态": "当前筛选口径下满足进房和上麦时长条件的活跃房间供给情况。",
+      "互动深度": "当前筛选口径下的上麦用户规模，用于观察语音互动参与度。",
+      "商业化": "当前筛选口径下的充值表现，默认使用总充值金额。",
+      "运营区域": "一级运营分析维度，如中东、北美、拉美、欧洲等。",
+      "国家/地区": "运营区域下的二级下钻维度。",
+      "统计周期": "当前筛选的 UTC+8 日期范围；支持快捷日期、整月，或单月内起止日期区间。",
+      "总送礼金额": "统计周期内礼物消耗产生的付费金额，活动券和免费礼物计入次数但不计入金额。",
+      "送礼人数": "统计周期内发生送礼行为的去重用户数；礼物明细表按礼物名分别去重。",
+      "送礼次数": "统计周期内成功送礼事件总次数，同一用户多次送礼重复计数。",
+      "人均送礼金额": "总送礼金额 / 送礼人数，用于观察送礼用户的平均消耗强度。",
+      "送礼金额占充值": "总送礼金额 / 普通用户充值金额，用于观察充值向礼物消耗的转化强度。",
+      "Rose": "示例礼物。送礼人数按礼物名分别去重，总送礼金额按付费消耗金额计算。",
+      "Heart": "示例礼物。送礼人数按礼物名分别去重，总送礼金额按付费消耗金额计算。",
+      "Crown": "示例礼物。送礼人数按礼物名分别去重，总送礼金额按付费消耗金额计算。",
+      "Rocket": "示例礼物。送礼人数按礼物名分别去重，总送礼金额按付费消耗金额计算。",
+      "Castle": "示例礼物。送礼人数按礼物名分别去重，总送礼金额按付费消耗金额计算。"
+    };
+
+    const regionSelect = document.querySelector("#regionSelect");
+    const countrySelect = document.querySelector("#countrySelect");
+    const datePickerTrigger = document.querySelector("#datePickerTrigger");
+    const datePickerLabel = document.querySelector("#datePickerLabel");
+    const datePickerPanel = document.querySelector("#datePickerPanel");
+    const datePickerTitle = document.querySelector("#datePickerTitle");
+    const monthGrid = document.querySelector("#monthGrid");
+    const dayGrid = document.querySelector("#dayGrid");
+    const monthPicker = document.querySelector("#monthPicker");
+    const rangeStartPicker = document.querySelector("#rangeStartPicker");
+    const rangeEndPicker = document.querySelector("#rangeEndPicker");
+    const platformSelect = document.querySelector("#platformSelect");
+    const channelSelect = document.querySelector("#channelSelect");
+    const userTypeSelect = document.querySelector("#userTypeSelect");
+    const pageHeading = document.querySelector("#pageHeading");
+    const kpiGrid = document.querySelector("#kpiGrid");
+    const insightGrid = document.querySelector("#insightGrid");
+    const overviewAnalytics = document.querySelector("#overviewAnalytics");
+    const modulePanel = document.querySelector("#modulePanel");
+    const regionTable = document.querySelector("#regionTable");
+    const moduleBody = document.querySelector("#moduleBody");
+    const toast = document.querySelector("#toast");
+    const metricTooltip = document.querySelector("#metricTooltip");
+    const chartValueTip = document.querySelector("#chartValueTip");
+
+    function init() {
+      regionSelect.innerHTML = regions.map(r => `<option value="${r.id}">${r.name}</option>`).join("");
+      updateCountries();
+      document.querySelector("#updatedAt").textContent = "最近更新 2026-05-06 08:00";
+
+      document.querySelectorAll("[data-range]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          applyQuickRange(btn.dataset.range);
+          document.querySelectorAll("[data-range]").forEach(b => b.classList.toggle("active", b === btn));
+          closeDatePicker();
+          render();
+        });
+      });
+
+      datePickerTrigger.addEventListener("click", event => {
+        event.stopPropagation();
+        toggleDatePicker();
+      });
+
+      datePickerPanel.addEventListener("click", event => {
+        event.stopPropagation();
+      });
+
+      document.querySelectorAll("[data-date-mode]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.datePickerMode = btn.dataset.dateMode;
+          renderDatePicker();
+        });
+      });
+
+      document.querySelectorAll("[data-date-nav]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.datePickerYear += Number(btn.dataset.dateNav);
+          renderDatePicker();
+        });
+      });
+
+      monthGrid.addEventListener("click", event => {
+        const button = event.target.closest("[data-month]");
+        if (!button) return;
+        selectMonth(Number(button.dataset.month));
+      });
+
+      dayGrid.addEventListener("click", event => {
+        const button = event.target.closest("[data-day]");
+        if (!button) return;
+        selectDay(Number(button.dataset.day));
+      });
+
+      monthPicker.addEventListener("change", () => {
+        state.month = monthPicker.value || state.month;
+        const bounds = monthBounds(state.month);
+        state.rangeStart = bounds.start;
+        state.rangeEnd = bounds.end;
+        rangeStartPicker.value = state.rangeStart;
+        rangeEndPicker.value = state.rangeEnd;
+        state.range = "month";
+        document.querySelectorAll("[data-range]").forEach(b => b.classList.remove("active"));
+        render();
+      });
+
+      rangeStartPicker.addEventListener("change", () => {
+        applyRangeDate("start");
+      });
+
+      rangeEndPicker.addEventListener("change", () => {
+        applyRangeDate("end");
+      });
+
+      document.addEventListener("click", event => {
+        if (!event.target.closest(".help-btn") && !event.target.closest("#metricTooltip")) {
+          closeMetricTip();
+        }
+        if (!event.target.closest(".date-picker-shell")) {
+          closeDatePicker();
+        }
+      });
+
+      regionSelect.addEventListener("change", () => {
+        state.region = regionSelect.value;
+        state.country = "all";
+        updateCountries();
+        render();
+      });
+      countrySelect.addEventListener("change", () => {
+        state.country = countrySelect.value;
+        render();
+      });
+      platformSelect.addEventListener("change", () => {
+        state.platform = platformSelect.value;
+        render();
+      });
+      channelSelect.addEventListener("change", () => {
+        state.channel = channelSelect.value;
+        render();
+      });
+      userTypeSelect.addEventListener("change", () => {
+        state.userType = userTypeSelect.value;
+        render();
+      });
+
+      document.querySelectorAll("[data-view]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          setView(btn.dataset.view);
+        });
+      });
+
+      document.querySelectorAll("[data-metric]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.trendMetric = btn.dataset.metric;
+          document.querySelectorAll("[data-metric]").forEach(b => b.classList.toggle("active-metric", b === btn));
+          document.querySelectorAll("[data-metric]").forEach(b => {
+            b.style.background = b === btn ? "#1f4e79" : "#ffffff";
+            b.style.color = b === btn ? "#ffffff" : "#344054";
+          });
+          drawTrendChart();
+        });
+      });
+      document.querySelector('[data-metric="dau"]').style.background = "#1f4e79";
+      document.querySelector('[data-metric="dau"]').style.color = "#ffffff";
+
+      document.querySelector("#resetRegion").addEventListener("click", () => {
+        state.region = "all";
+        state.country = "all";
+        regionSelect.value = "all";
+        updateCountries();
+        render();
+        showToast("已重置为全部运营区域");
+      });
+
+      window.addEventListener("resize", () => {
+        drawTrendChart();
+        renderModuleCharts();
+      });
+      render();
+    }
+
+    function updateCountries() {
+      const selected = regions.find(r => r.id === state.region) || regions[0];
+      const options = ["全部国家/地区", ...selected.countries.filter(c => c !== "全部国家/地区")];
+      countrySelect.innerHTML = options.map((c, idx) => `<option value="${idx === 0 ? "all" : c}">${c}</option>`).join("");
+      countrySelect.value = state.country;
+    }
+
+    const todayUtc8 = "2026-05-06";
+
+    function toggleDatePicker() {
+      const opening = datePickerPanel.classList.contains("hidden");
+      datePickerPanel.classList.toggle("hidden", !opening);
+      datePickerTrigger.setAttribute("aria-expanded", opening ? "true" : "false");
+      if (opening) {
+        state.datePickerYear = Number(state.month.slice(0, 4)) || state.datePickerYear;
+        renderDatePicker();
+      }
+    }
+
+    function closeDatePicker() {
+      datePickerPanel.classList.add("hidden");
+      datePickerTrigger.setAttribute("aria-expanded", "false");
+      state.pendingDateStart = null;
+    }
+
+    function updateDatePickerLabel() {
+      if (!datePickerLabel) return;
+      datePickerLabel.textContent = rangeName();
+    }
+
+    function renderDatePicker() {
+      if (!monthGrid || !dayGrid) return;
+      const selectedMonth = Number(state.month.slice(5, 7));
+      datePickerTitle.textContent = state.datePickerYear;
+      document.querySelectorAll("[data-date-mode]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.dateMode === state.datePickerMode);
+      });
+      document.querySelectorAll("[data-range]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.range === state.range);
+      });
+      monthGrid.classList.toggle("hidden", state.datePickerMode !== "month");
+      dayGrid.classList.toggle("hidden", state.datePickerMode !== "day");
+      const monthLabels = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+      monthGrid.innerHTML = monthLabels.map((label, index) => {
+        const month = index + 1;
+        return `<button type="button" class="${month === selectedMonth ? "active" : ""}" data-month="${month}">${label}</button>`;
+      }).join("");
+      const days = new Date(state.datePickerYear, selectedMonth, 0).getDate();
+      dayGrid.innerHTML = Array.from({ length: days }, (_, index) => {
+        const day = index + 1;
+        const iso = `${state.datePickerYear}-${String(selectedMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const active = iso === state.rangeStart || iso === state.rangeEnd;
+        const inRange = state.range === "range" && iso >= state.rangeStart && iso <= state.rangeEnd;
+        return `<button type="button" class="${active ? "active" : inRange ? "in-range" : ""}" data-day="${day}">${day}</button>`;
+      }).join("");
+    }
+
+    function selectMonth(month) {
+      state.month = `${state.datePickerYear}-${String(month).padStart(2, "0")}`;
+      const bounds = monthBounds(state.month);
+      state.rangeStart = bounds.start;
+      state.rangeEnd = bounds.end;
+      state.range = "month";
+      state.pendingDateStart = null;
+      syncDateInputs();
+      closeDatePicker();
+      render();
+    }
+
+    function selectDay(day) {
+      const iso = `${state.datePickerYear}-${state.month.slice(5, 7)}-${String(day).padStart(2, "0")}`;
+      if (!state.pendingDateStart) {
+        state.pendingDateStart = iso;
+        state.rangeStart = iso;
+        state.rangeEnd = iso;
+        state.month = iso.slice(0, 7);
+        state.range = "range";
+        syncDateInputs();
+        render();
+        return;
+      }
+      state.rangeStart = state.pendingDateStart <= iso ? state.pendingDateStart : iso;
+      state.rangeEnd = state.pendingDateStart <= iso ? iso : state.pendingDateStart;
+      state.month = state.rangeStart.slice(0, 7);
+      state.pendingDateStart = null;
+      state.range = "range";
+      syncDateInputs();
+      closeDatePicker();
+      render();
+    }
+
+    function syncDateInputs() {
+      monthPicker.value = state.month;
+      rangeStartPicker.value = state.rangeStart;
+      rangeEndPicker.value = state.rangeEnd;
+    }
+
+    function applyQuickRange(range) {
+      state.range = range;
+      const end = range === "yesterday" ? shiftDate(todayUtc8, -1) : todayUtc8;
+      const start = range === "7d" ? shiftDate(end, -6) : end;
+      state.rangeStart = start;
+      state.rangeEnd = end;
+      state.month = end.slice(0, 7);
+      state.datePickerYear = Number(state.month.slice(0, 4));
+      state.pendingDateStart = null;
+      syncDateInputs();
+    }
+
+    function shiftDate(isoDate, days) {
+      const date = new Date(isoDate + "T00:00:00");
+      date.setDate(date.getDate() + days);
+      return formatDate(date);
+    }
+
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function monthBounds(month) {
+      const [year, monthIndex] = month.split("-").map(Number);
+      const lastDay = new Date(year, monthIndex, 0).getDate();
+      return {
+        start: `${month}-01`,
+        end: `${month}-${String(lastDay).padStart(2, "0")}`
+      };
+    }
+
+    function sameMonth(a, b) {
+      return a && b && a.slice(0, 7) === b.slice(0, 7);
+    }
+
+    function applyRangeDate(changed) {
+      let start = rangeStartPicker.value || state.rangeStart;
+      let end = rangeEndPicker.value || state.rangeEnd;
+
+      if (!sameMonth(start, end)) {
+        if (changed === "start") {
+          end = start;
+          rangeEndPicker.value = end;
+        } else {
+          start = end.slice(0, 7) + "-01";
+          rangeStartPicker.value = start;
+        }
+        showToast("已限制为同一月份内的日期区间");
+      }
+
+      if (new Date(start) > new Date(end)) {
+        if (changed === "start") {
+          end = start;
+          rangeEndPicker.value = end;
+        } else {
+          start = end;
+          rangeStartPicker.value = start;
+        }
+      }
+
+      state.rangeStart = start;
+      state.rangeEnd = end;
+      state.month = start.slice(0, 7);
+      monthPicker.value = state.month;
+      state.range = "range";
+      document.querySelectorAll("[data-range]").forEach(b => b.classList.remove("active"));
+      render();
+    }
+
+    function setView(view) {
+      state.view = view;
+      document.querySelectorAll("[data-view]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.view === view);
+      });
+      render();
+    }
+
+    function selectedRegions() {
+      if (state.region !== "all") return [regions.find(r => r.id === state.region)];
+      return regions.filter(r => r.id !== "all");
+    }
+
+    function modifier() {
+      const platform = { all: 1, ios: 0.47, android: 0.53 }[state.platform] || 1;
+      const channel = { all: 1, organic: 0.56, paid: 0.44 }[state.channel] || 1;
+      const type = { all: 1, new: 0.28, old: 0.72 }[state.userType] || 1;
+      const country = state.country === "all" ? 1 : 0.22;
+      const range = rangeMultiplier();
+      return platform * channel * type * country * range;
+    }
+
+    function rangeMultiplier() {
+      if (state.range === "today") return 0.72;
+      if (state.range === "yesterday") return 1;
+      if (state.range === "7d") return 6.85;
+      if (state.range === "month") {
+        const bounds = monthBounds(state.month);
+        return daysBetween(bounds.start, bounds.end) * 0.98;
+      }
+      if (state.range === "range") {
+        return daysBetween(state.rangeStart, state.rangeEnd) * 0.99;
+      }
+      return 1;
+    }
+
+    function daysBetween(start, end) {
+      const startDate = new Date(start + "T00:00:00");
+      const endDate = new Date(end + "T00:00:00");
+      const diff = Math.round((endDate - startDate) / 86400000) + 1;
+      return Math.max(1, diff);
+    }
+
+    function dataForRegion(regionId, offset = 0) {
+      const seed = regionSeed[regionId] || 0.5;
+      const wave = 1 + Math.sin((offset + seed * 10) * 0.9) * 0.09 + Math.cos((offset + seed * 6) * 0.5) * 0.04;
+      const mod = modifier();
+      const dau = 21500 * seed * mod * wave;
+      const newUsers = dau * (0.145 + seed * 0.012);
+      const rooms = dau / (15.5 - seed * 1.7);
+      const activeRooms = rooms * (0.48 + seed * 0.07);
+      const micUsers = dau * (0.095 + seed * 0.016);
+      const entries = dau * (2.8 + seed * 0.42);
+      const stay = 11.5 + seed * 5.4;
+      const payRate = 0.031 + seed * 0.006;
+      const payers = dau * payRate;
+      const merchantBuyerUsers = payers * (0.24 + seed * 0.055);
+      const overlapPayUsers = Math.min(payers, merchantBuyerUsers) * (0.16 + seed * 0.018);
+      const combinedPayUsers = payers + merchantBuyerUsers - overlapPayUsers;
+      const ordinaryRevenue = payers * (8.8 + seed * 6.2);
+      const iapShare = Math.max(0.42, Math.min(0.68, 0.56 + Math.sin(seed * 4) * 0.08));
+      const iapRevenue = ordinaryRevenue * iapShare;
+      const thirdPartyRevenue = ordinaryRevenue - iapRevenue;
+      const merchantRevenue = ordinaryRevenue * (0.18 + seed * 0.07);
+      const merchantPayers = Math.max(1, Math.round(payers * (0.004 + seed * 0.001)));
+      const revenue = ordinaryRevenue + merchantRevenue;
+      const refundAmount = revenue * (0.018 + seed * 0.006);
+      const gifts = ordinaryRevenue * (0.62 + seed * 0.05);
+      return {
+        dau,
+        newUsers,
+        rooms,
+        activeRooms,
+        micUsers,
+        entries,
+        stay,
+        payRate,
+        payers,
+        merchantBuyerUsers,
+        overlapPayUsers,
+        combinedPayUsers,
+        merchantPayers,
+        revenue,
+        ordinaryRevenue,
+        merchantRevenue,
+        iapRevenue,
+        thirdPartyRevenue,
+        refundAmount,
+        gifts
+      };
+    }
+
+    function aggregate(offset = 0) {
+      const list = selectedRegions().map(r => dataForRegion(r.id, offset));
+      const sum = key => list.reduce((acc, item) => acc + item[key], 0);
+      const dau = sum("dau");
+      const revenue = sum("revenue");
+      const payers = sum("payers");
+      const merchantBuyerUsers = sum("merchantBuyerUsers");
+      const overlapPayUsers = sum("overlapPayUsers");
+      const combinedPayUsers = Math.max(0, payers + merchantBuyerUsers - overlapPayUsers);
+      const ordinaryRevenue = sum("ordinaryRevenue");
+      const merchantRevenue = sum("merchantRevenue");
+      const iapRevenue = sum("iapRevenue");
+      const thirdPartyRevenue = sum("thirdPartyRevenue");
+      const refundAmount = sum("refundAmount");
+      return {
+        dau,
+        newUsers: sum("newUsers"),
+        totalUsers: dau * 18.4,
+        rooms: sum("rooms"),
+        activeRooms: sum("activeRooms"),
+        micUsers: sum("micUsers"),
+        entries: sum("entries"),
+        stay: list.reduce((acc, item) => acc + item.stay * item.entries, 0) / Math.max(sum("entries"), 1),
+        payers,
+        merchantBuyerUsers,
+        overlapPayUsers,
+        combinedPayUsers,
+        merchantPayers: sum("merchantPayers"),
+        revenue,
+        ordinaryRevenue,
+        merchantRevenue,
+        iapRevenue,
+        thirdPartyRevenue,
+        refundAmount,
+        payRate: payers / Math.max(dau, 1),
+        combinedPayRate: combinedPayUsers / Math.max(dau, 1),
+        arpu: ordinaryRevenue / Math.max(dau, 1),
+        totalArpu: revenue / Math.max(dau, 1),
+        arppu: ordinaryRevenue / Math.max(payers, 1),
+        gifts: sum("gifts")
+      };
+    }
+
+    function series(key) {
+      return Array.from({ length: 7 }, (_, i) => {
+        const item = aggregate(i - 6);
+        if (key === "revenue") return item.revenue;
+        if (key === "ordinaryRevenue") return item.ordinaryRevenue;
+        if (key === "merchantRevenue") return item.merchantRevenue;
+        if (key === "iapRevenue") return item.iapRevenue;
+        if (key === "thirdPartyRevenue") return item.thirdPartyRevenue;
+        if (key === "payRate") return item.payRate;
+        if (key === "combinedPayRate") return item.combinedPayRate;
+        if (key === "rooms") return item.activeRooms;
+        return item.dau;
+      });
+    }
+
+    function render() {
+      closeMetricTip();
+      hideChartValueTip();
+      renderPageChrome();
+      updateDatePickerLabel();
+      renderDatePicker();
+      renderKpis();
+      renderInsights();
+      drawTrendChart();
+      renderRegionTable();
+      renderModule();
+      bindMetricTips(document);
+    }
+
+    function renderPageChrome() {
+      const isOverview = state.view === "overview";
+      const isPrd = state.view === "prd";
+      document.querySelector(".topbar").classList.toggle("hidden", isPrd);
+      document.querySelectorAll(".overview-section").forEach(section => {
+        section.classList.toggle("hidden", !isOverview);
+      });
+      modulePanel.classList.toggle("hidden", isOverview);
+      modulePanel.classList.toggle("focused", !isOverview);
+      pageHeading.classList.toggle("hidden", isOverview);
+
+      if (!isOverview) {
+        const copy = pageCopy(state.view);
+        pageHeading.innerHTML = `
+          <div>
+            <h2>${copy.title}</h2>
+            <p>${copy.desc}</p>
+          </div>
+          ${isPrd ? "" : `<div class="page-context">
+            <span class="chip">${regionName()}</span>
+            <span class="chip">${countryName()}</span>
+            <span class="chip">${rangeName()}</span>
+          </div>`}
+        `;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function tip(label) {
+      const safe = escapeHtml(label);
+      return `<span class="metric-label"><span>${safe}</span><button class="help-btn" type="button" data-tip="${safe}" aria-label="查看${safe}定义">?</button></span>`;
+    }
+
+    function bindMetricTips(root = document) {
+      root.querySelectorAll(".help-btn").forEach(button => {
+        if (button.dataset.tipBound === "1") return;
+        button.dataset.tipBound = "1";
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+          const key = button.dataset.tip;
+          if (button.classList.contains("active")) {
+            closeMetricTip();
+          } else {
+            showMetricTip(button, key);
+          }
+        });
+      });
+    }
+
+    function showMetricTip(button, key) {
+      document.querySelectorAll(".help-btn.active").forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+      const definition = metricDefinitions[key] || "该字段按当前筛选条件统计，口径与当前模块保持一致。";
+      metricTooltip.innerHTML = `<strong>${escapeHtml(key)}</strong><span>${escapeHtml(definition)}</span>`;
+      metricTooltip.classList.remove("hidden");
+
+      const rect = button.getBoundingClientRect();
+      const gap = 8;
+      const width = metricTooltip.offsetWidth || 320;
+      let left = rect.left;
+      let top = rect.bottom + gap;
+      left = Math.max(12, Math.min(left, window.innerWidth - width - 12));
+
+      metricTooltip.style.left = left + "px";
+      metricTooltip.style.top = top + "px";
+
+      const bubbleRect = metricTooltip.getBoundingClientRect();
+      if (bubbleRect.bottom > window.innerHeight - 12) {
+        top = Math.max(12, rect.top - bubbleRect.height - gap);
+        metricTooltip.style.top = top + "px";
+      }
+    }
+
+    function closeMetricTip() {
+      metricTooltip.classList.add("hidden");
+      document.querySelectorAll(".help-btn.active").forEach(btn => btn.classList.remove("active"));
+    }
+
+    function renderKpis() {
+      const cur = aggregate(0);
+      const prev = aggregate(-1);
+      const cards = [
+        { key: "dau", label: "DAU", value: fmt.num(cur.dau), prev: prev.dau, raw: cur.dau, spark: series("dau") },
+        { key: "new", label: "新注册用户", value: fmt.num(cur.newUsers), prev: prev.newUsers, raw: cur.newUsers, spark: series("dau").map(v => v * 0.15) },
+        { key: "revenue", label: "总充值金额", value: fmt.money(cur.revenue), prev: prev.revenue, raw: cur.revenue, spark: series("revenue") },
+        { key: "payers", label: "普通用户充值人数", value: fmt.num(cur.payers), prev: prev.payers, raw: cur.payers, spark: series("ordinaryRevenue").map(v => v / 13) },
+        { key: "payRate", label: "平台直充付费率", value: fmt.pct(cur.payRate), prev: prev.payRate, raw: cur.payRate, spark: series("payRate") },
+        { key: "arpu", label: "普通用户 ARPU", value: "$" + fmt.dec(cur.arpu), prev: prev.arpu, raw: cur.arpu, spark: series("ordinaryRevenue").map((v, i) => v / Math.max(series("dau")[i], 1)) },
+        { key: "arppu", label: "普通用户 ARPPU", value: "$" + fmt.dec(cur.arppu), prev: prev.arppu, raw: cur.arppu, spark: series("ordinaryRevenue").map(v => v / Math.max(cur.payers, 1)) },
+        { key: "rooms", label: "活跃房间", value: fmt.num(cur.activeRooms), prev: prev.activeRooms, raw: cur.activeRooms, spark: series("rooms") }
+      ];
+      kpiGrid.innerHTML = cards.map(card => {
+        const delta = card.raw - card.prev;
+        const pct = card.prev === 0 ? "--" : ((delta / card.prev) * 100).toFixed(1) + "%";
+        const cls = delta >= 0 ? "up" : "down";
+        const mark = delta >= 0 ? "▲" : "▼";
+        return `
+          <article class="kpi">
+            <div class="kpi-head">${tip(card.label)}<span class="delta ${cls}">${mark} ${pct}</span></div>
+            <div class="kpi-value">${card.value}</div>
+            ${sparkline(card.spark, cls === "up" ? "#16875f" : "#c2413a")}
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderInsights() {
+      const regionRows = regions.filter(r => r.id !== "all").map(r => {
+        const d = dataForRegion(r.id);
+        const prev = dataForRegion(r.id, -1);
+        return { region: r, prev, ...d };
+      });
+      const cur = currentScope(0);
+      const prev = currentScope(-1);
+      const topRevenue = [...regionRows].sort((a, b) => b.revenue - a.revenue)[0];
+      const topPay = [...regionRows].sort((a, b) => b.payRate - a.payRate)[0];
+      const highRooms = [...regionRows].sort((a, b) => b.activeRooms - a.activeRooms)[0];
+      const growthDelta = ratio(cur.dau, prev.dau);
+      const revenueDelta = ratio(cur.revenue, prev.revenue);
+      const roomDelta = ratio(cur.activeRooms, prev.activeRooms);
+      const dataCompleteness = 0.982;
+      const isAll = state.region === "all";
+      const scopeName = regionName();
+      const roomGap = ratio(cur.activeRooms, highRooms.activeRooms);
+      const revenueGap = ratio(cur.revenue, topRevenue.revenue);
+      const payGap = ratio(cur.payRate, topPay.payRate);
+      const roomStatus = isAll ? roomDelta : roomGap;
+      const revenueStatus = isAll ? revenueDelta : revenueGap;
+      const health = [
+        {
+          name: "增长与留存",
+          status: growthDelta >= 0.03 ? "健康" : growthDelta >= -0.02 ? "观察" : "风险",
+          tone: growthDelta >= 0.03 ? "good" : growthDelta >= -0.02 ? "watch" : "risk",
+          text: `${scopeName} DAU ${fmt.num(cur.dau)}，较昨日 ${signedPct(growthDelta)}，新增 ${fmt.num(cur.newUsers)}。`,
+          compare: isAll ? "全局汇总口径" : `对比全局汇总 DAU ${fmt.num(aggregate(0).dau)}`
+        },
+        {
+          name: "房间生态",
+          status: roomStatus >= -0.12 ? "健康" : roomStatus >= -0.32 ? "观察" : "风险",
+          tone: roomStatus >= -0.12 ? "good" : roomStatus >= -0.32 ? "watch" : "risk",
+          text: `${scopeName} 活跃房间 ${fmt.num(cur.activeRooms)} 间。`,
+          compare: isAll
+            ? `区域最高：${highRooms.region.name} ${fmt.num(highRooms.activeRooms)} 间`
+            : `表现最佳：${highRooms.region.name} ${fmt.num(highRooms.activeRooms)} 间，差距 ${signedPct(roomGap)}`
+        },
+        {
+          name: "商业化",
+          status: revenueStatus >= -0.15 ? "健康" : revenueStatus >= -0.38 ? "观察" : "风险",
+          tone: revenueStatus >= -0.15 ? "good" : revenueStatus >= -0.38 ? "watch" : "risk",
+          text: `${scopeName} 总充值 ${fmt.money(cur.revenue)}；币商 ${fmt.money(cur.merchantRevenue)}，普通用户 ${fmt.money(cur.ordinaryRevenue)}。`,
+          compare: isAll
+            ? `区域最高：${topRevenue.region.name} ${fmt.money(topRevenue.revenue)}`
+            : `充值最佳：${topRevenue.region.name} ${fmt.money(topRevenue.revenue)}，差距 ${signedPct(revenueGap)}；平台直充付费率最佳 ${topPay.region.name} ${fmt.pct(topPay.payRate)}，当前差距 ${signedPct(payGap)}`
+        },
+        {
+          name: "数据质量",
+          status: dataCompleteness >= 0.98 ? "可信" : "观察",
+          tone: dataCompleteness >= 0.98 ? "info" : "watch",
+          text: `${scopeName} 事件完整率 ${fmt.pct(dataCompleteness)}，最近刷新 08:00。`,
+          compare: "适用于当前筛选口径"
+        }
+      ];
+
+      const actions = [
+        {
+          title: isAll ? `复盘 ${topRevenue.region.name} 充值贡献` : `复盘 ${scopeName} 充值结构`,
+          body: isAll ? `总充值 ${fmt.money(topRevenue.revenue)}，平台直充付费率 ${fmt.pct(topRevenue.payRate)}。` : `总充值 ${fmt.money(cur.revenue)}，币商充值占比 ${fmt.pct(cur.merchantRevenue / Math.max(cur.revenue, 1))}。`,
+          label: "看营收",
+          action: "revenue",
+          region: isAll ? topRevenue.region.id : state.region
+        },
+        {
+          title: isAll ? `对比 ${topPay.region.name} 直充表现` : `${scopeName} 对比直充标杆`,
+          body: isAll ? `平台直充付费率 ${fmt.pct(topPay.payRate)}，当前区域最高。` : `标杆 ${topPay.region.name} ${fmt.pct(topPay.payRate)}，当前 ${fmt.pct(cur.payRate)}。`,
+          label: isAll ? "看区域" : "看口径",
+          action: "overview",
+          region: isAll ? topPay.region.id : state.region
+        },
+        {
+          title: isAll ? `跟进 ${highRooms.region.name} 房间供给` : `排查 ${scopeName} 房间互动`,
+          body: isAll ? `活跃房间 ${fmt.num(highRooms.activeRooms)}，适合看停留和上麦。` : `当前活跃房间 ${fmt.num(cur.activeRooms)}，对比 ${highRooms.region.name} 差距 ${signedPct(roomGap)}。`,
+          label: "看房间",
+          action: "rooms",
+          region: isAll ? highRooms.region.id : state.region
+        }
+      ];
+
+      insightGrid.innerHTML = `
+        <article class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <strong>经营健康诊断</strong>
+              <span>增长、房间、营收、数据质量四个维度一起看</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="health-cards">
+              ${health.map(item => `
+                <div class="health-card">
+                  <span class="status ${item.tone}">${item.status}</span>
+                  <strong>${item.name}</strong>
+                  <p>${item.text}</p>
+                  <div class="compare-line"><span>${item.compare}</span></div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <strong>今日运营动作</strong>
+              <span>按当前筛选口径生成</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="action-list">
+              ${actions.map(item => `
+                <div class="action-item">
+                  <div class="action-copy">
+                    <strong>${item.title}</strong>
+                    <span>${item.body}</span>
+                  </div>
+                  <button data-action="${item.action}" data-action-region="${item.region}">${item.label}</button>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </article>
+      `;
+
+      insightGrid.querySelectorAll("[data-action]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.region = button.dataset.actionRegion;
+          state.country = "all";
+          regionSelect.value = state.region;
+          updateCountries();
+          setView(button.dataset.action);
+          showToast(`已切换到 ${regionName()} / ${viewName(state.view)}`);
+        });
+      });
+    }
+
+    function currentScope(offset = 0) {
+      if (state.region === "all") return aggregate(offset);
+      const d = dataForRegion(state.region, offset);
+      return {
+        ...d,
+        totalUsers: d.dau * 18.4,
+        arpu: d.ordinaryRevenue / Math.max(d.dau, 1),
+        totalArpu: d.revenue / Math.max(d.dau, 1),
+        arppu: d.ordinaryRevenue / Math.max(d.payers, 1)
+      };
+    }
+
+    function ratio(cur, prev) {
+      if (!prev) return 0;
+      return (cur - prev) / prev;
+    }
+
+    function signedPct(value) {
+      const sign = value >= 0 ? "+" : "";
+      return sign + (value * 100).toFixed(1) + "%";
+    }
+
+    function sparkline(values, color) {
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const points = values.map((v, i) => {
+        const x = (i / (values.length - 1)) * 100;
+        const y = 28 - ((v - min) / Math.max(max - min, 1)) * 24;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(" ");
+      return `<svg class="spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      </svg>`;
+    }
+
+    function drawTrendChart() {
+      const canvas = document.querySelector("#trendChart");
+      const parent = canvas.parentElement;
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(320, parent.clientWidth);
+      const height = Math.max(240, parent.clientHeight);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      const values = series(state.trendMetric);
+      const labels = ["6天前", "5天前", "4天前", "3天前", "2天前", "昨日", "今日"];
+      const pad = { left: 58, right: 18, top: 20, bottom: 42 };
+      const chartW = width - pad.left - pad.right;
+      const chartH = height - pad.top - pad.bottom;
+      const max = Math.max(...values) * 1.12;
+      const min = Math.min(...values) * 0.88;
+      const color = state.trendMetric === "revenue" ? "#16875f" : state.trendMetric === "rooms" ? "#b7791f" : "#2f6fbb";
+      const title = state.trendMetric === "revenue" ? "充值金额趋势" : state.trendMetric === "rooms" ? "活跃房间趋势" : "DAU 趋势";
+      document.querySelector("#trendTitle").textContent = title;
+
+      ctx.strokeStyle = "#e8edf3";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px Microsoft YaHei, Arial";
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + (chartH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
+        const v = max - ((max - min) / 4) * i;
+        ctx.fillText(state.trendMetric === "revenue" ? "$" + Math.round(v / 1000) + "k" : Math.round(v).toLocaleString("zh-CN"), 8, y + 4);
+      }
+
+      const points = values.map((v, i) => ({
+        x: pad.left + (chartW / (values.length - 1)) * i,
+        y: pad.top + chartH - ((v - min) / Math.max(max - min, 1)) * chartH
+      }));
+
+      const gradient = ctx.createLinearGradient(0, pad.top, 0, height - pad.bottom);
+      gradient.addColorStop(0, color + "33");
+      gradient.addColorStop(1, color + "00");
+
+      ctx.beginPath();
+      points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.lineTo(points[points.length - 1].x, height - pad.bottom);
+      ctx.lineTo(points[0].x, height - pad.bottom);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.beginPath();
+      points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      points.forEach((p, i) => {
+        ctx.beginPath();
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.arc(p.x, p.y, i === points.length - 1 ? 5 : 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#667085";
+        ctx.fillText(labels[i], p.x - 13, height - 15);
+      });
+    }
+
+    function renderRegionTable() {
+      const rows = regions.filter(r => r.id !== "all").map(r => {
+        const d = dataForRegion(r.id);
+        return { region: r, ...d };
+      }).sort((a, b) => b.dau - a.dau);
+      const maxPay = Math.max(...rows.map(r => r.payRate));
+      regionTable.innerHTML = rows.map(row => `
+        <tr data-region="${row.region.id}" class="${state.region === row.region.id ? "active-row" : ""}">
+          <td><strong>${row.region.name}</strong></td>
+          <td>${fmt.num(row.dau)}</td>
+          <td>${fmt.money(row.revenue)}</td>
+          <td class="bar-cell">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="bar" style="flex:1;"><span style="width:${Math.max(5, row.payRate / maxPay * 100)}%;"></span></div>
+              <span>${fmt.pct(row.payRate)}</span>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+      regionTable.querySelectorAll("tr").forEach(tr => {
+        tr.addEventListener("click", () => {
+          state.region = tr.dataset.region;
+          state.country = "all";
+          regionSelect.value = state.region;
+          updateCountries();
+          render();
+          showToast(`已筛选：${regions.find(r => r.id === state.region).name}`);
+        });
+      });
+    }
+
+    function renderModule() {
+      const cur = aggregate(0);
+      const views = {
+        overview: renderOverview,
+        users: renderUsers,
+        rooms: renderRooms,
+        gifts: renderGifts,
+        revenue: renderRevenue,
+        prd: renderPrd
+      };
+      moduleBody.innerHTML = (views[state.view] || renderOverview)(cur);
+      bindModuleActions();
+    }
+
+    function renderOverview(cur) {
+      return `
+        <div class="module-grid">
+          <div>
+            <div class="mini-grid">
+              <div class="mini-card">${tip("运营区域")}<strong>${regionName()}</strong></div>
+              <div class="mini-card">${tip("国家/地区")}<strong>${countryName()}</strong></div>
+              <div class="mini-card">${tip("统计周期")}<strong>${rangeName()}</strong></div>
+            </div>
+            <div style="height:14px;"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>观察项</th><th>当前读数</th><th>运营含义</th></tr></thead>
+                <tbody>
+                  <tr><td>${tip("用户活跃")}</td><td>${fmt.num(cur.dau)} DAU</td><td>已登录用户启动/登录去重规模。</td></tr>
+                  <tr><td>${tip("房间生态")}</td><td>${fmt.num(cur.activeRooms)} 活跃房间</td><td>有非房主进入且累计上麦时长不低于 5 分钟的房间数量。</td></tr>
+                  <tr><td>${tip("互动深度")}</td><td>${fmt.num(cur.micUsers)} 上麦用户</td><td>衡量语音互动参与度。</td></tr>
+                  <tr><td>${tip("商业化")}</td><td>${fmt.money(cur.revenue)} 充值</td><td>净充值金额，统一 USD。</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="rule-list">
+            <div class="rule"><strong>口径</strong><span>UTC+8 自然日，T+1 刷新，金额统一 USD。</span></div>
+            <div class="rule"><strong>区域</strong><span>中东、北美、拉美、欧洲等均纳入全球包统计。</span></div>
+            <div class="rule"><strong>归属</strong><span>用户按注册国家优先映射运营区域，缺失时使用最近登录 IP 国家。</span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderUsers(cur) {
+      const d1 = retentionValue(1, 0);
+      const d7 = retentionValue(7, 0);
+      const d15 = retentionValue(15, 0);
+      const d30 = retentionValue(30, 0);
+      return `
+        <div class="mini-grid">
+          <div class="mini-card">${tip("DAU")}<strong>${fmt.num(cur.dau)}</strong></div>
+          <div class="mini-card">${tip("新注册用户")}<strong>${fmt.num(cur.newUsers)}</strong></div>
+          <div class="mini-card">${tip("总用户数")}<strong>${fmt.num(cur.totalUsers)}</strong></div>
+        </div>
+        <div style="height:10px;"></div>
+        <div class="mini-grid">
+          <div class="mini-card">${tip("WAU")}<strong>${fmt.num(cur.dau * 3.8)}</strong></div>
+          <div class="mini-card">${tip("MAU")}<strong>${fmt.num(cur.dau * 10.9)}</strong></div>
+          <div class="mini-card">${tip("次日留存")}<strong>${fmt.pct(d1)}</strong></div>
+        </div>
+        <div style="height:10px;"></div>
+        <div class="mini-grid">
+          <div class="mini-card">${tip("7日留存")}<strong>${fmt.pct(d7)}</strong></div>
+          <div class="mini-card">${tip("15日留存")}<strong>${fmt.pct(d15)}</strong></div>
+          <div class="mini-card">${tip("30日留存")}<strong>${fmt.pct(d30)}</strong></div>
+        </div>
+        <div style="height:16px;"></div>
+
+        <div class="analytics-grid">
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>登录用户与新增趋势</strong>
+                <span>近 7 天</span>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="userGrowthTrendChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>活跃规模结构</strong>
+                <span>DAU / WAU / MAU</span>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="activeScaleChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>留存趋势</strong>
+                <span>次日留存 / 7日留存 / 15日留存 / 30日留存</span>
+              </div>
+            </div>
+            <div class="chart-card-body large">
+              <canvas id="retentionTrendChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>运营区域增长排行</strong>
+                <span>按新注册用户排序</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>${tip("运营区域")}</th><th>${tip("新注册用户")}</th><th>${tip("DAU")}</th><th>${tip("次日留存")}</th><th>${tip("7日留存")}</th><th>${tip("15日留存")}</th><th>${tip("30日留存")}</th></tr></thead>
+                <tbody>${userGrowthRankingRows()}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function userGrowthRankingRows() {
+      return regions.filter(r => r.id !== "all").map(region => {
+        const d = dataForRegion(region.id);
+        return {
+          region,
+          ...d,
+          d1: retentionValue(1, 0, region.id),
+          d7: retentionValue(7, 0, region.id),
+          d15: retentionValue(15, 0, region.id),
+          d30: retentionValue(30, 0, region.id)
+        };
+      }).sort((a, b) => b.newUsers - a.newUsers).slice(0, 8).map(row => `
+        <tr data-region="${row.region.id}">
+          <td><strong>${row.region.name}</strong></td>
+          <td>${fmt.num(row.newUsers)}</td>
+          <td>${fmt.num(row.dau)}</td>
+          <td>${fmt.pct(row.d1)}</td>
+          <td>${fmt.pct(row.d7)}</td>
+          <td>${fmt.pct(row.d15)}</td>
+          <td>${fmt.pct(row.d30)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function retentionValue(day = 1, offset = 0, regionId = state.region) {
+      const baseSeed = regionId === "all" ? 0.96 : (regionSeed[regionId] || 0.8);
+      const decay = { 1: 1, 7: 0.58, 15: 0.39, 30: 0.24 }[day] || 1;
+      const trend = offset * 0.0032;
+      const weeklyWave = Math.sin((offset + 6) * 1.25 + baseSeed * 2.4) * 0.012;
+      const retentionNoise = Math.cos((offset + day / 3) * 0.9 + baseSeed) * 0.006;
+      const base = 0.285 + baseSeed * 0.03 + trend + weeklyWave + retentionNoise + modifier() * 0.004;
+      return Math.max(0.035, Math.min(0.46, base * decay));
+    }
+
+    function renderUserGrowthCharts() {
+      const cur = aggregate(0);
+      const dau = Array.from({ length: 7 }, (_, i) => aggregate(i - 6).dau);
+      const newUsers = Array.from({ length: 7 }, (_, i) => aggregate(i - 6).newUsers);
+      const d1 = Array.from({ length: 7 }, (_, i) => retentionValue(1, i - 6));
+      const d7 = Array.from({ length: 7 }, (_, i) => retentionValue(7, i - 6));
+      const d15 = Array.from({ length: 7 }, (_, i) => retentionValue(15, i - 6));
+      const d30 = Array.from({ length: 7 }, (_, i) => retentionValue(30, i - 6));
+      drawDualLineChart("userGrowthTrendChart", [
+        { label: "DAU", values: dau, color: "#2f6fbb" },
+        { label: "新注册", values: newUsers, color: "#16875f" }
+      ], { inspectByDay: true });
+      drawBarChart("activeScaleChart", [
+        { label: "DAU", value: cur.dau, color: "#2f6fbb" },
+        { label: "WAU", value: cur.dau * 3.8, color: "#1d7f8c" },
+        { label: "MAU", value: cur.dau * 10.9, color: "#b7791f" }
+      ]);
+      drawDualLineChart("retentionTrendChart", [
+        { label: "次日留存", values: d1, color: "#6a5acd" },
+        { label: "7日留存", values: d7, color: "#2f6fbb" },
+        { label: "15日留存", values: d15, color: "#1d7f8c" },
+        { label: "30日留存", values: d30, color: "#b7791f" }
+      ], { percent: true, inspectByDay: true });
+    }
+
+    function renderModuleCharts() {
+      if (state.view === "users") renderUserGrowthCharts();
+      if (state.view === "rooms") renderRoomCharts();
+      if (state.view === "gifts") renderGiftCharts();
+      if (state.view === "revenue") renderRevenueCharts();
+    }
+
+    function renderRoomCharts() {
+      const cur = aggregate(0);
+      const activeRooms = Array.from({ length: 7 }, (_, i) => aggregate(i - 6).activeRooms);
+      const newRooms = Array.from({ length: 7 }, (_, i) => aggregate(i - 6).rooms * 0.18);
+      drawDualLineChart("roomTrendChart", [
+        { label: "活跃房间", values: activeRooms, color: "#2f6fbb" },
+        { label: "新建房间", values: newRooms, color: "#1d7f8c" }
+      ], { inspectByDay: true });
+      drawBarChart("roomInteractionChart", [
+        { label: "新建房间", value: cur.rooms * 0.18, color: "#1d7f8c" },
+        { label: "活跃房间", value: cur.activeRooms, color: "#2f6fbb" },
+        { label: "上麦人数", value: cur.micUsers, color: "#b7791f" },
+        { label: "上麦次数", value: cur.micUsers * 1.9, color: "#6a5acd" }
+      ]);
+    }
+
+    function renderGiftCharts() {
+      const cur = aggregate(0);
+      const giftAmount = Array.from({ length: 7 }, (_, i) => aggregate(i - 6).gifts);
+      const highValueGiftAmount = giftAmount.map(value => value * 0.61);
+      drawDualLineChart("giftTrendChart", [
+        { label: "总送礼金额", values: giftAmount, color: "#2f6fbb" },
+        { label: "高价礼物金额", values: highValueGiftAmount, color: "#b7791f" }
+      ], { money: true, inspectByDay: true });
+      drawBarChart("giftAmountChart", [...giftRows(cur)].sort((a, b) => b.amount - a.amount).slice(0, 6).map(gift => ({
+        label: gift.name,
+        value: gift.amount,
+        color: gift.color
+      })), { money: true });
+    }
+
+    function renderRevenueCharts() {
+      const cur = aggregate(0);
+      drawDualLineChart("revenueTrendChart", [
+        { label: "总充值金额", values: series("revenue"), color: "#2f6fbb" },
+        { label: "普通用户充值", values: series("ordinaryRevenue"), color: "#16875f" },
+        { label: "币商充值", values: series("merchantRevenue"), color: "#b7791f" }
+      ], { money: true, inspectByDay: true });
+      drawBarChart("revenueSplitChart", [
+        { label: "币商充值", value: cur.merchantRevenue, color: "#b7791f" },
+        { label: "普通用户内购", value: cur.iapRevenue, color: "#2f6fbb" },
+        { label: "普通用户第三方", value: cur.thirdPartyRevenue, color: "#1d7f8c" }
+      ], { money: true });
+    }
+
+    function drawDualLineChart(canvasId, datasets, options = {}) {
+      const canvas = document.querySelector("#" + canvasId);
+      if (!canvas) return;
+      const parent = canvas.parentElement;
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(320, parent.clientWidth);
+      const height = Math.max(220, parent.clientHeight);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+      const values = datasets.flatMap(d => d.values);
+      const max = Math.max(...values) * (options.percent ? 1.08 : 1.12);
+      const min = Math.min(...values) * (options.percent ? 0.92 : 0.88);
+      const pad = { left: 56, right: 16, top: 24, bottom: 40 };
+      const chartW = width - pad.left - pad.right;
+      const chartH = height - pad.top - pad.bottom;
+      const pointGroups = [];
+      const dayLabels = options.labels || ["6天前", "5天前", "4天前", "3天前", "2天前", "昨日", "今日"];
+      let legendX = pad.left;
+
+      ctx.strokeStyle = "#e8edf3";
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px Microsoft YaHei, Arial";
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + chartH / 4 * i;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
+        const value = max - (max - min) / 4 * i;
+        ctx.fillText(chartValueLabel(value, options), 8, y + 4);
+      }
+
+      datasets.forEach((dataset, idx) => {
+        const points = dataset.values.map((value, i) => ({
+          x: pad.left + chartW / (dataset.values.length - 1) * i,
+          y: pad.top + chartH - ((value - min) / Math.max(max - min, 1)) * chartH,
+          value,
+          label: dataset.label,
+          color: dataset.color,
+          index: i
+        }));
+        points.forEach(point => {
+          if (!pointGroups[point.index]) pointGroups[point.index] = [];
+          pointGroups[point.index].push(point);
+        });
+        ctx.beginPath();
+        points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.strokeStyle = dataset.color;
+        ctx.lineWidth = 3;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.stroke();
+        points.forEach(p => {
+          ctx.beginPath();
+          ctx.fillStyle = "#ffffff";
+          ctx.strokeStyle = dataset.color;
+          ctx.lineWidth = 2;
+          ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+        ctx.fillStyle = dataset.color;
+        ctx.fillRect(legendX, 5, 10, 10);
+        ctx.fillStyle = "#475467";
+        ctx.fillText(dataset.label, legendX + 15, 14);
+        legendX += ctx.measureText(dataset.label).width + 34;
+      });
+
+      dayLabels.forEach((label, i) => {
+        const x = pad.left + chartW / 6 * i;
+        ctx.fillStyle = "#667085";
+        ctx.fillText(label, x - 13, height - 15);
+      });
+
+      if (options.inspectByDay) {
+        const showDayTip = (event, index) => {
+          const rows = pointGroups[index] || [];
+          if (!rows.length) return;
+          const html = rows.map(row => `${escapeHtml(row.label)}：${chartTooltipValueLabel(row.value, options)}`).join("<br>");
+          showChartValueTip(event.clientX, event.clientY, dayLabels[index], html, true);
+        };
+        canvas.onmousemove = event => {
+          const rect = canvas.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const index = Math.round((x - pad.left) / (chartW / 6));
+          if (index >= 0 && index <= 6) {
+            canvas.style.cursor = "pointer";
+            showDayTip(event, index);
+          } else {
+            canvas.style.cursor = "default";
+            hideChartValueTip();
+          }
+        };
+        canvas.onclick = event => {
+          const rect = canvas.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const index = Math.round((x - pad.left) / (chartW / 6));
+          if (index >= 0 && index <= 6) showDayTip(event, index);
+        };
+        canvas.onmouseleave = hideChartValueTip;
+      }
+    }
+
+    function drawBarChart(canvasId, rows, options = {}) {
+      const canvas = document.querySelector("#" + canvasId);
+      if (!canvas) return;
+      const parent = canvas.parentElement;
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(320, parent.clientWidth);
+      const height = Math.max(220, parent.clientHeight);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+      const pad = { left: 54, right: 22, top: 20, bottom: 40 };
+      const chartW = width - pad.left - pad.right;
+      const chartH = height - pad.top - pad.bottom;
+      const max = Math.max(...rows.map(r => r.value)) * 1.12;
+      const barW = Math.min(72, chartW / rows.length * 0.42);
+      const bars = [];
+
+      ctx.strokeStyle = "#e8edf3";
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px Microsoft YaHei, Arial";
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + chartH / 4 * i;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
+        ctx.fillText(chartValueLabel(max - max / 4 * i, options), 8, y + 4);
+      }
+
+      rows.forEach((row, i) => {
+        const x = pad.left + chartW / rows.length * i + chartW / rows.length / 2 - barW / 2;
+        const h = row.value / max * chartH;
+        const y = pad.top + chartH - h;
+        bars.push({ ...row, x, y, width: barW, height: h });
+        ctx.fillStyle = row.color;
+        roundRect(ctx, x, y, barW, h, 7);
+        ctx.fill();
+        ctx.fillStyle = "#344054";
+        const labelWidth = ctx.measureText(row.label).width;
+        ctx.fillText(row.label, x + barW / 2 - labelWidth / 2, height - 16);
+      });
+
+      canvas.onmousemove = event => {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const hit = bars.find(bar => x >= bar.x && x <= bar.x + bar.width && y >= bar.y && y <= bar.y + bar.height);
+        if (hit) {
+          canvas.style.cursor = "pointer";
+          showChartValueTip(event.clientX, event.clientY, hit.label, chartTooltipValueLabel(hit.value, options));
+        } else {
+          canvas.style.cursor = "default";
+          hideChartValueTip();
+        }
+      };
+      canvas.onclick = event => {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const hit = bars.find(bar => x >= bar.x && x <= bar.x + bar.width && y >= bar.y && y <= bar.y + bar.height);
+        if (hit) showChartValueTip(event.clientX, event.clientY, hit.label, chartTooltipValueLabel(hit.value, options));
+      };
+      canvas.onmouseleave = hideChartValueTip;
+    }
+
+    function showChartValueTip(x, y, label, value, allowHtml = false) {
+      chartValueTip.innerHTML = `<strong>${escapeHtml(label)}</strong><span>${allowHtml ? value : escapeHtml(value)}</span>`;
+      chartValueTip.classList.remove("hidden");
+      const width = chartValueTip.offsetWidth || 140;
+      const height = chartValueTip.offsetHeight || 50;
+      const left = Math.max(12, Math.min(x + 10, window.innerWidth - width - 12));
+      const top = Math.max(12, Math.min(y + 10, window.innerHeight - height - 12));
+      chartValueTip.style.left = left + "px";
+      chartValueTip.style.top = top + "px";
+    }
+
+    function hideChartValueTip() {
+      chartValueTip.classList.add("hidden");
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function compact(value) {
+      if (value >= 1000000) return (value / 1000000).toFixed(1) + "M";
+      if (value >= 1000) return Math.round(value / 1000) + "k";
+      return Math.round(value).toLocaleString("zh-CN");
+    }
+
+    function chartValueLabel(value, options = {}) {
+      if (options.percent) return fmt.pct(value);
+      if (options.money) return "$" + compact(value);
+      if (options.decimal) return fmt.dec(value);
+      return fmt.num(value);
+    }
+
+    function chartTooltipValueLabel(value, options = {}) {
+      if (options.percent) return fmt.pct(value);
+      if (options.money) return fmt.money(value);
+      if (options.decimal) return fmt.dec(value);
+      return fmt.num(value);
+    }
+
+    function renderRooms(cur) {
+      const newRooms = cur.rooms * 0.18;
+      const micTimes = cur.micUsers * 1.9;
+      return `
+        <div class="mini-grid">
+          <div class="mini-card">${tip("活跃房间数")}<strong>${fmt.num(cur.activeRooms)}</strong></div>
+          <div class="mini-card">${tip("新建房间数")}<strong>${fmt.num(newRooms)}</strong></div>
+          <div class="mini-card">${tip("上麦人数")}<strong>${fmt.num(cur.micUsers)}</strong></div>
+        </div>
+        <div style="height:10px;"></div>
+        <div class="mini-grid">
+          <div class="mini-card">${tip("上麦次数")}<strong>${fmt.num(micTimes)}</strong></div>
+          <div class="mini-card">${tip("人均进房次数")}<strong>${fmt.dec(cur.entries / Math.max(cur.dau, 1))}</strong></div>
+          <div class="mini-card">${tip("人均停留时长")}<strong>${fmt.dec(cur.stay)} 分钟</strong></div>
+        </div>
+        <div style="height:16px;"></div>
+
+        <div class="analytics-grid">
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>房间规模趋势</strong>
+                <span>近 7 天</span>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="roomTrendChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>房间互动结构</strong>
+                <span>当前筛选周期</span>
+              </div>
+              <div class="field" style="width:220px;">
+                <input id="roomSearch" type="search" placeholder="房间 ID / 房主 ID" />
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="roomInteractionChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>运营区域房间排行</strong>
+                <span>按活跃房间排序</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>${tip("运营区域")}</th><th>${tip("活跃房间数")}</th><th>${tip("新建房间数")}</th><th>${tip("上麦人数")}</th><th>${tip("人均进房次数")}</th><th>${tip("人均停留时长")}</th></tr></thead>
+                <tbody>${roomRankingRows()}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function roomRankingRows() {
+      return regions.filter(r => r.id !== "all").map(region => {
+        const d = dataForRegion(region.id);
+        return { region, ...d, newRooms: d.rooms * 0.18 };
+      }).sort((a, b) => b.activeRooms - a.activeRooms).slice(0, 8).map(row => `
+        <tr data-region="${row.region.id}">
+          <td><strong>${row.region.name}</strong></td>
+          <td>${fmt.num(row.activeRooms)}</td>
+          <td>${fmt.num(row.newRooms)}</td>
+          <td>${fmt.num(row.micUsers)}</td>
+          <td>${fmt.dec(row.entries / Math.max(row.dau, 1))}</td>
+          <td>${fmt.dec(row.stay)} 分钟</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderGifts(cur) {
+      const gifts = giftRows(cur);
+      const giftUsers = gifts.reduce((acc, item) => acc + item.users, 0);
+      const giftCount = gifts.reduce((acc, item) => acc + item.count, 0);
+      const topGift = [...gifts].sort((a, b) => b.amount - a.amount)[0];
+      const page = pagedGifts(gifts);
+      return `
+        <div class="mini-grid">
+          <div class="mini-card">${tip("总送礼金额")}<strong>${fmt.money(cur.gifts)}</strong></div>
+          <div class="mini-card">${tip("送礼人数")}<strong>${fmt.num(giftUsers)}</strong></div>
+          <div class="mini-card">${tip("送礼次数")}<strong>${fmt.num(giftCount)}</strong></div>
+        </div>
+        <div style="height:10px;"></div>
+        <div class="mini-grid">
+          <div class="mini-card">${tip("人均送礼金额")}<strong>${fmt.money(cur.gifts / Math.max(giftUsers, 1))}</strong></div>
+          <div class="mini-card">${tip("送礼金额占充值")}<strong>${fmt.pct(cur.gifts / Math.max(cur.ordinaryRevenue, 1))}</strong></div>
+          <div class="mini-card"><span>最高贡献礼物</span><strong>${topGift.name}</strong></div>
+        </div>
+        <div style="height:16px;"></div>
+
+        <div class="analytics-grid">
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>礼物消耗趋势</strong>
+                <span>近 7 天</span>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="giftTrendChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>礼物金额结构</strong>
+                <span>按总送礼金额</span>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="giftAmountChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>礼物消耗明细</strong>
+                <span>按总送礼金额排序</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>礼物名</th><th>价格</th><th>${tip("送礼人数")}</th><th>${tip("送礼次数")}</th><th>${tip("总送礼金额")}</th><th>金额占比</th></tr></thead>
+                <tbody>
+                  ${page.rows.map(g => `<tr><td>${tip(g.name)}</td><td>${g.price}</td><td>${fmt.num(g.users)}</td><td>${fmt.num(g.count)}</td><td>${fmt.money(g.amount)}</td><td>${fmt.pct(g.amount / Math.max(cur.gifts, 1))}</td></tr>`).join("")}
+                </tbody>
+              </table>
+              <div class="pager">
+                <span>共 ${page.total} 个礼物，第 ${state.giftPage} / ${page.pageCount} 页</span>
+                <div class="pager-actions">
+                  <button data-gift-page="prev" ${state.giftPage <= 1 ? "disabled" : ""}>上一页</button>
+                  <button data-gift-page="next" ${state.giftPage >= page.pageCount ? "disabled" : ""}>下一页</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function pagedGifts(gifts) {
+      const pageSize = 6;
+      const sorted = [...gifts].sort((a, b) => b.amount - a.amount);
+      const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
+      state.giftPage = Math.min(Math.max(state.giftPage, 1), pageCount);
+      const start = (state.giftPage - 1) * pageSize;
+      return {
+        rows: sorted.slice(start, start + pageSize),
+        total: sorted.length,
+        pageCount
+      };
+    }
+
+    function renderRevenue(cur) {
+      const total = Math.max(cur.revenue, 1);
+      const netRevenue = Math.max(0, cur.revenue - cur.refundAmount);
+      return `
+        <div class="revenue-summary">
+          <div class="mini-card">${tip("总充值金额")}<strong>${fmt.money(cur.revenue)}</strong></div>
+          <div class="mini-card">${tip("退款金额")}<strong>${fmt.money(cur.refundAmount)}</strong></div>
+          <div class="mini-card">${tip("净充值金额")}<strong>${fmt.money(netRevenue)}</strong></div>
+          <div class="mini-card">${tip("币商充值占比")}<strong>${fmt.pct(cur.merchantRevenue / total)}</strong></div>
+          <div class="mini-card">${tip("综合付费率（含币商）")}<strong>${fmt.pct(cur.combinedPayRate)}</strong></div>
+        </div>
+        <div style="height:16px;"></div>
+
+        <div class="analytics-grid">
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>充值金额趋势</strong>
+                <span>近 7 天</span>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="revenueTrendChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>充值来源结构</strong>
+                <span>币商 / 普通用户内购 / 普通用户第三方</span>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="revenueSplitChart"></canvas>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>充值结构明细</strong>
+                <span>当前筛选周期</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>充值类型</th><th>金额</th><th>占总充值</th><th>占普通用户充值</th></tr></thead>
+                <tbody>
+                  <tr><td>${tip("币商充值")}</td><td>${fmt.money(cur.merchantRevenue)}</td><td>${fmt.pct(cur.merchantRevenue / total)}</td><td>--</td></tr>
+                  <tr><td>${tip("普通用户充值")}</td><td>${fmt.money(cur.ordinaryRevenue)}</td><td>${fmt.pct(cur.ordinaryRevenue / total)}</td><td>100.0%</td></tr>
+                  <tr><td>${tip("普通用户内购充值")}</td><td>${fmt.money(cur.iapRevenue)}</td><td>${fmt.pct(cur.iapRevenue / total)}</td><td>${fmt.pct(cur.iapRevenue / Math.max(cur.ordinaryRevenue, 1))}</td></tr>
+                  <tr><td>${tip("普通用户第三方充值")}</td><td>${fmt.money(cur.thirdPartyRevenue)}</td><td>${fmt.pct(cur.thirdPartyRevenue / total)}</td><td>${fmt.pct(cur.thirdPartyRevenue / Math.max(cur.ordinaryRevenue, 1))}</td></tr>
+                  <tr><td>${tip("退款金额")}</td><td>${fmt.money(cur.refundAmount)}</td><td>${fmt.pct(cur.refundAmount / total)}</td><td>--</td></tr>
+                  <tr><td>${tip("净充值金额")}</td><td>${fmt.money(netRevenue)}</td><td>${fmt.pct(netRevenue / total)}</td><td>--</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>运营区域充值排行</strong>
+                <span>按总充值金额排序</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>${tip("运营区域")}</th><th>${tip("总充值金额")}</th><th>${tip("退款金额")}</th><th>${tip("币商充值")}</th><th>${tip("普通用户充值")}</th><th>${tip("平台直充付费率")}</th><th>${tip("综合付费率（含币商）")}</th><th>${tip("普通用户 ARPPU")}</th></tr></thead>
+                <tbody>${revenueRankingRows()}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function revenueRankingRows() {
+      return regions.filter(r => r.id !== "all").map(region => {
+        const d = dataForRegion(region.id);
+        return {
+          region,
+          ...d,
+          arppu: d.ordinaryRevenue / Math.max(d.payers, 1),
+          combinedPayRate: d.combinedPayUsers / Math.max(d.dau, 1)
+        };
+      }).sort((a, b) => b.revenue - a.revenue).slice(0, 8).map(row => `
+        <tr data-region="${row.region.id}">
+          <td><strong>${row.region.name}</strong></td>
+          <td>${fmt.money(row.revenue)}</td>
+          <td>${fmt.money(row.refundAmount)}</td>
+          <td>${fmt.money(row.merchantRevenue)}</td>
+          <td>${fmt.money(row.ordinaryRevenue)}</td>
+          <td>${fmt.pct(row.payRate)}</td>
+          <td>${fmt.pct(row.combinedPayRate)}</td>
+          <td>$${fmt.dec(row.arppu)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderPrd() {
+      const row2 = rows => rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`).join("");
+      const row3 = rows => rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join("");
+      const row4 = rows => rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`).join("");
+      const scopeRows = [
+        ["产品定位", "面向 Sada 全球包运营、产品、数据和技术团队的数据统计后台，用于日常经营监控、区域复盘、充值对账和评审验收。"],
+        ["统计范围", "全球包全部运营区域均纳入统计，中东区域作为运营区域之一参与筛选、排行和汇总。"],
+        ["核心页面", "总览、用户增长、房间互动、礼物消耗、充值营收。"],
+        ["统计时区", "所有日期筛选、事件归属、留存计算、充值成功和退款拒付均按 UTC+8 自然日。"],
+        ["刷新策略", "默认 T+1 每日 08:00 刷新；今日数据可展示但必须标记为未完结。"],
+        ["金额币种", "汇总层统一 USD，明细层需保留原币种、支付币种、汇率、手续费、退款和拒付状态。"]
+      ];
+      const interactionRows = [
+        ["全局筛选", "日期、运营区域、国家/地区、平台、渠道、用户类型为全局筛选，切换后所有卡片、图表、排行和明细同步刷新。", "任一筛选变化后，页面不跳转，当前模块保持不变，数据按新筛选条件重新计算。"],
+        ["日期选择器", "顶部仅展示一个日期按钮，点击弹出选择器；支持昨日、今日、近 7 天、按月、按日。", "按月选择后统计整月；按日选择第一天作为开始，再选第二天形成同月内区间；跨月区间不允许。"],
+        ["模块切换", "左侧导航、移动端导航、模块页签均可切换页面。", "进入非总览模块时隐藏总览诊断区，页面标题和说明随模块变化。"],
+        ["字段说明", "指标字段右侧展示问号按钮。", "点击问号后在字段附近展示悬浮气泡，点击空白处关闭；气泡内容使用统一字段字典。"],
+        ["图表交互", "折线图、柱状图支持悬停和点击查看具体数值。", "留存趋势点击某一天时展示次日、7日、15日、30日留存率；结构柱点击展示对应金额或人数。"],
+        ["区域下钻", "运营区域排行表行可点击。", "点击区域后写入全局运营区域筛选，并重绘当前页面。"],
+        ["分页", "礼物消耗明细使用分页。", "默认每页 6 条，上一页/下一页切换后保持当前全局筛选和当前模块。"]
+      ];
+      const pageRows = [
+        ["总览", "展示核心 KPI、趋势、区域排行、经营健康诊断和运营动作。", "适合评审首屏确认整体经营状态。"],
+        ["用户增长", "仅展示用户增长相关数据：DAU、WAU、MAU、新注册、总用户、留存和区域增长排行。", "留存趋势图为主视觉，不再重复展示大段口径说明。"],
+        ["房间互动", "展示活跃房间、新建房间、上麦人数、上麦次数、进房次数和停留时长。", "支持房间 ID / 房主 ID 检索入口，技术后续接入真实检索接口。"],
+        ["礼物消耗", "展示总送礼金额、送礼人数、送礼次数、礼物金额结构和分页明细。", "活动券和免费礼物计入次数，不计入付费消耗金额。"],
+        ["充值营收", "展示总充值、币商充值、普通用户充值、普通用户内购充值、普通用户第三方充值、退款金额、币商充值占比、平台直充付费率和综合付费率。", "平台直充付费率、ARPU、ARPPU 只使用平台官方直充链路；综合付费率额外纳入币商购币用户并按用户去重。"]
+      ];
+      const fieldRows = [
+        ["DAU", "用户增长", "统计日内已登录用户发生启动/登录行为的去重用户数；App 不提供游客模式，游客不统计。", "user_id 去重"],
+        ["新注册用户", "用户增长", "统计日内完成账号注册的去重用户数。", "user_id 去重"],
+        ["次日/7日/15日/30日留存", "用户增长", "当天注册用户在第 1/7/15/30 天仍有启动/登录行为的用户数 / 当天注册用户数。", "UTC+8 注册日"],
+        ["活跃房间数", "房间互动", "统计日内至少有 1 名非房主用户有效进入，且房间累计上麦时长不低于 5 分钟的去重房间数。", "room_id 去重"],
+        ["新建房间数", "房间互动", "统计日内创建成功的房间数；房间创建后不可删除，同一房主多次创建分别计数。", "create_room 事件"],
+        ["上麦人数", "房间互动", "统计日内成功上麦的去重用户数；断线重连不重复计人数。", "user_id 去重"],
+        ["上麦次数", "房间互动", "统计日内成功上麦事件总次数；5 分钟内重连不重复计数。", "mic_success 事件"],
+        ["总送礼金额", "礼物消耗", "统计周期内礼物消耗产生的付费金额；活动券和免费礼物计入次数但不计入金额。", "USD 净金额"],
+        ["送礼人数", "礼物消耗", "统计周期内发生送礼行为的去重用户数；礼物明细按礼物名分别去重。", "sender_user_id 去重"],
+        ["总充值金额", "充值营收", "总充值金额 = 币商充值 + 普通用户充值；退款金额单独展示。", "USD 金额"],
+        ["退款金额", "充值营收", "统计周期内支付成功后发生退款或拒付的金额，统一折算 USD 展示。", "refund / chargeback"],
+        ["净充值金额", "充值营收", "净充值金额 = 总充值金额 - 退款金额。", "USD 净额"],
+        ["币商充值", "充值营收", "币商向平台充值进货的金额；币商对终端用户售卖金币属于平台外分销链路，不重复确认为平台收入。", "merchant account"],
+        ["币商充值占比", "充值营收", "币商充值金额 / 总充值金额，用于观察平台收入中来自币商进货的比例。", "merchant revenue / total revenue"],
+        ["普通用户充值", "充值营收", "普通用户充值 = 普通用户内购充值 + 普通用户第三方充值，仅指平台官方直充链路。", "normal user direct"],
+        ["平台直充付费率", "充值营收", "通过内购或第三方直充的普通用户充值人数 / DAU。", "平台直充人数"],
+        ["币商购币用户", "充值营收", "统计日内通过币商购币的去重普通用户数。", "user_id 去重"],
+        ["综合付费人数", "充值营收", "平台直充用户与币商购币用户合并去重后的普通用户数；同一用户同时内购和找币商购币只计 1 人。", "user_id 合并去重"],
+        ["综合付费率（含币商）", "充值营收", "综合付费人数 / DAU，综合付费人数按平台直充用户和币商购币用户合并去重计算。", "综合付费人数"],
+        ["普通用户 ARPU", "充值营收", "平台官方直充普通用户充值金额 / DAU，不包含币商分销给终端用户的金额。", "官方直充金额"],
+        ["普通用户 ARPPU", "充值营收", "平台官方直充普通用户充值金额 / 平台直充普通用户充值人数。", "平台直充人数"]
+      ];
+      const dataRows = [
+        ["账号剔除", "测试账号、内部账号、封禁账号统一剔除；注销账号不计入当前总用户。"],
+        ["区域归属", "用户注册国家优先映射运营区域；注册国家缺失时使用最近登录 IP 国家兜底。"],
+        ["渠道归属", "渠道支持全部渠道、自然量、投放渠道；邀请渠道不进入当前版本筛选。"],
+        ["跨天会话", "用户在线时长和房间停留按 UTC+8 切分；异常长会话需要截断。"],
+        ["退款拒付", "充值金额按支付成功金额扣除退款和拒付；退款拒付的时间归属按 UTC+8。"],
+        ["今日数据", "今日可筛选但需在数据层标记未完结，避免与昨日或历史完整日直接误比。"]
+      ];
+      const acceptanceRows = [
+        ["筛选一致性", "切换任一全局筛选后，顶部 KPI、趋势图、结构图、排行表、明细表和字段气泡口径一致。"],
+        ["日期选择器", "昨日、今日、近 7 天、按月、按日均可正常选择；按日区间限制在单月内。"],
+        ["留存图表", "点击或悬停任一天时，展示该天对应的次日、7日、15日、30日留存率。"],
+        ["区域下钻", "点击任一运营区域排行行后，全局运营区域筛选同步切换，并重绘当前模块。"],
+        ["礼物分页", "礼物明细支持分页，翻页后不丢失全局筛选和当前页面状态。"],
+        ["充值对账", "总充值 = 币商充值 + 普通用户充值；普通用户充值 = 普通用户内购充值 + 普通用户第三方充值；币商向终端用户售卖金币不二次计入平台收入。"],
+        ["权限预留", "技术实现需预留角色权限：运营可看聚合，数据/技术可看字段说明和对账明细入口。"]
+      ];
+      return `
+        <div class="analytics-grid">
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>数据统计后台产品需求说明</strong>
+                <span>评审版 / 技术查阅</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>项目</th><th>说明</th></tr></thead>
+                <tbody>${row2(scopeRows)}</tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>页面与交互需求</strong>
+                <span>全局行为</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>交互项</th><th>需求说明</th><th>验收表现</th></tr></thead>
+                <tbody>${row3(interactionRows)}</tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>页面范围</strong>
+                <span>模块说明</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>页面</th><th>展示内容</th><th>产品要求</th></tr></thead>
+                <tbody>${row3(pageRows)}</tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="chart-card full-span">
+            <div class="chart-card-head">
+              <div>
+                <strong>字段说明</strong>
+                <span>核心指标字典</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>字段</th><th>所属模块</th><th>统计定义</th><th>去重 / 计算依据</th></tr></thead>
+                <tbody>${row4(fieldRows)}</tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>数据处理规则</strong>
+                <span>实现约束</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>规则</th><th>说明</th></tr></thead>
+                <tbody>${row2(dataRows)}</tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-card-head">
+              <div>
+                <strong>技术验收清单</strong>
+                <span>上线前检查</span>
+              </div>
+            </div>
+            <div class="panel-body table-wrap" style="padding:0;">
+              <table>
+                <thead><tr><th>验收项</th><th>通过标准</th></tr></thead>
+                <tbody>${row2(acceptanceRows)}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function giftRows(cur) {
+      const base = cur.gifts;
+      return [
+        { name: "Rose", price: "10 金币", users: base / 9.2, count: base / 2.1, amount: base * 0.11, color: "#2f6fbb" },
+        { name: "Heart", price: "30 金币", users: base / 14.1, count: base / 4.5, amount: base * 0.12, color: "#1d7f8c" },
+        { name: "Crown", price: "99 金币", users: base / 31.4, count: base / 7.2, amount: base * 0.15, color: "#b7791f" },
+        { name: "Rocket", price: "199 金币", users: base / 55.6, count: base / 13.4, amount: base * 0.13, color: "#6a5acd" },
+        { name: "Castle", price: "599 金币", users: base / 142.2, count: base / 36.8, amount: base * 0.10, color: "#16875f" },
+        { name: "Ring", price: "88 金币", users: base / 28.8, count: base / 6.8, amount: base * 0.09, color: "#475467" },
+        { name: "Star", price: "20 金币", users: base / 12.6, count: base / 3.9, amount: base * 0.08, color: "#4f46e5" },
+        { name: "Kiss", price: "50 金币", users: base / 18.4, count: base / 5.2, amount: base * 0.07, color: "#db2777" },
+        { name: "Yacht", price: "999 金币", users: base / 188.5, count: base / 51.6, amount: base * 0.06, color: "#0f766e" },
+        { name: "Dragon", price: "1,999 金币", users: base / 254.2, count: base / 72.8, amount: base * 0.04, color: "#9a3412" },
+        { name: "Galaxy", price: "2,999 金币", users: base / 312.4, count: base / 86.2, amount: base * 0.03, color: "#7c3aed" },
+        { name: "Lucky Box", price: "随机", users: base / 22.2, count: base / 8.4, amount: base * 0.02, color: "#0b7285" }
+      ];
+    }
+
+    function bindModuleActions() {
+      renderModuleCharts();
+
+      const roomSearch = document.querySelector("#roomSearch");
+      if (roomSearch) {
+        roomSearch.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            const value = roomSearch.value.trim();
+            showToast(value ? `已检索房间：${value}` : "请输入房间 ID 或房主 ID");
+          }
+        });
+      }
+
+      moduleBody.querySelectorAll("[data-gift-page]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.giftPage += button.dataset.giftPage === "next" ? 1 : -1;
+          renderModule();
+        });
+      });
+
+      moduleBody.querySelectorAll("tr[data-region]").forEach(row => {
+        row.addEventListener("click", () => {
+          state.region = row.dataset.region;
+          state.country = "all";
+          regionSelect.value = state.region;
+          updateCountries();
+          render();
+          showToast(`已筛选：${regionName()}`);
+        });
+      });
+    }
+
+    function regionName() {
+      return (regions.find(r => r.id === state.region) || regions[0]).name;
+    }
+
+    function countryName() {
+      return state.country === "all" ? "全部国家/地区" : state.country;
+    }
+
+    function rangeName() {
+      if (state.range === "month") return state.month;
+      if (state.range === "range") return `${state.rangeStart} 至 ${state.rangeEnd}`;
+      return { today: "今日", yesterday: "昨日", "7d": "近 7 天" }[state.range];
+    }
+
+    function viewName(view) {
+      return {
+        overview: "总览摘要",
+        users: "用户增长",
+        rooms: "房间互动",
+        gifts: "礼物消耗",
+        revenue: "充值营收",
+        prd: "产品需求"
+      }[view] || "总览摘要";
+    }
+
+    function pageCopy(view) {
+      return {
+        users: {
+          title: "用户增长",
+          desc: "跟踪当前筛选范围内的登录用户规模、新增注册、累计用户和留存表现，定位增长变化来自哪个区域。"
+        },
+        rooms: {
+          title: "房间互动",
+          desc: "聚焦活跃房间、新建房间、上麦、进房和停留，用于排查房间供给与互动深度。"
+        },
+        gifts: {
+          title: "礼物消耗",
+          desc: "按礼物查看送礼人数、次数和金额，帮助运营识别高贡献礼物与活动消耗结构。"
+        },
+        revenue: {
+          title: "充值营收",
+          desc: "聚焦总充值、币商充值、普通用户充值，并拆分普通用户内购充值和普通用户第三方充值，支撑商业化复盘。"
+        },
+        prd: {
+          title: "产品需求说明",
+          desc: "面向技术评审，集中说明数据统计后台的页面范围、交互规则、字段定义、数据处理和验收标准。"
+        }
+      }[view] || {
+        title: "总览摘要",
+        desc: "查看当前筛选口径下的核心经营表现。"
+      };
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    init();
+  </script>
+</body>
+</html>
+
