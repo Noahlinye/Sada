@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -1047,7 +1047,6 @@
         <button class="active" data-view="bdList"><span class="ico">□</span>BD 管理</button>
         <button data-view="bindings"><span class="ico">⇄</span>邀请数据</button>
         <button data-view="settlement"><span class="ico">◇</span>月度结算</button>
-        <button data-view="rules"><span class="ico">☷</span>政策规则</button>
       </nav>
 
       <div class="nav-group">预留模块</div>
@@ -1335,22 +1334,22 @@
   <script>
     const monthLabel = "2026-05";
     const levelRules = [
-      { level: "Lv6", min: 22, salary: 4000000 },
-      { level: "Lv5", min: 16, salary: 2600000 },
-      { level: "Lv4", min: 12, salary: 1800000 },
-      { level: "Lv3", min: 8, salary: 1200000 },
-      { level: "Lv2", min: 4, salary: 800000 },
-      { level: "Lv1", min: 2, salary: 500000 },
-      { level: "Lv0", min: 1, salary: 250000 },
+      { level: "Lv6", min: 22, salary: 3600000 },
+      { level: "Lv5", min: 16, salary: 2340000 },
+      { level: "Lv4", min: 12, salary: 1620000 },
+      { level: "Lv3", min: 8, salary: 1080000 },
+      { level: "Lv2", min: 4, salary: 720000 },
+      { level: "Lv1", min: 2, salary: 450000 },
+      { level: "Lv0", min: 1, salary: 225000 },
       { level: "Lv0", min: 0, salary: 0 }
     ];
+    const coinsPerUsd = 9000;
 
     const state = {
       view: "bdList",
       activeBdId: "BD10021",
       activeSettleBd: null,
       invitationTab: "merchant",
-      rulesTab: "rules",
       activeInviteId: null,
       activeUnbindId: null,
       filters: {
@@ -1382,8 +1381,8 @@
             { id: "G9288", name: "Night Pearl", bindMonth: "2026-05", points: 980000, subAgents: 1, subAgentAnchors: 2, agentPoints: 120000, guildLevel: "E", anchors: 4, status: "未达标" }
           ],
           merchants: [
-            { id: "M6001", name: "Sami Coins", bindMonth: "2026-03", monthUsd: 480, totalUsd: 1390, soldCoins: 4800000, firstChargeUsd: 500, rewardActive: true },
-            { id: "M6018", name: "Noura Trade", bindMonth: "2026-05", monthUsd: 180, totalUsd: 180, soldCoins: 1800000, firstChargeUsd: 180, rewardActive: true }
+            { id: "M6001", name: "Sami Coins", bindMonth: "2026-03", monthUsd: 480, totalUsd: 1390, soldCoins: 4800000, firstChargeUsd: 500 },
+            { id: "M6018", name: "Noura Trade", bindMonth: "2026-05", monthUsd: 180, totalUsd: 180, soldCoins: 1800000, firstChargeUsd: 180 }
           ],
           audit: "待审核",
           actualPay: 2480000,
@@ -1402,7 +1401,7 @@
             { id: "G8177", name: "Pearl Link", bindMonth: "2026-05", points: 1120000, subAgents: 0, subAgentAnchors: 0, agentPoints: 0, guildLevel: "D", anchors: 3, status: "未达标" }
           ],
           merchants: [
-            { id: "M6080", name: "Basel Topup", bindMonth: "2026-05", monthUsd: 520, totalUsd: 520, soldCoins: 5200000, firstChargeUsd: 520, rewardActive: true }
+            { id: "M6080", name: "Basel Topup", bindMonth: "2026-05", monthUsd: 520, totalUsd: 520, soldCoins: 5200000, firstChargeUsd: 520 }
           ],
           audit: "未提交",
           actualPay: 0,
@@ -1445,7 +1444,7 @@
             { id: "G6501", name: "Amman Chat", bindMonth: "2026-02", points: 910000, subAgents: 1, subAgentAnchors: 2, agentPoints: 120000, guildLevel: "E", anchors: 4, status: "未达标" }
           ],
           merchants: [
-            { id: "M5904", name: "Jordan Coin", bindMonth: "2026-02", monthUsd: 0, totalUsd: 310, soldCoins: 0, firstChargeUsd: 310, rewardActive: false }
+            { id: "M5904", name: "Jordan Coin", bindMonth: "2026-02", monthUsd: 0, totalUsd: 310, soldCoins: 0, firstChargeUsd: 310 }
           ],
           audit: "审核拒绝",
           actualPay: 0,
@@ -1476,7 +1475,6 @@
       bdList: "运营开通/删除 BD 身份，并查看累计邀请数据",
       bindings: "按币商/公会查看BD邀请数据，并处理创建审核",
       settlement: "后台自动计算薪资参考值，运营输入实际发放金币并提交审核",
-      rules: "当前评审确认的等级、佣金与状态规则",
       external: "外管系统预留入口，后续纳入同一一级模块"
     };
 
@@ -1491,7 +1489,7 @@
         return levelRules.find(rule => validGuilds >= rule.min) || levelRules[levelRules.length - 1];
       },
       statusClass(status) {
-        if (["正常", "绑定成功", "审核通过", "同意", "已添加", "已创建", "有效", "奖励中"].includes(status)) return "success";
+        if (["正常", "绑定成功", "审核通过", "同意", "已添加", "已创建", "有效"].includes(status)) return "success";
         if (["取消", "审核拒绝", "已拒绝", "已解绑", "拒绝", "未达标"].includes(status)) return "reject";
         if (["待审核", "待公会审核", "待被邀请人确认", "待创建", "未处理", "未申请"].includes(status)) return "pending";
         if (["已过期"].includes(status)) return "expired";
@@ -1516,30 +1514,39 @@
     const unbindConfirmModal = document.querySelector("#unbindConfirmModal");
     const toast = document.querySelector("#toast");
 
+    function guildCommissionAmount(points) {
+      const usd = Number(points || 0) / 10000;
+      const cappedUsd = Math.min(usd, 1000);
+      let rate = 0;
+      if (cappedUsd >= 1000) rate = 0.1;
+      else if (cappedUsd >= 500) rate = 0.08;
+      else if (cappedUsd >= 200) rate = 0.06;
+      else if (cappedUsd >= 100) rate = 0.04;
+      return cappedUsd * rate * coinsPerUsd;
+    }
+
     function calcBd(bd) {
-      const level = fmt.level(bd.validGuilds);
+      const month = selectedMonth();
+      const monthlyValidGuilds = bd.guilds.filter(guild => guild.status === "有效" && guild.bindMonth === month).length;
+      const level = fmt.level(monthlyValidGuilds);
       const guildCommission = bd.guilds.reduce((sum, guild) => {
         if (guild.status !== "有效") return sum;
-        const diff = monthDiff(guild.bindMonth);
+        const diff = monthDiff(guild.bindMonth, month);
         if (diff < 0 || diff > 2) return sum;
-        return sum + Math.min(guild.points, 5000000) * 0.1;
+        return sum + guildCommissionAmount(guild.points);
       }, 0);
       const merchantFirst = bd.merchants.reduce((sum, merchant) => {
-        return sum + Math.min(merchant.firstChargeUsd, 500) * 0.1 * 10000;
+        const diff = monthDiff(merchant.bindMonth, month);
+        if (diff !== 0) return sum;
+        return sum + Math.min(merchant.firstChargeUsd, 500) * 0.1 * coinsPerUsd;
       }, 0);
-      const merchantMonthly = bd.merchants.reduce((sum, merchant) => {
-        if (!merchant.rewardActive) return sum;
-        const diff = monthDiff(merchant.bindMonth);
-        if (diff < 0 || diff > 5) return sum;
-        return sum + Math.min(merchant.monthUsd, 200) * 0.02 * 10000;
-      }, 0);
-      const total = level.salary + guildCommission + merchantFirst + merchantMonthly;
+      const total = level.salary + guildCommission + merchantFirst;
       return {
         level: level.level,
+        monthlyValidGuilds,
         baseSalary: level.salary,
         guildCommission,
         merchantFirst,
-        merchantMonthly,
         total
       };
     }
@@ -1655,7 +1662,6 @@
         bdList: renderBdList,
         bindings: renderBindings,
         settlement: renderSettlement,
-        rules: renderRules,
         external: renderExternal
       };
       appContent.innerHTML = (viewMap[state.view] || renderBdList)();
@@ -1865,11 +1871,10 @@
                   <th>BD</th>
                   <th>状态</th>
                   <th>等级</th>
-                  <th class="num">有效公会</th>
+                  <th class="num">当月有效公会</th>
                   <th class="num">基础薪资</th>
                   <th class="num">公会佣金</th>
                   <th class="num">币商首充</th>
-                  <th class="num">币商月交易</th>
                   <th class="num">系统合计</th>
                   <th class="num">实际发放</th>
                   <th>审核状态</th>
@@ -1885,11 +1890,10 @@
                       <td><button class="link-btn" data-open-bd="${bd.id}" type="button">${bd.name}</button><div class="muted">UID:${bd.userId}</div></td>
                       <td>${statusPill(bd.status)}</td>
                       <td class="strong">${calc.level}</td>
-                      <td class="num">${bd.validGuilds}</td>
+                      <td class="num">${calc.monthlyValidGuilds}</td>
                       <td class="num">${fmt.num(calc.baseSalary)}</td>
                       <td class="num">${fmt.num(calc.guildCommission)}</td>
                       <td class="num">${fmt.num(calc.merchantFirst)}</td>
-                      <td class="num">${fmt.num(calc.merchantMonthly)}</td>
                       <td class="num strong">${fmt.num(calc.total)}</td>
                       <td class="num">${fmt.num(bd.actualPay)}</td>
                       <td>${statusPill(bd.audit)}</td>
@@ -1904,198 +1908,6 @@
             </table>
           </div>
         </article>
-      `;
-    }
-
-    function renderRules() {
-      return `
-        <article class="panel">
-          <div class="tabs">
-            <button class="${state.rulesTab === "rules" ? "active" : ""}" data-rules-tab="rules" type="button">政策规则</button>
-            <button class="${state.rulesTab === "prd" ? "active" : ""}" data-rules-tab="prd" type="button">产品需求文档</button>
-          </div>
-          <div class="panel-body">
-            ${state.rulesTab === "rules" ? renderPolicyRulesContent() : renderPrdContent()}
-          </div>
-        </article>
-      `;
-    }
-
-    function renderPolicyRulesContent() {
-      return `
-        <section class="split">
-          <article class="panel">
-            <div class="panel-head">
-              <div class="panel-title">
-                <strong>等级与月基础薪资</strong>
-                <span>等级由有效公会数自动计算，基础薪资仅后台展示</span>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>等级</th>
-                    <th>有效公会数</th>
-                    <th class="num">月基础薪资 Coins</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>Lv0</td><td>0</td><td class="num">0</td></tr>
-                  <tr><td>Lv0</td><td>1</td><td class="num">250,000</td></tr>
-                  <tr><td>Lv1</td><td>≥ 2</td><td class="num">500,000</td></tr>
-                  <tr><td>Lv2</td><td>≥ 4</td><td class="num">800,000</td></tr>
-                  <tr><td>Lv3</td><td>≥ 8</td><td class="num">1,200,000</td></tr>
-                  <tr><td>Lv4</td><td>≥ 12</td><td class="num">1,800,000</td></tr>
-                  <tr><td>Lv5</td><td>≥ 16</td><td class="num">2,600,000</td></tr>
-                  <tr><td>Lv6</td><td>≥ 22</td><td class="num">4,000,000</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-head">
-              <div class="panel-title">
-                <strong>有效公会定义</strong>
-                <span>三个条件同时满足</span>
-              </div>
-            </div>
-            <div class="panel-body">
-              <ul class="rule-list">
-                <li><span class="rule-index">1</span><span>公会内至少 5 名主播</span></li>
-                <li><span class="rule-index">2</span><span>每月有效总流水 ≥ 2,000,000 points</span></li>
-                <li><span class="rule-index">3</span><span>公会等级达到 D 级及以上</span></li>
-              </ul>
-            </div>
-          </article>
-        </section>
-
-        <section class="section-grid">
-          <article class="panel">
-            <div class="panel-head"><div class="panel-title"><strong>公会招募佣金</strong><span>单个公会含旗下子代理单独封顶</span></div></div>
-            <div class="panel-body">
-              <ul class="rule-list">
-                <li><span class="rule-index">1</span><span>公会有效流水含子代理积分</span></li>
-                <li><span class="rule-index">2</span><span>佣金 = min(月积分, 5,000,000) × 10%</span></li>
-                <li><span class="rule-index">3</span><span>单公会每月最高 500,000 coins</span></li>
-                <li><span class="rule-index">4</span><span>从绑定当月开始计算 3 个自然月</span></li>
-              </ul>
-            </div>
-          </article>
-          <article class="panel">
-            <div class="panel-head"><div class="panel-title"><strong>币商首充佣金</strong><span>单个币商单独封顶</span></div></div>
-            <div class="panel-body">
-              <ul class="rule-list">
-                <li><span class="rule-index">1</span><span>佣金 = min(首充USD, 500) × 10% × 10,000</span></li>
-                <li><span class="rule-index">2</span><span>单币商最高 500,000 coins</span></li>
-                <li><span class="rule-index">3</span><span>后台展示，BD 端不展示</span></li>
-              </ul>
-            </div>
-          </article>
-          <article class="panel">
-            <div class="panel-head"><div class="panel-title"><strong>币商月交易佣金</strong><span>从绑定当月开始 6 个自然月</span></div></div>
-            <div class="panel-body">
-              <ul class="rule-list">
-                <li><span class="rule-index">1</span><span>佣金 = min(月售卖USD, 200) × 2% × 10,000</span></li>
-                <li><span class="rule-index">2</span><span>单币商每月最高 40,000 coins</span></li>
-                <li><span class="rule-index">3</span><span>审核通过后自动发放金币</span></li>
-              </ul>
-            </div>
-          </article>
-        </section>
-      `;
-    }
-
-    function renderPrdContent() {
-      return `
-        <section class="panel">
-          <div class="panel-head">
-            <div class="panel-title"><strong>BD 拉新管理系统 PRD</strong></div>
-          </div>
-          <div class="panel-body">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th>模块</th><th>需求</th><th>验收标准</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>BD管理</td>
-                    <td>支持通过平台UID开通BD身份，选择运营区域，可填写备注；列表支持UID、等级、区域筛选。</td>
-                    <td>开通后列表新增BD；列表不展示手机号；删除BD后App端隐藏BD入口，历史数据保留。</td>
-                  </tr>
-                  <tr>
-                    <td>邀请数据</td>
-                    <td>按币商、公会分tab展示邀请数据；支持月份、BD用户、被邀请用户筛选；支持用户绑定。</td>
-                    <td>BD用户展示格式为姓名 + UID:XXX；来源App展示BD填写值；被邀请用户状态包含同意、拒绝、未处理、已过期、已解绑。</td>
-                  </tr>
-                  <tr>
-                    <td>币商邀请</td>
-                    <td>币商列表展示被邀请用户、来源App、被邀请用户状态、币商创建状态、发起时间、更新时间。</td>
-                    <td>被邀请用户同意后可点击同意创建币商；币商UID在弹窗中预填且不可修改；3天未处理显示已过期。</td>
-                  </tr>
-                  <tr>
-                    <td>公会邀请</td>
-                    <td>公会列表展示邀请绑定信息；被邀请用户同意后自行提交建会资料。</td>
-                    <td>列表不平铺建会资料；点击详情查看联系方式、公会头像、公会昵称、公会公告；待审核可同意创建或拒绝。</td>
-                  </tr>
-                  <tr>
-                    <td>解绑</td>
-                    <td>运营后台可对绑定成功的公会/币商执行解绑。</td>
-                    <td>点击解绑必须二次确认；确认后状态显示已解绑，不显示已结束。</td>
-                  </tr>
-                  <tr>
-                    <td>月度结算</td>
-                    <td>支持BD UID、结算月份、BD等级筛选；系统计算基础薪资、公会佣金、币商首充佣金、币商月交易佣金。</td>
-                    <td>同一BD同一月份仅一条结算；待审核不可覆盖；审核通过不可二次结算；提交后进入金币审核模块。</td>
-                  </tr>
-                  <tr>
-                    <td>BD明细</td>
-                    <td>结算明细按本月邀请数据、非本月邀请但仍在奖励有效期拆分。</td>
-                    <td>每个分组内公会和币商分表展示；公会表展示子代理主播数；币商表展示充值USD、售卖金币、首充USD。</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <section class="section-grid">
-          <article class="panel">
-            <div class="panel-head"><div class="panel-title"><strong>页面清单</strong></div></div>
-            <div class="panel-body">
-              <ul class="rule-list">
-                <li><span class="rule-index">1</span><span>BD管理：开通BD、删除BD、查看累计邀请数据。</span></li>
-                <li><span class="rule-index">2</span><span>邀请数据：币商邀请、公会邀请、用户绑定、解绑。</span></li>
-                <li><span class="rule-index">3</span><span>月度结算：筛选、查看明细、提交结算。</span></li>
-                <li><span class="rule-index">4</span><span>政策规则：等级、基础薪资、佣金规则。</span></li>
-              </ul>
-            </div>
-          </article>
-          <article class="panel">
-            <div class="panel-head"><div class="panel-title"><strong>状态定义</strong></div></div>
-            <div class="panel-body">
-              <ul class="rule-list">
-                <li><span class="rule-index">1</span><span>BD状态：正常、取消。</span></li>
-                <li><span class="rule-index">2</span><span>被邀请用户状态：同意、拒绝、未处理、已过期、已解绑。</span></li>
-                <li><span class="rule-index">3</span><span>创建状态：待创建、待审核、已创建、已添加、已拒绝、已解绑、已过期。</span></li>
-                <li><span class="rule-index">4</span><span>结算状态：未提交、待审核、审核通过、审核拒绝。</span></li>
-              </ul>
-            </div>
-          </article>
-          <article class="panel">
-            <div class="panel-head"><div class="panel-title"><strong>不做范围</strong></div></div>
-            <div class="panel-body">
-              <ul class="rule-list">
-                <li><span class="rule-index">1</span><span>BD端不展示等级、佣金、工资。</span></li>
-                <li><span class="rule-index">2</span><span>系统不自动取消未达标BD。</span></li>
-                <li><span class="rule-index">3</span><span>本模块不承载金币审核列表。</span></li>
-                <li><span class="rule-index">4</span><span>审核通过后不支持二次结算。</span></li>
-              </ul>
-            </div>
-          </article>
-        </section>
       `;
     }
 
@@ -2151,10 +1963,36 @@
         const diff = monthDiff(guild.bindMonth, current);
         return mode === "current" ? diff === 0 : diff > 0 && diff <= 2;
       });
-      const merchantRows = bd.merchants.filter(merchant => {
-        const diff = monthDiff(merchant.bindMonth, current);
-        return mode === "current" ? diff === 0 : diff > 0 && diff <= 5;
-      });
+      const merchantRows = mode === "current"
+        ? bd.merchants.filter(merchant => monthDiff(merchant.bindMonth, current) === 0)
+        : [];
+      const merchantSection = mode === "current" ? `
+        <div class="panel-title" style="margin:18px 0 10px;">
+          <strong>币商</strong>
+        </div>
+        <div class="table-wrap detail-table">
+          <table>
+            <thead>
+              <tr>
+                <th>币商</th>
+                <th>绑定月份</th>
+                <th class="num">首充金额 USD</th>
+                <th class="num">首充奖励 Coins</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${merchantRows.map(merchant => `
+                <tr>
+                  <td>${merchant.name}<div class="muted">${merchant.id}</div></td>
+                  <td>${merchant.bindMonth}</td>
+                  <td class="num">${fmt.money(merchant.firstChargeUsd)}</td>
+                  <td class="num">${fmt.num(Math.min(merchant.firstChargeUsd, 500) * 0.1 * coinsPerUsd)}</td>
+                </tr>
+              `).join("") || `<tr><td colspan="4" class="muted">暂无币商数据</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      ` : "";
       return `
         <div class="panel-title" style="margin-bottom:10px;">
           <strong>公会</strong>
@@ -2168,9 +2006,6 @@
                 <th>等级</th>
                 <th class="num">主播数</th>
                 <th class="num">公会每月积分</th>
-                <th class="num">子代理数</th>
-                <th class="num">子代理主播数</th>
-                <th class="num">所有代理总积分</th>
                 <th>有效状态</th>
               </tr>
             </thead>
@@ -2182,47 +2017,13 @@
                   <td>${guild.guildLevel}</td>
                   <td class="num">${guild.anchors}</td>
                   <td class="num">${fmt.num(guild.points)}</td>
-                  <td class="num">${guild.subAgents}</td>
-                  <td class="num">${guild.subAgentAnchors || 0}</td>
-                  <td class="num">${fmt.num(guild.agentPoints)}</td>
                   <td>${statusPill(guild.status)}</td>
                 </tr>
-              `).join("") || `<tr><td colspan="9" class="muted">暂无公会数据</td></tr>`}
+              `).join("") || `<tr><td colspan="6" class="muted">暂无公会数据</td></tr>`}
             </tbody>
           </table>
         </div>
-
-        <div class="panel-title" style="margin:18px 0 10px;">
-          <strong>币商</strong>
-        </div>
-        <div class="table-wrap detail-table">
-          <table>
-            <thead>
-              <tr>
-                <th>币商</th>
-                <th>绑定月份</th>
-                <th class="num">本月充值金额 USD</th>
-                <th class="num">累计充值金额 USD</th>
-                <th class="num">售卖金币数</th>
-                <th class="num">首充金额 USD</th>
-                <th>奖励周期</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${merchantRows.map(merchant => `
-                <tr>
-                  <td>${merchant.name}<div class="muted">${merchant.id}</div></td>
-                  <td>${merchant.bindMonth}</td>
-                  <td class="num">${fmt.money(merchant.monthUsd)}</td>
-                  <td class="num">${fmt.money(merchant.totalUsd)}</td>
-                  <td class="num">${fmt.num(merchant.soldCoins)}</td>
-                  <td class="num">${fmt.money(merchant.firstChargeUsd)}</td>
-                  <td>${merchant.rewardActive ? statusPill("奖励中") : statusPill("已过期")}</td>
-                </tr>
-              `).join("") || `<tr><td colspan="7" class="muted">暂无币商数据</td></tr>`}
-            </tbody>
-          </table>
-        </div>
+        ${merchantSection}
       `;
     }
 
@@ -2333,12 +2134,6 @@
       document.querySelectorAll("[data-invite-tab]").forEach(btn => {
         btn.onclick = () => {
           state.invitationTab = btn.dataset.inviteTab;
-          render();
-        };
-      });
-      document.querySelectorAll("[data-rules-tab]").forEach(btn => {
-        btn.onclick = () => {
-          state.rulesTab = btn.dataset.rulesTab;
           render();
         };
       });
@@ -2590,3 +2385,4 @@
   </script>
 </body>
 </html>
+
