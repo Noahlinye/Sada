@@ -1,0 +1,3404 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>全球包外管系统 - 需求评审原型文档</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #667085;
+      --line: #dfe7f0;
+      --blue: #2f7ef0;
+      --teal: #119a9f;
+      --bg: #eef3f8;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; color: var(--ink); background: var(--bg); }
+    button, input, select, textarea { font: inherit; }
+
+    .review-layout {
+      display: grid;
+      grid-template-columns: minmax(760px, 4.2fr) minmax(360px, 1.08fr);
+      gap: 14px;
+      padding: 14px;
+      min-height: calc(100vh - 62px);
+      position: relative;
+    }
+
+    .prototype-shell, .prd-shell {
+      border: 1px solid #cdd9e6;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 16px 42px rgba(34, 52, 77, .12);
+      overflow: hidden;
+    }
+
+    .prototype-frame {
+      width: 100%;
+      height: calc(100vh - 96px);
+      border: 0;
+      display: block;
+      background: #fff;
+    }
+
+    .prd-shell {
+      height: calc(100vh - 96px);
+      overflow: auto;
+      background: #f8fafc;
+    }
+
+    .prd-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .prd-card.context-hidden { display: none; }
+    .context-note {
+      border: 1px solid #c8e4ff;
+      border-radius: 10px;
+      background: #f0f7ff;
+      color: #23527f;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .prd-card > summary {
+      cursor: pointer;
+      list-style: none;
+      min-height: 44px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 900;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .prd-card > summary::-webkit-details-marker { display: none; }
+    .prd-card[open] > summary .chevron { transform: rotate(90deg); }
+    .chevron { transition: .18s ease; color: #98a2b3; }
+
+    .prd-body { padding: 14px; display: grid; gap: 12px; }
+    .doc-block { display: grid; gap: 7px; }
+    .doc-block h4 { margin: 0; font-size: 13px; font-weight: 900; color: #1f2a44; }
+    .doc-block ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+    .doc-block li { font-size: 12px; line-height: 1.5; color: #4d5d73; }
+    .doc-block strong { color: #101828; }
+    .doc-table { width: 100%; border-collapse: collapse; font-size: 12px; overflow: hidden; border-radius: 8px; }
+    .doc-table th, .doc-table td { border: 1px solid #e5edf5; padding: 7px; vertical-align: top; text-align: left; }
+    .doc-table th { background: #f3f7fb; color: #475467; white-space: nowrap; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      background: #eaf4ff;
+      color: #1f6fbd;
+      white-space: nowrap;
+    }
+
+    .tag.teal { background: #e6fffb; color: #078579; }
+    .tag.gold { background: #fff4d6; color: #936200; }
+    .tag.red { background: #fff0f2; color: #c83346; }
+    .tag.green { background: #e9f9f0; color: #117c4d; }
+
+    .anchor-btn {
+      border: 1px solid #d7e2ee;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: #fff;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .anchor-btn.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+    }
+
+    .connector {
+      fill: none;
+      stroke: rgba(47,126,240,.54);
+      stroke-width: 2;
+      stroke-dasharray: 7 7;
+      marker-end: url(#arrow);
+    }
+
+    @media (max-width: 1180px) {
+      .review-layout { grid-template-columns: 1fr; }
+      .prototype-frame, .prd-shell { height: 72vh; }
+      #connectors { display: none; }
+    }
+
+    @media print {
+      header, #connectors { display: none !important; }
+      body { background: #fff; }
+      .review-layout { display: block; padding: 0; }
+      .prototype-shell { page-break-after: always; height: auto; }
+      .prototype-frame { height: 900px; }
+      .prd-shell { height: auto; overflow: visible; box-shadow: none; border: 0; }
+      .prd-card { break-inside: avoid; margin-bottom: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="h-[62px] px-5 flex items-center justify-between bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div>
+      <div class="font-black text-lg">全球包外管系统 · 需求评审原型文档（单文件版）</div>
+      <div class="text-xs text-slate-500 mt-0.5">左侧为完整后台原型，右侧为页面字段、按钮、弹窗、状态与边界说明。</div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <button class="anchor-btn active" data-doc-target="doc-regions">国家/地区</button>
+      <button class="anchor-btn" data-doc-target="doc-members">人员配置</button>
+      <button class="anchor-btn" data-doc-target="doc-materials">物料配置</button>
+      <button class="anchor-btn" data-doc-target="doc-reviews">审核记录</button>
+      <button class="anchor-btn" data-doc-target="doc-settlement">薪资结算</button>
+    </div>
+  </header>
+
+  <main id="reviewLayout" class="review-layout">
+    <svg id="connectors" class="pointer-events-none absolute inset-0 z-10 w-full h-full">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(47,126,240,.62)"></path>
+        </marker>
+      </defs>
+    </svg>
+
+    <section id="prototypeArea" class="prototype-shell">
+      <iframe
+        id="prototypeFrame"
+        class="prototype-frame"
+        title="外管系统后台完整原型"
+        srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;zh-CN&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;外管系统后台评审版&lt;/title&gt;
+  &lt;style&gt;
+    :root {
+      --bg: #f5f7fb;
+      --surface: #fff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #dfe7f0;
+      --teal: #119a9f;
+      --blue: #2f7ef0;
+      --green: #12a36f;
+      --gold: #e9a018;
+      --red: #d94b59;
+      --shadow: 0 12px 28px rgba(29, 45, 75, .09);
+      font-family: &quot;Microsoft YaHei&quot;, &quot;PingFang SC&quot;, &quot;Segoe UI&quot;, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .layout { min-height: 100vh; display: grid; grid-template-columns: 224px 1fr; }
+    .sidebar { position: sticky; top: 0; height: 100vh; padding: 20px 14px; color: #fff; background: #102033; }
+    .brand { padding: 0 8px 16px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.12); }
+    .brand h1 { margin: 0 0 6px; font-size: 19px; }
+    .brand span { color: rgba(255,255,255,.64); font-size: 12px; }
+    .nav { display: grid; gap: 8px; }
+    .nav button { min-height: 40px; border: 0; border-radius: 8px; padding: 10px 12px; background: transparent; color: rgba(255,255,255,.76); text-align: left; font-weight: 800; }
+    .nav button.active { color: #fff; background: linear-gradient(135deg, var(--teal), var(--blue)); box-shadow: 0 10px 22px rgba(21,184,189,.22); }
+
+    .main { min-width: 0; padding: 22px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .topbar h2 { margin: 0; font-size: 24px; }
+    .actions, .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .toolbar { margin-bottom: 12px; }
+
+    .panel { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+    .panel-head { min-height: 50px; padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 900; }
+    .panel-body { padding: 14px; }
+    .grid { display: grid; gap: 14px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .btn { min-height: 36px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); padding: 8px 12px; font-weight: 800; }
+    .btn.primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, var(--teal), var(--blue)); }
+    .btn.soft { background: #f8fafc; color: var(--muted); }
+    .btn.danger { border-color: rgba(217,75,89,.28); color: var(--red); background: #fff5f6; }
+    .icon-btn { width: 32px; height: 32px; border: 0; border-radius: 8px; background: #f1f5f9; color: var(--muted); font-size: 18px; font-weight: 900; }
+    .field { width: 100%; min-height: 38px; border: 1px solid #d5deea; border-radius: 8px; background: #fff; color: var(--ink); padding: 8px 10px; outline: none; }
+    .toolbar .field { max-width: 220px; }
+
+    .table-wrap { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid #edf1f6; text-align: left; vertical-align: middle; white-space: nowrap; }
+    th { color: var(--muted); background: #f8fafc; font-weight: 900; }
+    td.wrap, th.wrap { white-space: normal; min-width: 180px; }
+
+    .badge { display: inline-flex; align-items: center; justify-content: center; min-height: 22px; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 900; white-space: nowrap; background: #eef2f7; color: #556070; }
+    .badge.green { background: #e7faf2; color: var(--green); }
+    .badge.gold { background: #fff5d8; color: #9b6500; }
+    .badge.red { background: #fff0f2; color: var(--red); }
+    .badge.blue { background: #eaf4ff; color: #1f6fbd; }
+    .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px; border-radius: 999px; background: #f1f5f9; color: #475467; font-size: 12px; font-weight: 800; }
+    .summary-chip { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border-radius: 999px; background: #eaf4ff; color: #1d4ed8; font-size: 12px; font-weight: 900; border: 1px solid #bfdbfe; }
+    .summary-chip:nth-child(2n) { background: #ecfdf5; color: #047857; border-color: #bbf7d0; }
+    .summary-chip:nth-child(3n) { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .summary-chip:nth-child(4n) { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+    .flag { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; font-size: 22px; line-height: 1; }
+
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .form-row { display: grid; gap: 6px; }
+    .form-row label { color: #344054; font-weight: 800; }
+    .check-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .check { min-height: 38px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; background: #fff; font-weight: 800; }
+    .template-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .template-card { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #fff; display: grid; gap: 5px; cursor: pointer; }
+    .template-card.active { border-color: rgba(17,154,159,.58); background: #f0fdfa; box-shadow: inset 0 0 0 1px rgba(17,154,159,.28); }
+    .template-card strong { font-size: 13px; }
+    .template-card span { color: var(--muted); font-size: 12px; }
+    .builder-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .muted { color: var(--muted); }
+    .tabs { display: flex; gap: 8px; padding: 12px 14px 0; border-bottom: 1px solid var(--line); background: #fff; }
+    .tabs button { min-height: 36px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); padding: 8px 12px; font-weight: 900; }
+    .tabs button.active { color: var(--teal); border-color: var(--teal); }
+    .tab-page { padding: 14px; }
+    .form-row.full { grid-column: 1 / -1; }
+    .material-picker { border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 10px; display: grid; gap: 10px; }
+    .material-list { max-height: 310px; overflow: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .material-option { min-height: 58px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: grid; grid-template-columns: auto 36px minmax(0, 1fr); align-items: center; gap: 8px; background: #fff; font-weight: 800; }
+    .material-option small { display: block; margin-top: 2px; color: var(--muted); font-weight: 700; }
+    .material-thumb { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #ecfeff, #eff6ff); display: inline-flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid #dbeafe; }
+    .material-detail-name { display: flex; align-items: center; gap: 8px; }
+    .review-status-bar { margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .review-status-bar .btn.active { border-color: rgba(17,154,159,.45); color: var(--teal); background: #f0fdfa; }
+    .section-title { margin: 2px 0 12px; padding-left: 10px; border-left: 3px solid var(--blue); font-weight: 900; }
+    .payment-option { display: inline-flex; align-items: center; gap: 10px; min-height: 42px; }
+    .pay-icon { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #111827; color: #f5c451; font-size: 11px; font-weight: 900; }
+    .switch-row { min-height: 72px; border-radius: 8px; background: #f5f7fb; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .switch-row strong { display: block; margin-bottom: 4px; }
+    .level-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .level-option { min-height: 34px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+    .level-option input { margin-right: 6px; }
+    .info-box { margin-top: 12px; border-radius: 8px; background: #eaf4ff; color: #475467; padding: 12px; }
+    .review-avatar { width: 54px; height: 54px; border-radius: 10px; object-fit: cover; border: 1px solid var(--line); box-shadow: 0 6px 14px rgba(15,23,42,.10); }
+
+    .help { position: relative; width: 20px; height: 20px; border: 1px solid var(--line); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); background: #fff; font-size: 12px; font-weight: 900; }
+    .help:hover::after { content: attr(data-tip); position: absolute; right: 0; top: 26px; z-index: 50; width: 260px; border-radius: 8px; background: #102033; color: #fff; padding: 9px 10px; box-shadow: 0 16px 34px rgba(15,23,42,.2); font-weight: 500; line-height: 1.5; }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(15,23,42,.48); }
+    .modal-backdrop.open { display: flex; }
+    .modal { width: min(860px, 100%); max-height: 88vh; overflow: auto; border-radius: 10px; background: #fff; box-shadow: 0 24px 70px rgba(15,23,42,.32); }
+    .modal.wide { width: min(1080px, 100%); }
+    .modal-head { min-height: 54px; padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 900; font-size: 18px; }
+    .modal-body { padding: 16px; }
+    .modal-actions { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
+
+    .phone { width: 100%; max-width: 320px; min-height: 610px; margin: 0 auto; border-radius: 24px; overflow: hidden; background: #f4f6f9; border: 8px solid #243347; box-shadow: 0 16px 40px rgba(28,45,75,.18); }
+    .phone-head { min-height: 58px; color: #fff; background: linear-gradient(135deg, #149a9f, #2f7ef0); padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+    .back { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.18); display: inline-flex; align-items: center; justify-content: center; font-weight: 900; }
+    .phone-head h3 { margin: 0; font-size: 15px; flex: 1; text-align: center; margin-right: 26px; }
+    .phone-body { padding: 12px; display: grid; gap: 10px; }
+    .app-card, .profile, .salary-box { border-radius: 8px; background: #fff; box-shadow: 0 8px 18px rgba(32,45,72,.08); padding: 10px; }
+    .profile { display: flex; gap: 10px; align-items: center; }
+    .avatar { width: 42px; height: 42px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; background: linear-gradient(135deg, #15b8bd, #2f7ef0); flex: 0 0 auto; }
+    .app-meta { color: #667085; font-size: 12px; }
+    .salary-box h4 { margin: 0 0 8px; color: #667085; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+    .salary-line { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid #edf1f6; }
+    .salary-line:last-child { border-bottom: 0; }
+    .salary-line strong { color: #009688; }
+    .app-card { min-height: 58px; display: flex; align-items: center; gap: 9px; }
+    .app-icon { width: 34px; height: 34px; border-radius: 8px; background: #e9fbf8; color: #0c8994; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; flex: 0 0 auto; }
+    .app-card-body { flex: 1; min-width: 0; }
+    .app-title { font-weight: 900; margin-bottom: 2px; }
+    .coins { color: #009688; font-weight: 900; }
+    .arrow { color: #98a2b3; font-size: 18px; flex: 0 0 auto; }
+
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 30; display: none; min-width: 220px; border-radius: 8px; background: #102033; color: #fff; padding: 10px 12px; box-shadow: 0 16px 40px rgba(15,23,42,.24); font-weight: 900; }
+    .toast.show { display: block; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid.two, .grid.three, .grid.four, .form-grid, .check-grid { grid-template-columns: 1fr; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class=&quot;layout&quot;&gt;
+    &lt;aside class=&quot;sidebar&quot;&gt;
+      &lt;div class=&quot;brand&quot;&gt;
+        &lt;h1&gt;外管后台&lt;/h1&gt;
+        &lt;span&gt;Review Demo&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;nav class=&quot;nav&quot;&gt;
+        &lt;button class=&quot;active&quot; data-view=&quot;regions&quot;&gt;国家/地区&lt;/button&gt;
+        &lt;button data-view=&quot;members&quot;&gt;人员配置&lt;/button&gt;
+        &lt;button data-view=&quot;materials&quot;&gt;物料配置与记录&lt;/button&gt;
+        &lt;button data-view=&quot;reviews&quot;&gt;审核记录&lt;/button&gt;
+        &lt;button data-view=&quot;settlement&quot;&gt;薪资结算&lt;/button&gt;
+      &lt;/nav&gt;
+    &lt;/aside&gt;
+
+    &lt;main class=&quot;main&quot;&gt;
+      &lt;section id=&quot;view-regions&quot; class=&quot;view&quot;&gt;
+        &lt;div class=&quot;topbar&quot;&gt;
+          &lt;h2&gt;国家/地区&lt;/h2&gt;
+          &lt;div class=&quot;actions&quot;&gt;
+            &lt;button class=&quot;btn primary&quot; data-add-region&gt;新增国家/地区&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;国家/地区列表&lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;toolbar&quot;&gt;
+              &lt;input class=&quot;field&quot; placeholder=&quot;搜索国家/地区&quot;&gt;
+              &lt;select class=&quot;field&quot;&gt;&lt;option&gt;全部状态&lt;/option&gt;&lt;option&gt;启用&lt;/option&gt;&lt;option&gt;禁用&lt;/option&gt;&lt;/select&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;ID&lt;/th&gt;&lt;th&gt;国家&lt;/th&gt;&lt;th&gt;国家En&lt;/th&gt;&lt;th&gt;国家码&lt;/th&gt;&lt;th&gt;图片&lt;/th&gt;&lt;th&gt;身份集合&lt;/th&gt;&lt;th&gt;薪资项&lt;/th&gt;&lt;th&gt;人员&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;regionRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id=&quot;view-members&quot; class=&quot;view hidden&quot;&gt;
+        &lt;div class=&quot;topbar&quot;&gt;
+          &lt;h2&gt;人员配置&lt;/h2&gt;
+          &lt;div class=&quot;actions&quot;&gt;
+            &lt;button class=&quot;btn primary&quot; data-add-member&gt;配置人员&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;
+            &lt;span&gt;人员薪资项&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;toolbar&quot;&gt;
+              &lt;select id=&quot;memberRegionFilter&quot; class=&quot;field&quot;&gt;&lt;/select&gt;
+              &lt;input class=&quot;field&quot; placeholder=&quot;搜索 UID&quot;&gt;
+              &lt;select class=&quot;field&quot;&gt;&lt;option&gt;全部状态&lt;/option&gt;&lt;option&gt;生效&lt;/option&gt;&lt;option&gt;停用&lt;/option&gt;&lt;/select&gt;
+              &lt;button class=&quot;btn primary&quot; data-toast=&quot;已查询&quot;&gt;查询&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;国家/地区&lt;/th&gt;&lt;th&gt;UID&lt;/th&gt;&lt;th&gt;身份&lt;/th&gt;&lt;th&gt;薪资项&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;memberRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id=&quot;view-materials&quot; class=&quot;view hidden&quot;&gt;
+        &lt;div class=&quot;topbar&quot;&gt;
+          &lt;h2&gt;物料配置与记录&lt;/h2&gt;
+          &lt;div class=&quot;actions&quot;&gt;
+            &lt;button class=&quot;btn primary&quot; data-open-material&gt;添加物料配置&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot;&gt;
+          &lt;div class=&quot;tabs&quot;&gt;
+            &lt;button class=&quot;active&quot; data-material-tab=&quot;config&quot;&gt;物料配置&lt;/button&gt;
+            &lt;button data-material-tab=&quot;records&quot;&gt;发放记录&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;tab-page&quot; data-material-page=&quot;config&quot;&gt;
+              &lt;div class=&quot;table-wrap&quot;&gt;
+                &lt;table&gt;
+                  &lt;thead&gt;&lt;tr&gt;&lt;th&gt;类型&lt;/th&gt;&lt;th&gt;已勾选物料&lt;/th&gt;&lt;th&gt;有效期&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                  &lt;tbody id=&quot;materialRows&quot;&gt;&lt;/tbody&gt;
+                &lt;/table&gt;
+              &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;tab-page hidden&quot; data-material-page=&quot;records&quot;&gt;
+              &lt;div class=&quot;toolbar&quot;&gt;
+                &lt;input class=&quot;field&quot; placeholder=&quot;搜索发放人UID / 接收用户ID&quot;&gt;
+                &lt;select class=&quot;field&quot;&gt;&lt;option&gt;全部类型&lt;/option&gt;&lt;option&gt;座驾&lt;/option&gt;&lt;option&gt;头像框&lt;/option&gt;&lt;option&gt;麦位声浪&lt;/option&gt;&lt;option&gt;气泡框&lt;/option&gt;&lt;option&gt;进场特效&lt;/option&gt;&lt;option&gt;VIP&lt;/option&gt;&lt;option&gt;个人名片&lt;/option&gt;&lt;/select&gt;
+              &lt;/div&gt;
+              &lt;div class=&quot;table-wrap&quot;&gt;
+                &lt;table&gt;
+                  &lt;thead&gt;&lt;tr&gt;&lt;th&gt;发放人UID&lt;/th&gt;&lt;th&gt;接收用户ID&lt;/th&gt;&lt;th&gt;物料类型&lt;/th&gt;&lt;th&gt;物料昵称&lt;/th&gt;&lt;th&gt;有效期&lt;/th&gt;&lt;th&gt;时间&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                  &lt;tbody id=&quot;materialRecordRows&quot;&gt;&lt;/tbody&gt;
+                &lt;/table&gt;
+              &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id=&quot;view-reviews&quot; class=&quot;view hidden&quot;&gt;
+        &lt;div class=&quot;topbar&quot;&gt;
+          &lt;h2&gt;审核记录&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot;&gt;
+          &lt;div class=&quot;tabs&quot;&gt;
+            &lt;button class=&quot;active&quot; data-review-tab=&quot;guild&quot;&gt;公会&lt;/button&gt;
+            &lt;button data-review-tab=&quot;seller&quot;&gt;币商&lt;/button&gt;
+            &lt;button data-review-tab=&quot;bd&quot;&gt;BD&lt;/button&gt;
+            &lt;button data-review-tab=&quot;team&quot;&gt;下级成员&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;toolbar&quot;&gt;
+              &lt;select id=&quot;reviewRegionFilter&quot; class=&quot;field&quot;&gt;&lt;/select&gt;
+              &lt;select id=&quot;reviewStatusFilter&quot; class=&quot;field&quot;&gt;&lt;option value=&quot;all&quot;&gt;全部状态&lt;/option&gt;&lt;option value=&quot;Pending&quot;&gt;待审核&lt;/option&gt;&lt;option value=&quot;Approved&quot;&gt;已通过&lt;/option&gt;&lt;option value=&quot;Rejected&quot;&gt;已拒绝&lt;/option&gt;&lt;/select&gt;
+              &lt;button class=&quot;btn primary&quot; data-review-search&gt;查询&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;div id=&quot;reviewStatusSummary&quot; class=&quot;review-status-bar&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead id=&quot;reviewHead&quot;&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;reviewRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section id=&quot;view-settlement&quot; class=&quot;view hidden&quot;&gt;
+        &lt;div class=&quot;topbar&quot;&gt;
+          &lt;h2&gt;薪资结算&lt;/h2&gt;
+          &lt;div class=&quot;actions&quot;&gt;
+            &lt;input class=&quot;field&quot; type=&quot;month&quot; value=&quot;2026-05&quot;&gt;
+            &lt;button class=&quot;btn primary&quot; data-toast=&quot;已导出&quot;&gt;导出&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;结算列表&lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;toolbar&quot;&gt;
+              &lt;select id=&quot;settlementRegionFilter&quot; class=&quot;field&quot;&gt;&lt;/select&gt;
+              &lt;select class=&quot;field&quot;&gt;&lt;option&gt;全部身份&lt;/option&gt;&lt;option&gt;manager&lt;/option&gt;&lt;option&gt;superadmin&lt;/option&gt;&lt;option&gt;admin&lt;/option&gt;&lt;/select&gt;
+              &lt;select class=&quot;field&quot;&gt;&lt;option&gt;全部状态&lt;/option&gt;&lt;option&gt;待复核&lt;/option&gt;&lt;option&gt;等待发放&lt;/option&gt;&lt;option&gt;金币审核拒绝&lt;/option&gt;&lt;option&gt;已结算&lt;/option&gt;&lt;option&gt;异常&lt;/option&gt;&lt;/select&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;月份&lt;/th&gt;&lt;th&gt;国家/地区&lt;/th&gt;&lt;th&gt;UID&lt;/th&gt;&lt;th&gt;身份&lt;/th&gt;&lt;th&gt;周期&lt;/th&gt;&lt;th&gt;薪资项&lt;/th&gt;&lt;th&gt;金币&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;settlementRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+    &lt;/main&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;regionModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span&gt;国家/地区&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;form-grid&quot;&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;国家/地区&lt;/label&gt;&lt;select id=&quot;regionCountryField&quot; class=&quot;field&quot;&gt;&lt;/select&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;状态&lt;/label&gt;&lt;select id=&quot;regionStatusField&quot; class=&quot;field&quot;&gt;&lt;option&gt;启用&lt;/option&gt;&lt;option&gt;禁用&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;身份集合&lt;/div&gt;
+          &lt;div class=&quot;panel-body check-grid&quot;&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input type=&quot;checkbox&quot; checked&gt; manager&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input type=&quot;checkbox&quot; checked&gt; superadmin&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input type=&quot;checkbox&quot; checked&gt; admin&lt;/label&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-save-modal&gt;保存&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;countryPermissionModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal wide&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span id=&quot;countryPermissionTitle&quot;&gt;身份权限&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;thead&gt;&lt;tr&gt;&lt;th&gt;身份&lt;/th&gt;&lt;th&gt;上级身份&lt;/th&gt;&lt;th&gt;邀请权限&lt;/th&gt;&lt;th&gt;邀请与管理下级&lt;/th&gt;&lt;th&gt;奖励发放&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+            &lt;tbody id=&quot;permissionRows&quot;&gt;&lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;关闭&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;conversionModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span&gt;换算配置&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;form-grid&quot;&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;国家/地区&lt;/label&gt;&lt;input id=&quot;conversionCountryField&quot; class=&quot;field&quot; readonly&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;1 USD 对应积分&lt;/label&gt;&lt;input id=&quot;conversionPointsField&quot; class=&quot;field&quot; type=&quot;number&quot; min=&quot;1&quot; step=&quot;1&quot;&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;1 USD 对应金币&lt;/label&gt;&lt;input id=&quot;conversionCoinsField&quot; class=&quot;field&quot; type=&quot;number&quot; min=&quot;1&quot; step=&quot;1&quot;&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;状态&lt;/label&gt;&lt;select id=&quot;conversionStatusField&quot; class=&quot;field&quot;&gt;&lt;option&gt;启用&lt;/option&gt;&lt;option&gt;禁用&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-save-modal&gt;保存&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;permissionModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span&gt;身份权限&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;form-grid&quot;&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;国家/地区&lt;/label&gt;&lt;input id=&quot;permCountry&quot; class=&quot;field&quot; readonly&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;身份&lt;/label&gt;&lt;input id=&quot;permRole&quot; class=&quot;field&quot; readonly&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;上级身份&lt;/label&gt;&lt;input id=&quot;permParent&quot; class=&quot;field&quot; readonly&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;状态&lt;/label&gt;&lt;select class=&quot;field&quot;&gt;&lt;option&gt;启用中&lt;/option&gt;&lt;option&gt;停用&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;权限&lt;/div&gt;
+          &lt;div class=&quot;panel-body check-grid&quot;&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;permInviteBD&quot; type=&quot;checkbox&quot;&gt; 邀请BD&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;permInviteGuild&quot; type=&quot;checkbox&quot;&gt; 邀请公会&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;permInviteSeller&quot; type=&quot;checkbox&quot;&gt; 邀请币商&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;permDownline&quot; type=&quot;checkbox&quot; checked&gt; 邀请与管理下级&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;permReward&quot; type=&quot;checkbox&quot;&gt; 奖励发放&lt;/label&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-save-modal&gt;保存&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;countrySalaryModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal wide&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;
+        &lt;span id=&quot;countrySalaryTitle&quot;&gt;薪资政策&lt;/span&gt;
+        &lt;div class=&quot;actions&quot;&gt;
+          &lt;button class=&quot;btn primary&quot; data-add-salary&gt;新增薪资项&lt;/button&gt;
+          &lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;thead&gt;&lt;tr&gt;&lt;th&gt;适用身份&lt;/th&gt;&lt;th&gt;计薪来源&lt;/th&gt;&lt;th&gt;算法模板&lt;/th&gt;&lt;th&gt;配置&lt;/th&gt;&lt;th&gt;计入范围&lt;/th&gt;&lt;th&gt;计算周期&lt;/th&gt;&lt;th&gt;分配人数&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+            &lt;tbody id=&quot;countrySalaryRows&quot;&gt;&lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;关闭&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;salaryModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal wide&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span&gt;薪资项&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;form-grid&quot;&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;国家/地区&lt;/label&gt;&lt;select id=&quot;salaryCountryField&quot; class=&quot;field&quot;&gt;&lt;/select&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;计薪来源&lt;/label&gt;&lt;select id=&quot;salaryModuleField&quot; class=&quot;field&quot;&gt;&lt;option value=&quot;bd&quot;&gt;邀请BD业绩&lt;/option&gt;&lt;option value=&quot;guild&quot;&gt;邀请公会业绩&lt;/option&gt;&lt;option value=&quot;seller&quot;&gt;邀请币商业绩&lt;/option&gt;&lt;option value=&quot;downline&quot;&gt;下级薪资&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;算法模板&lt;/label&gt;&lt;select id=&quot;salaryTemplateField&quot; class=&quot;field&quot;&gt;&lt;/select&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;计算周期&lt;/label&gt;&lt;select id=&quot;salaryCycleField&quot; class=&quot;field&quot;&gt;&lt;option&gt;月结&lt;/option&gt;&lt;option&gt;连续三个月&lt;/option&gt;&lt;option&gt;自定义&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+          &lt;div id=&quot;salaryCustomCycleRow&quot; class=&quot;form-row hidden&quot;&gt;&lt;label&gt;自定义月份（月）&lt;/label&gt;&lt;input id=&quot;salaryCustomCycleField&quot; class=&quot;field&quot; type=&quot;number&quot; min=&quot;1&quot; step=&quot;1&quot; value=&quot;6&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;适用身份&lt;/div&gt;
+          &lt;div class=&quot;panel-body check-grid&quot;&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;salaryRoleManager&quot; type=&quot;checkbox&quot;&gt; manager&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;salaryRoleSuperadmin&quot; type=&quot;checkbox&quot;&gt; superadmin&lt;/label&gt;
+            &lt;label class=&quot;check&quot;&gt;&lt;input id=&quot;salaryRoleAdmin&quot; type=&quot;checkbox&quot;&gt; admin&lt;/label&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id=&quot;salarySharePanel&quot; class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;
+            &lt;span&gt;比例/固定金额&lt;/span&gt;
+            &lt;button class=&quot;btn soft&quot; data-add-share&gt;添加一行&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;计算基数&lt;/th&gt;&lt;th&gt;比例 %&lt;/th&gt;&lt;th&gt;固定金额&lt;/th&gt;&lt;th&gt;金额单位&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;salaryShareRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id=&quot;salaryTargetPanel&quot; class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;
+            &lt;span&gt;满额薪资&lt;/span&gt;
+            &lt;button class=&quot;btn soft&quot; data-add-target&gt;添加一行&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;满额薪资&lt;/th&gt;&lt;th&gt;金额单位&lt;/th&gt;&lt;th&gt;达标数量&lt;/th&gt;&lt;th&gt;达标条件&lt;/th&gt;&lt;th&gt;未达标处理&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;salaryTargetRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id=&quot;salaryTierPanel&quot; class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;
+            &lt;span&gt;阶梯&lt;/span&gt;
+            &lt;button class=&quot;btn soft&quot; data-add-tier&gt;添加档位&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;最小业绩&lt;/th&gt;&lt;th&gt;最大业绩&lt;/th&gt;&lt;th&gt;业绩单位&lt;/th&gt;&lt;th&gt;奖励方式&lt;/th&gt;&lt;th&gt;奖励值&lt;/th&gt;&lt;th&gt;奖励单位&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;salaryTierRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id=&quot;salaryLimitPanel&quot; class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;
+            &lt;span&gt;计入范围&lt;/span&gt;
+            &lt;button class=&quot;btn soft&quot; data-add-limit&gt;添加条件&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;条件类型&lt;/th&gt;&lt;th&gt;条件值&lt;/th&gt;&lt;th&gt;单位&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;salaryLimitRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-save-modal&gt;保存&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;memberModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal wide&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span&gt;人员配置&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;form-grid&quot;&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;UID&lt;/label&gt;&lt;input id=&quot;memberUidField&quot; class=&quot;field&quot; placeholder=&quot;请输入UID&quot;&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;国家/地区&lt;/label&gt;&lt;select id=&quot;memberCountryField&quot; class=&quot;field&quot;&gt;&lt;/select&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;身份&lt;/label&gt;&lt;select id=&quot;memberRoleField&quot; class=&quot;field&quot;&gt;&lt;/select&gt;&lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;&lt;label&gt;状态&lt;/label&gt;&lt;select id=&quot;memberStatusField&quot; class=&quot;field&quot;&gt;&lt;option&gt;生效&lt;/option&gt;&lt;option&gt;停用&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;panel&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;薪资项&lt;/div&gt;
+          &lt;div class=&quot;panel-body check-grid&quot; id=&quot;memberSalaryChecks&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-save-modal&gt;保存&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;materialModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal wide&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span&gt;物料配置&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;form-grid&quot;&gt;
+          &lt;div class=&quot;form-row&quot;&gt;
+            &lt;label&gt;物料类型&lt;/label&gt;
+            &lt;select id=&quot;materialTypeField&quot; class=&quot;field&quot;&gt;&lt;/select&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;form-row full&quot;&gt;
+            &lt;label&gt;物料&lt;/label&gt;
+            &lt;div class=&quot;material-picker&quot;&gt;
+              &lt;input id=&quot;materialSearchField&quot; class=&quot;field&quot; placeholder=&quot;搜索物料昵称 / 商品ID&quot;&gt;
+              &lt;div class=&quot;material-list&quot; id=&quot;materialItemChecks&quot;&gt;&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;
+            &lt;label&gt;有效期&lt;/label&gt;
+            &lt;div class=&quot;check-grid&quot; id=&quot;materialDurationChecks&quot;&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;form-row&quot;&gt;
+            &lt;label&gt;状态&lt;/label&gt;
+            &lt;select class=&quot;field&quot;&gt;&lt;option&gt;启用&lt;/option&gt;&lt;option&gt;停用&lt;/option&gt;&lt;/select&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-save-modal&gt;保存&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;materialDetailModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal wide&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span id=&quot;materialDetailTitle&quot;&gt;已勾选物料&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;thead&gt;&lt;tr&gt;&lt;th&gt;图片&lt;/th&gt;&lt;th&gt;物料昵称&lt;/th&gt;&lt;th&gt;商品ID&lt;/th&gt;&lt;th&gt;物料类型&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+            &lt;tbody id=&quot;materialDetailRows&quot;&gt;&lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;关闭&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;reviewModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span id=&quot;reviewModalTitle&quot;&gt;审核处理&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;tbody id=&quot;reviewDetailRows&quot;&gt;&lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot; id=&quot;reviewModalActions&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;reviewConfirmModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span id=&quot;reviewConfirmTitle&quot;&gt;确认操作&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;tbody id=&quot;reviewConfirmRows&quot;&gt;&lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button id=&quot;reviewConfirmButton&quot; class=&quot;btn primary&quot; type=&quot;button&quot;&gt;确认&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;sellerCreateModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span&gt;添加币商&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;section-title&quot;&gt;基本信息&lt;/div&gt;
+        &lt;div class=&quot;form-row&quot;&gt;
+          &lt;label&gt;币商UID&lt;/label&gt;
+          &lt;input id=&quot;sellerCreateUidField&quot; class=&quot;field&quot; placeholder=&quot;请输入币商UID，如：10001&quot;&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;form-row&quot; style=&quot;margin-top:12px&quot;&gt;
+          &lt;label&gt;支持的收款方式&lt;/label&gt;
+          &lt;div class=&quot;payment-option&quot;&gt;&lt;span class=&quot;pay-icon&quot;&gt;SP&lt;/span&gt;&lt;strong&gt;superpay&lt;/strong&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;section-title&quot; style=&quot;margin-top:22px&quot;&gt;权限设置&lt;/div&gt;
+        &lt;div class=&quot;switch-row&quot;&gt;
+          &lt;div&gt;&lt;strong&gt;代发权限&lt;/strong&gt;&lt;span class=&quot;muted&quot;&gt;允许该币商处理用户的代发订单&lt;/span&gt;&lt;/div&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot;&gt; 启用&lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;section-title&quot; style=&quot;margin-top:22px&quot;&gt;等级设置&lt;/div&gt;
+        &lt;div class=&quot;level-grid&quot;&gt;
+          &lt;label class=&quot;level-option&quot;&gt;&lt;input name=&quot;sellerLevel&quot; type=&quot;radio&quot; checked&gt;初级&lt;/label&gt;
+          &lt;label class=&quot;level-option&quot;&gt;&lt;input name=&quot;sellerLevel&quot; type=&quot;radio&quot;&gt;中级&lt;/label&gt;
+          &lt;label class=&quot;level-option&quot;&gt;&lt;input name=&quot;sellerLevel&quot; type=&quot;radio&quot;&gt;高级&lt;/label&gt;
+          &lt;label class=&quot;level-option&quot;&gt;&lt;input name=&quot;sellerLevel&quot; type=&quot;radio&quot;&gt;超级&lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;info-box&quot;&gt;等级用于控制币商额度、权限和风控策略。&lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-save-seller&gt;添加币商&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;settlementModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal wide&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span id=&quot;settlementModalTitle&quot;&gt;结算明细&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;panel&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;结算汇总&lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;薪资项&lt;/th&gt;&lt;th&gt;计薪来源&lt;/th&gt;&lt;th&gt;算法模板&lt;/th&gt;&lt;th&gt;周期&lt;/th&gt;&lt;th&gt;金币&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody id=&quot;settlementDetailRows&quot;&gt;&lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id=&quot;settlementObjectDetails&quot; class=&quot;grid&quot; style=&quot;margin-top:14px&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;关闭&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;settlementConfirmModal&quot; class=&quot;modal-backdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;
+    &lt;div class=&quot;modal&quot;&gt;
+      &lt;div class=&quot;modal-head&quot;&gt;&lt;span id=&quot;settlementConfirmTitle&quot;&gt;确认结算&lt;/span&gt;&lt;button class=&quot;icon-btn&quot; data-close-modal aria-label=&quot;关闭&quot;&gt;&#215;&lt;/button&gt;&lt;/div&gt;
+      &lt;div class=&quot;modal-body&quot;&gt;
+        &lt;div class=&quot;table-wrap&quot;&gt;
+          &lt;table&gt;
+            &lt;tbody id=&quot;settlementConfirmRows&quot;&gt;&lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;form-row&quot; style=&quot;margin-top:14px&quot;&gt;
+          &lt;label&gt;实际发放金币&lt;/label&gt;
+          &lt;input id=&quot;settlementActualCoinsField&quot; class=&quot;field&quot; inputmode=&quot;numeric&quot; placeholder=&quot;请输入实际发放金币&quot;&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;modal-actions&quot;&gt;
+          &lt;button class=&quot;btn soft&quot; data-close-modal&gt;取消&lt;/button&gt;
+          &lt;button class=&quot;btn primary&quot; data-submit-settlement&gt;提交金币审核&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;toast&quot; class=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+    const countryOptions = [
+      { key: &quot;ph&quot;, cn: &quot;菲律宾&quot;, name: &quot;Philippines&quot;, code: &quot;PH&quot;, flag: &quot;🇵🇭&quot; },
+      { key: &quot;tr&quot;, cn: &quot;土耳其&quot;, name: &quot;Turkey&quot;, code: &quot;TR&quot;, flag: &quot;🇹🇷&quot; },
+      { key: &quot;vn&quot;, cn: &quot;越南&quot;, name: &quot;Vietnam&quot;, code: &quot;VN&quot;, flag: &quot;🇻🇳&quot; },
+      { key: &quot;ae&quot;, cn: &quot;阿拉伯联合酋长国&quot;, name: &quot;United Arab Emirates&quot;, code: &quot;AE&quot;, flag: &quot;🇦🇪&quot; },
+      { key: &quot;in&quot;, cn: &quot;印度&quot;, name: &quot;India&quot;, code: &quot;IN&quot;, flag: &quot;🇮🇳&quot; },
+      { key: &quot;sa&quot;, cn: &quot;沙特阿拉伯&quot;, name: &quot;Saudi Arabia&quot;, code: &quot;SA&quot;, flag: &quot;🇸🇦&quot; }
+    ];
+
+    const regions = [
+      { id: 141, key: &quot;ph&quot;, cn: &quot;菲律宾&quot;, name: &quot;Philippines&quot;, flag: &quot;🇵🇭&quot;, code: &quot;PH&quot;, roles: [&quot;manager&quot;, &quot;superadmin&quot;, &quot;admin&quot;], pointsPerUsd: 10000, coinsPerUsd: 9000, status: &quot;启用&quot; },
+      { id: 177, key: &quot;tr&quot;, cn: &quot;土耳其&quot;, name: &quot;Turkey&quot;, flag: &quot;🇹🇷&quot;, code: &quot;TR&quot;, roles: [&quot;manager&quot;, &quot;superadmin&quot;, &quot;admin&quot;], pointsPerUsd: 10000, coinsPerUsd: 9000, status: &quot;启用&quot; },
+      { id: 188, key: &quot;vn&quot;, cn: &quot;越南&quot;, name: &quot;Vietnam&quot;, flag: &quot;🇻🇳&quot;, code: &quot;VN&quot;, roles: [&quot;manager&quot;], pointsPerUsd: 10000, coinsPerUsd: 9000, status: &quot;禁用&quot; }
+    ];
+
+    const permissions = {
+      ph: [
+        { role: &quot;manager&quot;, parent: &quot;-&quot;, invite: [&quot;BD&quot;, &quot;公会&quot;, &quot;币商&quot;], downline: [&quot;superadmin&quot;], reward: true, status: &quot;启用中&quot; },
+        { role: &quot;superadmin&quot;, parent: &quot;manager&quot;, invite: [&quot;BD&quot;, &quot;公会&quot;, &quot;币商&quot;], downline: [&quot;admin&quot;], reward: true, status: &quot;启用中&quot; },
+        { role: &quot;admin&quot;, parent: &quot;superadmin&quot;, invite: [&quot;BD&quot;, &quot;公会&quot;, &quot;币商&quot;], downline: [], reward: false, status: &quot;启用中&quot; }
+      ],
+      tr: [
+        { role: &quot;manager&quot;, parent: &quot;-&quot;, invite: [&quot;BD&quot;, &quot;公会&quot;, &quot;币商&quot;], downline: [&quot;superadmin&quot;], reward: true, status: &quot;启用中&quot; },
+        { role: &quot;superadmin&quot;, parent: &quot;manager&quot;, invite: [&quot;BD&quot;, &quot;公会&quot;, &quot;币商&quot;], downline: [&quot;admin&quot;], reward: true, status: &quot;启用中&quot; },
+        { role: &quot;admin&quot;, parent: &quot;superadmin&quot;, invite: [&quot;BD&quot;, &quot;公会&quot;, &quot;币商&quot;], downline: [], reward: false, status: &quot;启用中&quot; }
+      ],
+      vn: [
+        { role: &quot;manager&quot;, parent: &quot;-&quot;, invite: [], downline: [], reward: false, status: &quot;停用&quot; }
+      ]
+    };
+
+    const fixedModules = {
+      bd: { title: &quot;BD Center&quot;, icon: &quot;BD&quot;, permission: &quot;BD&quot; },
+      guild: { title: &quot;Guild Center&quot;, icon: &quot;GC&quot;, permission: &quot;公会&quot; },
+      seller: { title: &quot;Coin Seller Center&quot;, icon: &quot;CS&quot;, permission: &quot;币商&quot; },
+      downline: { title: &quot;Subordinate Center&quot;, icon: &quot;DL&quot;, permission: &quot;下级&quot; },
+      reward: { title: &quot;Reward Distribution&quot;, icon: &quot;RW&quot;, permission: &quot;物料&quot; },
+      bigR: { title: &quot;Big R Center&quot;, icon: &quot;BR&quot;, permission: &quot;大R&quot; }
+    };
+
+    const salaryTypeLabels = {
+      bd: &quot;邀请BD业绩&quot;,
+      guild: &quot;邀请公会业绩&quot;,
+      seller: &quot;邀请币商业绩&quot;,
+      downline: &quot;下级薪资&quot;,
+      bigR: &quot;邀请大R业绩&quot;
+    };
+
+    const templateLabels = {
+      total_tier: &quot;总业绩阶梯&quot;,
+      single_tier: &quot;单对象阶梯&quot;,
+      target_plus_single_tier: &quot;达标薪资 + 单对象阶梯&quot;,
+      target_salary: &quot;满额薪资&quot;,
+      share_percent: &quot;薪资分成&quot;,
+      fixed_amount: &quot;固定金额&quot;
+    };
+
+    const templateTips = {
+      total_tier: &quot;所有邀请对象合计后进一个档位&quot;,
+      single_tier: &quot;每个邀请对象分别进档后求和&quot;,
+      target_plus_single_tier: &quot;基础薪资和单对象阶梯在同一条规则里配置&quot;,
+      target_salary: &quot;达到指定对象数量发满额薪资，不足按比例&quot;,
+      share_percent: &quot;按下级或BD的金币薪资抽成&quot;,
+      fixed_amount: &quot;直接配置固定金额或金币&quot;
+    };
+
+    const salaryObjectTemplates = {
+      bd: [&quot;share_percent&quot;, &quot;fixed_amount&quot;],
+      guild: [&quot;total_tier&quot;, &quot;target_plus_single_tier&quot;, &quot;single_tier&quot;, &quot;target_salary&quot;, &quot;fixed_amount&quot;],
+      seller: [&quot;total_tier&quot;, &quot;single_tier&quot;, &quot;fixed_amount&quot;],
+      downline: [&quot;share_percent&quot;, &quot;fixed_amount&quot;]
+    };
+
+    const unitLabels = {
+      points: &quot;积分&quot;,
+      USD: &quot;USD&quot;,
+      coins: &quot;金币&quot;,
+      &quot;-&quot;: &quot;-&quot;
+    };
+
+    const baseLabels = {
+      bd_salary_coins: &quot;BD月薪资金币合计&quot;,
+      downline_salary_coins: &quot;下级月薪资金币合计&quot;,
+      invited_object_count: &quot;邀请对象数量&quot;,
+      manual: &quot;手动录入&quot;
+    };
+
+    const limitLabels = {
+      direct_invite_only: &quot;仅直属邀请对象计入&quot;,
+      current_month_invited: &quot;仅当月邀请对象计入&quot;,
+      min_per_object_points: &quot;单对象积分不低于&quot;
+    };
+
+    const handlingLabels = {
+      exclude: &quot;不计入&quot;,
+      proportional: &quot;按比例折算&quot;,
+    };
+
+    const targetConditionLabels = {
+      guild_salary_usd_gte: &quot;单公会薪资不低于500 USD&quot;,
+      object_points_gte: &quot;单对象积分不低于&quot;
+    };
+
+    const rewardTypeLabels = {
+      percent: &quot;提成比例&quot;,
+      fixed: &quot;固定金额&quot;
+    };
+
+    const salaryItems = [
+      {
+        id: &quot;ph_bd&quot;,
+        region: &quot;ph&quot;,
+        roles: [&quot;manager&quot;],
+        module: &quot;bd&quot;,
+        name: &quot;PH BD薪资分成&quot;,
+        template: &quot;share_percent&quot;,
+        cycle: &quot;月结&quot;,
+        assigned: 5,
+        status: &quot;启用中&quot;,
+        coins: 22000,
+        stats: [&quot;Invited guilds&quot;, &quot;Invited sellers&quot;],
+        shareRules: [
+          { base: &quot;bd_salary_coins&quot;, rate: 1, amount: &quot;&quot;, unit: &quot;coins&quot; }
+        ],
+        limits: [],
+        tiers: []
+      },
+      {
+        id: &quot;ph_guild&quot;,
+        region: &quot;ph&quot;,
+        roles: [&quot;manager&quot;, &quot;superadmin&quot;, &quot;admin&quot;],
+        module: &quot;guild&quot;,
+        name: &quot;PH公会总积分阶梯&quot;,
+        template: &quot;total_tier&quot;,
+        cycle: &quot;连续三个月&quot;,
+        assigned: 8,
+        status: &quot;启用中&quot;,
+        coins: 43200000,
+        stats: [&quot;Guild count&quot;, &quot;Monthly pts&quot;],
+        shareRules: [],
+        targetRules: [],
+        limits: [
+          { type: &quot;direct_invite_only&quot;, value: &quot;&quot;, unit: &quot;-&quot;, handling: &quot;exclude&quot; },
+        ],
+        tiers: [
+          { min: 0, max: 49999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 4, rewardUnit: &quot;%&quot; },
+          { min: 50000000, max: 199999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 4.5, rewardUnit: &quot;%&quot; },
+          { min: 200000000, max: 499999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 5, rewardUnit: &quot;%&quot; },
+          { min: 500000000, max: 999999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 6, rewardUnit: &quot;%&quot; },
+          { min: 1000000000, max: 2999999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 7, rewardUnit: &quot;%&quot; },
+          { min: 3000000000, max: &quot;&quot;, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 8, rewardUnit: &quot;%&quot; }
+        ]
+      },
+      {
+        id: &quot;ph_seller&quot;,
+        region: &quot;ph&quot;,
+        roles: [&quot;manager&quot;, &quot;superadmin&quot;, &quot;admin&quot;],
+        module: &quot;seller&quot;,
+        name: &quot;PH币商充值阶梯&quot;,
+        template: &quot;total_tier&quot;,
+        cycle: &quot;月结&quot;,
+        assigned: 8,
+        status: &quot;启用中&quot;,
+        coins: 5400000,
+        stats: [&quot;Seller count&quot;, &quot;Monthly recharge&quot;],
+        shareRules: [],
+        targetRules: [],
+        limits: [
+          { type: &quot;current_month_invited&quot;, value: &quot;&quot;, unit: &quot;-&quot;, handling: &quot;exclude&quot; }
+        ],
+        tiers: [
+          { min: 0, max: 1999, unit: &quot;USD&quot;, rewardType: &quot;percent&quot;, rewardValue: 3, rewardUnit: &quot;%&quot; },
+          { min: 2000, max: 9999, unit: &quot;USD&quot;, rewardType: &quot;percent&quot;, rewardValue: 3.5, rewardUnit: &quot;%&quot; },
+          { min: 10000, max: 49999, unit: &quot;USD&quot;, rewardType: &quot;percent&quot;, rewardValue: 4, rewardUnit: &quot;%&quot; },
+          { min: 50000, max: &quot;&quot;, unit: &quot;USD&quot;, rewardType: &quot;percent&quot;, rewardValue: 5, rewardUnit: &quot;%&quot; }
+        ]
+      },
+      {
+        id: &quot;tr_guild_combo_manager&quot;,
+        region: &quot;tr&quot;,
+        roles: [&quot;manager&quot;],
+        module: &quot;guild&quot;,
+        name: &quot;TR经理公会组合薪资&quot;,
+        template: &quot;target_plus_single_tier&quot;,
+        cycle: &quot;月结&quot;,
+        assigned: 9,
+        status: &quot;启用中&quot;,
+        coins: 12892500,
+        stats: [&quot;Qualified guilds&quot;, &quot;Guild count&quot;, &quot;Monthly pts&quot;],
+        targetRules: [
+          { salary: 300, unit: &quot;USD&quot;, target: 10, conditionType: &quot;guild_salary_usd_gte&quot;, handling: &quot;proportional&quot; }
+        ],
+        shareRules: [],
+        limits: [
+          { type: &quot;min_per_object_points&quot;, value: 5000000, unit: &quot;points&quot;, handling: &quot;exclude&quot; }
+        ],
+        tiers: [
+          { min: 200000000, max: &quot;&quot;, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 4, rewardUnit: &quot;%&quot; },
+          { min: 100000000, max: 199999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 3, rewardUnit: &quot;%&quot; },
+          { min: 50000000, max: 99999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 2, rewardUnit: &quot;%&quot; },
+          { min: 10000000, max: 49999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 1, rewardUnit: &quot;%&quot; },
+          { min: 5000000, max: 9999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 0.5, rewardUnit: &quot;%&quot; }
+        ]
+      },
+      {
+        id: &quot;tr_guild_combo_superadmin&quot;,
+        region: &quot;tr&quot;,
+        roles: [&quot;superadmin&quot;],
+        module: &quot;guild&quot;,
+        name: &quot;TR超管公会组合薪资&quot;,
+        template: &quot;target_plus_single_tier&quot;,
+        cycle: &quot;月结&quot;,
+        assigned: 5,
+        status: &quot;启用中&quot;,
+        coins: 9954000,
+        stats: [&quot;Qualified guilds&quot;, &quot;Guild count&quot;, &quot;Monthly pts&quot;],
+        targetRules: [
+          { salary: 100, unit: &quot;USD&quot;, target: 5, conditionType: &quot;guild_salary_usd_gte&quot;, handling: &quot;proportional&quot; }
+        ],
+        shareRules: [],
+        limits: [
+          { type: &quot;min_per_object_points&quot;, value: 5000000, unit: &quot;points&quot;, handling: &quot;exclude&quot; }
+        ],
+        tiers: [
+          { min: 200000000, max: &quot;&quot;, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 2, rewardUnit: &quot;%&quot; },
+          { min: 100000000, max: 199999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 1.5, rewardUnit: &quot;%&quot; },
+          { min: 50000000, max: 99999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 1, rewardUnit: &quot;%&quot; },
+          { min: 10000000, max: 49999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 0.5, rewardUnit: &quot;%&quot; },
+          { min: 5000000, max: 9999999, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 0.2, rewardUnit: &quot;%&quot; }
+        ]
+      }
+    ];
+
+    const members = [
+      { uid: &quot;164085&quot;, region: &quot;ph&quot;, role: &quot;manager&quot;, salaryIds: [&quot;ph_bd&quot;, &quot;ph_guild&quot;, &quot;ph_seller&quot;], status: &quot;生效&quot; },
+      { uid: &quot;782410&quot;, region: &quot;tr&quot;, role: &quot;superadmin&quot;, salaryIds: [&quot;tr_guild_combo_superadmin&quot;], status: &quot;生效&quot; },
+      { uid: &quot;782411&quot;, region: &quot;tr&quot;, role: &quot;manager&quot;, salaryIds: [&quot;tr_guild_combo_manager&quot;], status: &quot;生效&quot; }
+    ];
+
+    const materialTypeOrder = [&quot;座驾&quot;, &quot;头像框&quot;, &quot;麦位声浪&quot;, &quot;气泡框&quot;, &quot;进场特效&quot;, &quot;VIP&quot;, &quot;个人名片&quot;];
+    const materialDurations = [&quot;1天&quot;, &quot;3天&quot;, &quot;7天&quot;, &quot;30天&quot;];
+    const materialCatalog = {
+      &quot;座驾&quot;: [
+        { id: &quot;CAR-1001&quot;, nick: &quot;Sport Car&quot;, image: &quot;🏎️&quot; },
+        { id: &quot;CAR-1002&quot;, nick: &quot;Yacht&quot;, image: &quot;🛥️&quot; },
+        { id: &quot;CAR-1003&quot;, nick: &quot;Falcon&quot;, image: &quot;🦅&quot; }
+      ],
+      &quot;头像框&quot;: [
+        { id: &quot;FRAME-2001&quot;, nick: &quot;Neon Frame&quot;, image: &quot;🔷&quot; },
+        { id: &quot;FRAME-2002&quot;, nick: &quot;Crown Frame&quot;, image: &quot;👑&quot; },
+        { id: &quot;FRAME-2003&quot;, nick: &quot;Festival Frame&quot;, image: &quot;🎉&quot; }
+      ],
+      &quot;麦位声浪&quot;: [
+        { id: &quot;WAVE-3001&quot;, nick: &quot;Wave Pop&quot;, image: &quot;〰️&quot; },
+        { id: &quot;WAVE-3002&quot;, nick: &quot;Star Echo&quot;, image: &quot;⭐&quot; },
+        { id: &quot;WAVE-3003&quot;, nick: &quot;Crystal Voice&quot;, image: &quot;💎&quot; }
+      ],
+      &quot;气泡框&quot;: [
+        { id: &quot;BUBBLE-4001&quot;, nick: &quot;Blue Bubble&quot;, image: &quot;💬&quot; },
+        { id: &quot;BUBBLE-4002&quot;, nick: &quot;Gold Bubble&quot;, image: &quot;🟡&quot; },
+        { id: &quot;BUBBLE-4003&quot;, nick: &quot;Party Bubble&quot;, image: &quot;🎈&quot; }
+      ],
+      &quot;进场特效&quot;: [
+        { id: &quot;ENTRY-5001&quot;, nick: &quot;Meteor Entry&quot;, image: &quot;☄️&quot; },
+        { id: &quot;ENTRY-5002&quot;, nick: &quot;Fireworks Entry&quot;, image: &quot;🎆&quot; },
+        { id: &quot;ENTRY-5003&quot;, nick: &quot;Royal Entry&quot;, image: &quot;🛡️&quot; }
+      ],
+      &quot;VIP&quot;: [
+        { id: &quot;VIP-6001&quot;, nick: &quot;Gold VIP&quot;, image: &quot;🏅&quot; },
+        { id: &quot;VIP-6002&quot;, nick: &quot;Silver VIP&quot;, image: &quot;🥈&quot; },
+        { id: &quot;VIP-6003&quot;, nick: &quot;Diamond VIP&quot;, image: &quot;💠&quot; }
+      ],
+      &quot;个人名片&quot;: [
+        { id: &quot;CARD-7001&quot;, nick: &quot;Classic Card&quot;, image: &quot;📇&quot; },
+        { id: &quot;CARD-7002&quot;, nick: &quot;Neon Card&quot;, image: &quot;🌈&quot; },
+        { id: &quot;CARD-7003&quot;, nick: &quot;Royal Card&quot;, image: &quot;🔱&quot; }
+      ]
+    };
+
+    const materialTypes = [
+      { type: &quot;座驾&quot;, items: [&quot;CAR-1001&quot;, &quot;CAR-1003&quot;], durations: [&quot;1天&quot;, &quot;7天&quot;], status: &quot;启用&quot; },
+      { type: &quot;头像框&quot;, items: [&quot;FRAME-2001&quot;, &quot;FRAME-2003&quot;], durations: [&quot;1天&quot;, &quot;3天&quot;, &quot;7天&quot;], status: &quot;启用&quot; },
+      { type: &quot;麦位声浪&quot;, items: [&quot;WAVE-3001&quot;], durations: [&quot;1天&quot;, &quot;3天&quot;], status: &quot;启用&quot; },
+      { type: &quot;气泡框&quot;, items: [&quot;BUBBLE-4002&quot;], durations: [&quot;7天&quot;, &quot;30天&quot;], status: &quot;启用&quot; },
+      { type: &quot;进场特效&quot;, items: [&quot;ENTRY-5001&quot;], durations: [&quot;1天&quot;, &quot;7天&quot;], status: &quot;启用&quot; },
+      { type: &quot;VIP&quot;, items: [&quot;VIP-6001&quot;, &quot;VIP-6002&quot;], durations: [&quot;1天&quot;, &quot;3天&quot;, &quot;7天&quot;, &quot;30天&quot;], status: &quot;启用&quot; },
+      { type: &quot;个人名片&quot;, items: [&quot;CARD-7001&quot;], durations: [&quot;30天&quot;], status: &quot;启用&quot; }
+    ];
+
+    const materialRecords = [
+      { operatorUid: &quot;164085&quot;, receiverUid: &quot;900128&quot;, type: &quot;VIP&quot;, itemId: &quot;VIP-6001&quot;, duration: &quot;1天&quot;, time: &quot;2026-05-22 10:12&quot;, status: &quot;Success&quot; },
+      { operatorUid: &quot;782410&quot;, receiverUid: &quot;881204&quot;, type: &quot;头像框&quot;, itemId: &quot;FRAME-2001&quot;, duration: &quot;7天&quot;, time: &quot;2026-05-21 18:40&quot;, status: &quot;Success&quot; },
+      { operatorUid: &quot;164085&quot;, receiverUid: &quot;763521&quot;, type: &quot;座驾&quot;, itemId: &quot;CAR-1001&quot;, duration: &quot;3天&quot;, time: &quot;2026-05-20 14:08&quot;, status: &quot;Success&quot; }
+    ];
+
+    const reviewTabs = [
+      { key: &quot;guild&quot;, label: &quot;公会&quot; },
+      { key: &quot;seller&quot;, label: &quot;币商&quot; },
+      { key: &quot;bd&quot;, label: &quot;BD&quot; },
+      { key: &quot;team&quot;, label: &quot;下级成员&quot; }
+    ];
+
+    const reviews = [
+      { module: &quot;guild&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, guildId: &quot;GLD-1021&quot;, guildName: &quot;Star Guild&quot;, contact: &quot;+63 912 345 6789&quot;, avatarText: &quot;SG&quot;, avatarColor: &quot;#0ea5e9&quot;, announcement: &quot;Daily live room campaign&quot;, time: &quot;2026-05-18 09:10&quot;, status: &quot;Pending&quot; },
+      { module: &quot;guild&quot;, region: &quot;tr&quot;, submitter: &quot;782410&quot;, guildId: &quot;GLD-2044&quot;, guildName: &quot;Ankara Live&quot;, contact: &quot;telegram @ankara_live&quot;, avatarText: &quot;AL&quot;, avatarColor: &quot;#f97316&quot;, announcement: &quot;New host recruitment&quot;, time: &quot;2026-05-12 16:40&quot;, status: &quot;Approved&quot; },
+      { module: &quot;guild&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, guildId: &quot;GLD-1098&quot;, guildName: &quot;Moon Room&quot;, contact: &quot;WhatsApp +63 900 888 777&quot;, avatarText: &quot;MR&quot;, avatarColor: &quot;#a855f7&quot;, announcement: &quot;Weekend live show&quot;, time: &quot;2026-05-20 18:22&quot;, status: &quot;Rejected&quot; },
+      { module: &quot;seller&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, sellerUid: &quot;520889&quot;, sourceApp: &quot;Main App&quot;, time: &quot;2026-05-15 15:02&quot;, status: &quot;Pending&quot; },
+      { module: &quot;seller&quot;, region: &quot;tr&quot;, submitter: &quot;782410&quot;, sellerUid: &quot;620771&quot;, sourceApp: &quot;Main App&quot;, time: &quot;2026-05-14 12:02&quot;, status: &quot;Approved&quot; },
+      { module: &quot;seller&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, sellerUid: &quot;520889&quot;, sourceApp: &quot;Main App&quot;, time: &quot;2026-05-15 15:02&quot;, status: &quot;Rejected&quot; },
+      { module: &quot;bd&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, bdUid: &quot;209433&quot;, time: &quot;2026-05-19 11:22&quot;, status: &quot;Pending&quot; },
+      { module: &quot;bd&quot;, region: &quot;tr&quot;, submitter: &quot;782410&quot;, bdUid: &quot;307822&quot;, time: &quot;2026-05-13 10:40&quot;, status: &quot;Approved&quot; },
+      { module: &quot;bd&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, bdUid: &quot;318521&quot;, time: &quot;2026-05-10 17:35&quot;, status: &quot;Rejected&quot; },
+      { module: &quot;team&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, submitterRole: &quot;manager&quot;, memberUid: &quot;782410&quot;, memberRole: &quot;superadmin&quot;, time: &quot;2026-05-16 13:15&quot;, status: &quot;Pending&quot; },
+      { module: &quot;team&quot;, region: &quot;tr&quot;, submitter: &quot;782410&quot;, submitterRole: &quot;superadmin&quot;, memberUid: &quot;782499&quot;, memberRole: &quot;admin&quot;, time: &quot;2026-05-12 09:18&quot;, status: &quot;Approved&quot; },
+      { module: &quot;team&quot;, region: &quot;ph&quot;, submitter: &quot;164085&quot;, submitterRole: &quot;manager&quot;, memberUid: &quot;164099&quot;, memberRole: &quot;superadmin&quot;, time: &quot;2026-05-11 09:05&quot;, status: &quot;Rejected&quot; }
+    ];
+
+    const settlements = [
+      { month: &quot;2026-05&quot;, region: &quot;ph&quot;, uid: &quot;164085&quot;, role: &quot;manager&quot;, cycle: &quot;月结&quot;, salaryIds: [&quot;ph_bd&quot;, &quot;ph_guild&quot;, &quot;ph_seller&quot;], coins: 48622000, actualCoins: &quot;&quot;, status: &quot;待复核&quot; },
+      { month: &quot;2026-05&quot;, region: &quot;tr&quot;, uid: &quot;782410&quot;, role: &quot;superadmin&quot;, cycle: &quot;月结&quot;, salaryIds: [&quot;tr_guild_combo_superadmin&quot;], coins: 9954000, actualCoins: 9954000, status: &quot;已结算&quot;, operator: &quot;Sophia&quot; },
+      { month: &quot;2026-05&quot;, region: &quot;tr&quot;, uid: &quot;782411&quot;, role: &quot;manager&quot;, cycle: &quot;月结&quot;, salaryIds: [&quot;tr_guild_combo_manager&quot;], coins: 12892500, actualCoins: 12000000, status: &quot;金币审核拒绝&quot; }
+    ];
+
+    const settlementObjectDetails = {
+      &quot;2026-05:164085&quot;: [
+        {
+          title: &quot;邀请BD明细&quot;,
+          summary: [[&quot;BD月薪资金币合计&quot;, &quot;2,200,000&quot;], [&quot;分成比例&quot;, &quot;1%&quot;], [&quot;结算金币&quot;, &quot;22,000&quot;]],
+          columns: [&quot;BD UID&quot;, &quot;BD昵称&quot;, &quot;邀请公会数&quot;, &quot;邀请币商数&quot;, &quot;BD月薪资金币&quot;, &quot;结算金币&quot;],
+          rows: [
+            [&quot;209433&quot;, &quot;James M.&quot;, &quot;3&quot;, &quot;12&quot;, &quot;1,280,000&quot;, &quot;12,800&quot;],
+            [&quot;318521&quot;, &quot;Ana L.&quot;, &quot;1&quot;, &quot;7&quot;, &quot;920,000&quot;, &quot;9,200&quot;]
+          ]
+        },
+        {
+          title: &quot;邀请公会明细&quot;,
+          summary: [[&quot;公会总有效积分&quot;, &quot;480,000,000&quot;], [&quot;匹配档位&quot;, &quot;200M - 499,999,999&quot;], [&quot;提成比例&quot;, &quot;5%&quot;], [&quot;结算金币&quot;, &quot;43,200,000&quot;]],
+          columns: [&quot;公会ID&quot;, &quot;公会名称&quot;, &quot;邀请月份&quot;, &quot;有效积分&quot;, &quot;有效主播&quot;, &quot;状态&quot;],
+          rows: [
+            [&quot;GLD-1021&quot;, &quot;Star Guild&quot;, &quot;2026-05&quot;, &quot;210,000,000&quot;, &quot;8&quot;, &quot;计入&quot;],
+            [&quot;GLD-1045&quot;, &quot;Nexus Wave&quot;, &quot;2026-05&quot;, &quot;150,000,000&quot;, &quot;5&quot;, &quot;计入&quot;],
+            [&quot;GLD-1067&quot;, &quot;Royal Guild&quot;, &quot;2026-05&quot;, &quot;120,000,000&quot;, &quot;12&quot;, &quot;计入&quot;]
+          ]
+        },
+        {
+          title: &quot;邀请币商明细&quot;,
+          summary: [[&quot;币商总充值&quot;, &quot;15,000 USD&quot;], [&quot;匹配档位&quot;, &quot;10,000 - 49,999&quot;], [&quot;提成比例&quot;, &quot;4%&quot;], [&quot;结算金币&quot;, &quot;5,400,000&quot;]],
+          columns: [&quot;币商UID&quot;, &quot;币商昵称&quot;, &quot;Source App&quot;, &quot;当月充值USD&quot;, &quot;状态&quot;],
+          rows: [
+            [&quot;520889&quot;, &quot;Mike K.&quot;, &quot;Main App&quot;, &quot;9,300&quot;, &quot;计入&quot;],
+            [&quot;520910&quot;, &quot;Cara N.&quot;, &quot;Main App&quot;, &quot;5,700&quot;, &quot;计入&quot;]
+          ]
+        }
+      ],
+      &quot;2026-05:782410&quot;: [
+        {
+          title: &quot;邀请公会明细&quot;,
+          summary: [[&quot;达标公会数&quot;, &quot;5 / 5&quot;], [&quot;满额薪资&quot;, &quot;100 USD&quot;], [&quot;满额薪资金币&quot;, &quot;900,000&quot;], [&quot;邀请奖励金币&quot;, &quot;9,054,000&quot;], [&quot;结算金币&quot;, &quot;9,954,000&quot;]],
+          columns: [&quot;公会ID&quot;, &quot;公会名称&quot;, &quot;单公会薪资USD&quot;, &quot;有效积分&quot;, &quot;奖励规则&quot;, &quot;结算金币&quot;],
+          rows: [
+            [&quot;TR-201&quot;, &quot;Ankara Live&quot;, &quot;20,000&quot;, &quot;220,000,000&quot;, &quot;2%（400 USD）&quot;, &quot;3,600,000&quot;],
+            [&quot;TR-202&quot;, &quot;Izmir Voice&quot;, &quot;10,000&quot;, &quot;120,000,000&quot;, &quot;1.5%（150 USD）&quot;, &quot;1,350,000&quot;],
+            [&quot;TR-203&quot;, &quot;Bosphorus Room&quot;, &quot;5,000&quot;, &quot;80,000,000&quot;, &quot;1%（50 USD）&quot;, &quot;450,000&quot;],
+            [&quot;TR-204&quot;, &quot;Cappadocia Show&quot;, &quot;1,000&quot;, &quot;18,000,000&quot;, &quot;0.5%（5 USD）&quot;, &quot;45,000&quot;],
+            [&quot;TR-205&quot;, &quot;Ege Live&quot;, &quot;500&quot;, &quot;8,500,000&quot;, &quot;0.2%（1 USD）&quot;, &quot;9,000&quot;],
+            [&quot;TR-206&quot;, &quot;Antalya Stage&quot;, &quot;20,000&quot;, &quot;200,000,000&quot;, &quot;2%（400 USD）&quot;, &quot;3,600,000&quot;]
+          ]
+        }
+      ],
+      &quot;2026-05:782411&quot;: [
+        {
+          title: &quot;邀请公会明细&quot;,
+          summary: [[&quot;达标公会数&quot;, &quot;7 / 10&quot;], [&quot;未达标处理&quot;, &quot;按比例折算&quot;], [&quot;基础薪资金币&quot;, &quot;1,890,000&quot;], [&quot;邀请奖励金币&quot;, &quot;11,002,500&quot;], [&quot;结算金币&quot;, &quot;12,892,500&quot;]],
+          columns: [&quot;公会ID&quot;, &quot;公会名称&quot;, &quot;单公会薪资USD&quot;, &quot;有效积分&quot;, &quot;奖励规则&quot;, &quot;结算金币&quot;],
+          rows: [
+            [&quot;TR-301&quot;, &quot;Istanbul Star&quot;, &quot;20,000&quot;, &quot;240,000,000&quot;, &quot;4%（800 USD）&quot;, &quot;7,200,000&quot;],
+            [&quot;TR-302&quot;, &quot;Galata Live&quot;, &quot;10,000&quot;, &quot;130,000,000&quot;, &quot;3%（300 USD）&quot;, &quot;2,700,000&quot;],
+            [&quot;TR-303&quot;, &quot;Marmara Room&quot;, &quot;5,000&quot;, &quot;70,000,000&quot;, &quot;2%（100 USD）&quot;, &quot;900,000&quot;],
+            [&quot;TR-304&quot;, &quot;Aegean Guild&quot;, &quot;1,000&quot;, &quot;16,000,000&quot;, &quot;1%（10 USD）&quot;, &quot;90,000&quot;],
+            [&quot;TR-305&quot;, &quot;Konya Show&quot;, &quot;500&quot;, &quot;7,500,000&quot;, &quot;0.5%（2.5 USD）&quot;, &quot;22,500&quot;],
+            [&quot;TR-306&quot;, &quot;Bursa Voice&quot;, &quot;1,000&quot;, &quot;21,000,000&quot;, &quot;1%（10 USD）&quot;, &quot;90,000&quot;]
+          ]
+        }
+      ]
+    };
+
+    const navButtons = document.querySelectorAll(&quot;[data-view]&quot;);
+    const views = document.querySelectorAll(&quot;.view&quot;);
+    const toast = document.getElementById(&quot;toast&quot;);
+    let toastTimer;
+    let activePermissionRegion = &quot;ph&quot;;
+    let activeSalaryRegion = &quot;ph&quot;;
+    let activeReviewTab = &quot;guild&quot;;
+    let activeReviewStatus = &quot;all&quot;;
+    let activeReviewConfirm = null;
+    let activeSellerReviewIndex = null;
+    let activeSettlementIndex = null;
+    let materialDraftItems = new Set();
+    let materialDraftDurations = new Set();
+
+    function regionName(key) {
+      const r = regions.find((item) =&gt; item.key === key);
+      return r ? `${r.cn} ${r.flag}`.trim() : key;
+    }
+
+    function regionFlag(key) {
+      const r = regions.find((item) =&gt; item.key === key);
+      return r?.flag || &quot;-&quot;;
+    }
+
+    function regionOptionName(country) {
+      return `${country.cn} / ${country.name}`;
+    }
+
+    function money(value) {
+      return Math.round(Number(value || 0)).toLocaleString(&quot;en-US&quot;);
+    }
+
+    function badge(value) {
+      const cls = value === &quot;启用&quot; || value === &quot;启用中&quot; || value === &quot;生效&quot; || value === &quot;生效中&quot; || value === &quot;已确认&quot; || value === &quot;已通过&quot; || value === &quot;Approved&quot; || value === &quot;Success&quot; ? &quot;green&quot; : value === &quot;禁用&quot; || value === &quot;停用&quot; || value === &quot;已拒绝&quot; || value === &quot;Rejected&quot; || value === &quot;异常&quot; || value === &quot;已停用&quot; ? &quot;red&quot; : &quot;gold&quot;;
+      return `&lt;span class=&quot;badge ${cls}&quot;&gt;${value}&lt;/span&gt;`;
+    }
+
+    function chips(values) {
+      return `&lt;div class=&quot;chip-row&quot;&gt;${(values || []).map((value) =&gt; `&lt;span class=&quot;chip&quot;&gt;${value}&lt;/span&gt;`).join(&quot;&quot;) || &quot;&lt;span class=\&quot;chip\&quot;&gt;-&lt;/span&gt;&quot;}&lt;/div&gt;`;
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add(&quot;show&quot;);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() =&gt; toast.classList.remove(&quot;show&quot;), 1800);
+    }
+
+    function switchView(name) {
+      navButtons.forEach((button) =&gt; button.classList.toggle(&quot;active&quot;, button.dataset.view === name));
+      views.forEach((view) =&gt; view.classList.toggle(&quot;hidden&quot;, view.id !== `view-${name}`));
+    }
+
+    function fillRegionSelect(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = `&lt;option value=&quot;all&quot;&gt;全部国家&lt;/option&gt;${regions.map((r) =&gt; `&lt;option value=&quot;${r.key}&quot;&gt;${regionName(r.key)}&lt;/option&gt;`).join(&quot;&quot;)}`;
+    }
+
+    function fillRegionOnlySelect(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = regions.map((r) =&gt; `&lt;option value=&quot;${r.key}&quot;&gt;${regionName(r.key)}&lt;/option&gt;`).join(&quot;&quot;);
+    }
+
+    function fillCountryField() {
+      const el = document.getElementById(&quot;regionCountryField&quot;);
+      if (!el) return;
+      el.innerHTML = countryOptions.map((country) =&gt; `&lt;option value=&quot;${country.key}&quot;&gt;${regionOptionName(country)}&lt;/option&gt;`).join(&quot;&quot;);
+    }
+
+    function salaryNames(ids) {
+      return ids.map((id) =&gt; {
+        const item = salaryItems.find((salary) =&gt; salary.id === id);
+        return item ? salaryItemLabel(item) : id;
+      });
+    }
+
+    function salaryRoles(item) {
+      return item.roles || (item.role ? [item.role] : []);
+    }
+
+    function salaryTypeName(key) {
+      return salaryTypeLabels[key] || key;
+    }
+
+    function salaryItemLabel(item) {
+      return `${salaryTypeName(item.module)} &#183; ${templateLabels[item.template] || item.template}`;
+    }
+
+    function policyConfigSummary(item) {
+      if (item.template === &quot;total_tier&quot;) return `${(item.tiers || []).length}档，合计进档`;
+      if (item.template === &quot;single_tier&quot;) return `${(item.tiers || []).length}档，逐个计算`;
+      if (item.template === &quot;target_plus_single_tier&quot;) return `${(item.targetRules || []).length}组达标 + ${(item.tiers || []).length}档`;
+      if (item.template === &quot;target_salary&quot;) return `${(item.targetRules || []).length}组达标`;
+      if (item.template === &quot;share_percent&quot;) return `${(item.shareRules || []).length}组分成`;
+      if (item.template === &quot;fixed_amount&quot;) return `${(item.shareRules || []).length}组固定`;
+      return &quot;-&quot;;
+    }
+
+    function setPanelVisible(id, visible) {
+      document.getElementById(id).classList.toggle(&quot;hidden&quot;, !visible);
+    }
+
+    function populateOptions(id, options, selected, labels = {}) {
+      const el = document.getElementById(id);
+      el.innerHTML = options.map((option) =&gt; `&lt;option value=&quot;${option}&quot;&gt;${labels[option] || option}&lt;/option&gt;`).join(&quot;&quot;);
+      el.value = options.includes(selected) ? selected : options[0];
+    }
+
+    function syncSalaryTemplateOptions(draft = {}) {
+      const type = document.getElementById(&quot;salaryModuleField&quot;).value;
+      const options = salaryObjectTemplates[type] || salaryObjectTemplates.guild;
+      populateOptions(&quot;salaryTemplateField&quot;, options, draft.template || document.getElementById(&quot;salaryTemplateField&quot;).value, templateLabels);
+    }
+
+    function parentRole(role) {
+      if (role === &quot;manager&quot;) return &quot;-&quot;;
+      if (role === &quot;superadmin&quot;) return &quot;manager&quot;;
+      if (role === &quot;admin&quot;) return &quot;superadmin&quot;;
+      return &quot;-&quot;;
+    }
+
+    function renderRegions() {
+      document.getElementById(&quot;regionRows&quot;).innerHTML = regions.map((region) =&gt; {
+        const salaryCount = salaryItems.filter((item) =&gt; item.region === region.key).length;
+        const memberCount = members.filter((member) =&gt; member.region === region.key).length;
+        return `
+          &lt;tr&gt;
+            &lt;td&gt;${region.id}&lt;/td&gt;
+            &lt;td&gt;${region.cn}&lt;/td&gt;
+            &lt;td&gt;${region.name}&lt;/td&gt;
+            &lt;td&gt;${region.code}&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;flag&quot;&gt;${region.flag || &quot;-&quot;}&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;${chips(region.roles)}&lt;/td&gt;
+            &lt;td&gt;${salaryCount}&lt;/td&gt;
+            &lt;td&gt;${memberCount}&lt;/td&gt;
+            &lt;td&gt;${badge(region.status)}&lt;/td&gt;
+            &lt;td&gt;
+              &lt;button class=&quot;btn soft&quot; data-edit-region=&quot;${region.key}&quot;&gt;编辑&lt;/button&gt;
+              &lt;button class=&quot;btn soft&quot; data-region-conversion=&quot;${region.key}&quot;&gt;换算配置&lt;/button&gt;
+              &lt;button class=&quot;btn primary&quot; data-region-permission=&quot;${region.key}&quot;&gt;身份权限&lt;/button&gt;
+              &lt;button class=&quot;btn primary&quot; data-region-salary=&quot;${region.key}&quot;&gt;薪资政策&lt;/button&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        `;
+      }).join(&quot;&quot;);
+      document.querySelectorAll(&quot;[data-edit-region]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openRegionModal(button.dataset.editRegion)));
+      document.querySelectorAll(&quot;[data-region-conversion]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openConversionModal(button.dataset.regionConversion)));
+      document.querySelectorAll(&quot;[data-region-permission]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openCountryPermissionModal(button.dataset.regionPermission)));
+      document.querySelectorAll(&quot;[data-region-salary]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openCountrySalaryModal(button.dataset.regionSalary)));
+    }
+
+    function renderPermissions() {
+      const key = activePermissionRegion;
+      document.getElementById(&quot;permissionRows&quot;).innerHTML = (permissions[key] || []).map((row, index) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${row.role}&lt;/td&gt;
+          &lt;td&gt;${parentRole(row.role)}&lt;/td&gt;
+          &lt;td&gt;${chips(row.invite)}&lt;/td&gt;
+          &lt;td&gt;${chips(row.downline)}&lt;/td&gt;
+          &lt;td&gt;${row.reward ? &quot;可发放&quot; : &quot;-&quot;}&lt;/td&gt;
+          &lt;td&gt;${badge(row.status)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-permission=&quot;${key}:${index}&quot;&gt;配置&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;);
+      document.querySelectorAll(&quot;[data-permission]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openPermissionModal(button.dataset.permission)));
+    }
+
+    function renderCountrySalaryRows() {
+      document.getElementById(&quot;countrySalaryRows&quot;).innerHTML = salaryItems.filter((item) =&gt; item.region === activeSalaryRegion).map((item) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${chips(salaryRoles(item))}&lt;/td&gt;
+          &lt;td&gt;${salaryTypeName(item.module)}&lt;/td&gt;
+          &lt;td&gt;${templateLabels[item.template] || item.template}&lt;/td&gt;
+          &lt;td&gt;${policyConfigSummary(item)}&lt;/td&gt;
+          &lt;td&gt;${(item.limits || []).length ? `${item.limits.length}条` : &quot;-&quot;}&lt;/td&gt;
+          &lt;td&gt;${item.cycle}&lt;/td&gt;
+          &lt;td&gt;${item.assigned}&lt;/td&gt;
+          &lt;td&gt;${badge(item.status)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-edit-salary=&quot;${item.id}&quot;&gt;编辑&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;9&quot;&gt;暂无薪资项&lt;/td&gt;&lt;/tr&gt;`;
+      document.querySelectorAll(&quot;[data-edit-salary]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openSalaryModal(button.dataset.editSalary)));
+    }
+
+    function renderMembers() {
+      document.getElementById(&quot;memberRows&quot;).innerHTML = members.map((member) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${regionName(member.region)}&lt;/td&gt;
+          &lt;td&gt;${member.uid}&lt;/td&gt;
+          &lt;td&gt;${member.role}&lt;/td&gt;
+          &lt;td class=&quot;wrap&quot;&gt;${chips(salaryNames(member.salaryIds))}&lt;/td&gt;
+          &lt;td&gt;${badge(member.status)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-edit-member=&quot;${member.uid}&quot;&gt;配置&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;);
+      document.querySelectorAll(&quot;[data-edit-member]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openMemberModal(button.dataset.editMember)));
+    }
+
+    function renderMaterials() {
+      document.getElementById(&quot;materialRows&quot;).innerHTML = materialTypes.map((row) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${row.type}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-material-detail=&quot;${row.type}&quot;&gt;详情&lt;/button&gt;&lt;/td&gt;
+          &lt;td&gt;${chips(row.durations)}&lt;/td&gt;
+          &lt;td&gt;${badge(row.status)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-material-type=&quot;${row.type}&quot;&gt;配置&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;);
+      document.getElementById(&quot;materialRecordRows&quot;).innerHTML = materialRecords.map((row) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${row.operatorUid}&lt;/td&gt;
+          &lt;td&gt;${row.receiverUid}&lt;/td&gt;
+          &lt;td&gt;${row.type}&lt;/td&gt;
+          &lt;td&gt;${materialItemName(row.type, row.itemId)}&lt;/td&gt;
+          &lt;td&gt;${row.duration}&lt;/td&gt;
+          &lt;td&gt;${row.time}&lt;/td&gt;
+          &lt;td&gt;${badge(row.status)}&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;);
+      document.querySelectorAll(&quot;[data-material-type]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openMaterialModal(button.dataset.materialType)));
+      document.querySelectorAll(&quot;[data-material-detail]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openMaterialDetailModal(button.dataset.materialDetail)));
+    }
+
+    function reviewStatusLabel(status) {
+      return { all: &quot;全部&quot;, Pending: &quot;待审核&quot;, Approved: &quot;已通过&quot;, Rejected: &quot;已拒绝&quot; }[status] || status;
+    }
+
+    function renderReviewStatusSummary(baseRows) {
+      const statuses = [&quot;all&quot;, &quot;Pending&quot;, &quot;Approved&quot;, &quot;Rejected&quot;];
+      document.getElementById(&quot;reviewStatusSummary&quot;).innerHTML = statuses.map((status) =&gt; {
+        const count = status === &quot;all&quot; ? baseRows.length : baseRows.filter((item) =&gt; item.status === status).length;
+        return `&lt;button class=&quot;btn soft ${activeReviewStatus === status ? &quot;active&quot; : &quot;&quot;}&quot; data-review-status=&quot;${status}&quot;&gt;${reviewStatusLabel(status)} ${count}&lt;/button&gt;`;
+      }).join(&quot;&quot;);
+      document.querySelectorAll(&quot;[data-review-status]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; {
+        activeReviewStatus = button.dataset.reviewStatus;
+        document.getElementById(&quot;reviewStatusFilter&quot;).value = activeReviewStatus;
+        renderReviews();
+      }));
+    }
+
+    function reviewActionButtons(item) {
+      const view = `&lt;button class=&quot;btn soft&quot; data-review=&quot;${item.index}&quot;&gt;查看&lt;/button&gt;`;
+      if (item.status !== &quot;Pending&quot;) return view;
+      if (item.module === &quot;guild&quot;) {
+        return `&lt;button class=&quot;btn primary&quot; data-approve-review=&quot;${item.index}&quot;&gt;同意创建&lt;/button&gt;&lt;button class=&quot;btn danger&quot; data-reject-review=&quot;${item.index}&quot;&gt;拒绝&lt;/button&gt;${view}`;
+      }
+      if (item.module === &quot;seller&quot;) {
+        return `&lt;button class=&quot;btn primary&quot; data-approve-review=&quot;${item.index}&quot;&gt;同意创建币商&lt;/button&gt;&lt;button class=&quot;btn danger&quot; data-reject-review=&quot;${item.index}&quot;&gt;拒绝&lt;/button&gt;${view}`;
+      }
+      return `&lt;button class=&quot;btn primary&quot; data-approve-review=&quot;${item.index}&quot;&gt;通过&lt;/button&gt;&lt;button class=&quot;btn danger&quot; data-reject-review=&quot;${item.index}&quot;&gt;拒绝&lt;/button&gt;${view}`;
+    }
+
+    function renderReviews() {
+      const selectedRegion = document.getElementById(&quot;reviewRegionFilter&quot;)?.value || &quot;all&quot;;
+      const baseRows = reviews
+        .map((item, index) =&gt; ({ ...item, index }))
+        .filter((item) =&gt; item.module === activeReviewTab)
+        .filter((item) =&gt; selectedRegion === &quot;all&quot; || item.region === selectedRegion);
+      renderReviewStatusSummary(baseRows);
+      const rows = baseRows.filter((item) =&gt; activeReviewStatus === &quot;all&quot; || item.status === activeReviewStatus);
+      const headMap = {
+        guild: &quot;&lt;tr&gt;&lt;th&gt;国家/地区&lt;/th&gt;&lt;th&gt;提交人UID&lt;/th&gt;&lt;th&gt;公会&lt;/th&gt;&lt;th&gt;提交时间&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&quot;,
+        seller: &quot;&lt;tr&gt;&lt;th&gt;国家/地区&lt;/th&gt;&lt;th&gt;提交人UID&lt;/th&gt;&lt;th&gt;币商UID&lt;/th&gt;&lt;th&gt;Source App&lt;/th&gt;&lt;th&gt;提交时间&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&quot;,
+        bd: &quot;&lt;tr&gt;&lt;th&gt;国家/地区&lt;/th&gt;&lt;th&gt;提交人UID&lt;/th&gt;&lt;th&gt;BD UID&lt;/th&gt;&lt;th&gt;提交时间&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&quot;,
+        team: &quot;&lt;tr&gt;&lt;th&gt;国家/地区&lt;/th&gt;&lt;th&gt;上级UID&lt;/th&gt;&lt;th&gt;上级身份&lt;/th&gt;&lt;th&gt;下级UID&lt;/th&gt;&lt;th&gt;下级身份&lt;/th&gt;&lt;th&gt;提交时间&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&quot;
+      };
+      const colspanMap = { guild: 6, seller: 7, bd: 6, team: 8 };
+      document.getElementById(&quot;reviewHead&quot;).innerHTML = headMap[activeReviewTab];
+      document.getElementById(&quot;reviewRows&quot;).innerHTML = rows.map((item) =&gt; {
+        if (item.module === &quot;guild&quot;) {
+          return `&lt;tr&gt;&lt;td&gt;${regionName(item.region)}&lt;/td&gt;&lt;td&gt;${item.submitter}&lt;/td&gt;&lt;td&gt;${item.guildName}&lt;/td&gt;&lt;td&gt;${item.time}&lt;/td&gt;&lt;td&gt;${badge(reviewStatusLabel(item.status))}&lt;/td&gt;&lt;td&gt;${reviewActionButtons(item)}&lt;/td&gt;&lt;/tr&gt;`;
+        }
+        if (item.module === &quot;seller&quot;) {
+          return `&lt;tr&gt;&lt;td&gt;${regionName(item.region)}&lt;/td&gt;&lt;td&gt;${item.submitter}&lt;/td&gt;&lt;td&gt;${item.sellerUid}&lt;/td&gt;&lt;td&gt;${item.sourceApp}&lt;/td&gt;&lt;td&gt;${item.time}&lt;/td&gt;&lt;td&gt;${badge(reviewStatusLabel(item.status))}&lt;/td&gt;&lt;td&gt;${reviewActionButtons(item)}&lt;/td&gt;&lt;/tr&gt;`;
+        }
+        if (item.module === &quot;bd&quot;) {
+          return `&lt;tr&gt;&lt;td&gt;${regionName(item.region)}&lt;/td&gt;&lt;td&gt;${item.submitter}&lt;/td&gt;&lt;td&gt;${item.bdUid}&lt;/td&gt;&lt;td&gt;${item.time}&lt;/td&gt;&lt;td&gt;${badge(reviewStatusLabel(item.status))}&lt;/td&gt;&lt;td&gt;${reviewActionButtons(item)}&lt;/td&gt;&lt;/tr&gt;`;
+        }
+        return `&lt;tr&gt;&lt;td&gt;${regionName(item.region)}&lt;/td&gt;&lt;td&gt;${item.submitter}&lt;/td&gt;&lt;td&gt;${item.submitterRole}&lt;/td&gt;&lt;td&gt;${item.memberUid}&lt;/td&gt;&lt;td&gt;${item.memberRole}&lt;/td&gt;&lt;td&gt;${item.time}&lt;/td&gt;&lt;td&gt;${badge(reviewStatusLabel(item.status))}&lt;/td&gt;&lt;td&gt;${reviewActionButtons(item)}&lt;/td&gt;&lt;/tr&gt;`;
+      }).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;${colspanMap[activeReviewTab]}&quot;&gt;暂无记录&lt;/td&gt;&lt;/tr&gt;`;
+      document.querySelectorAll(&quot;[data-review]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openReviewModal(Number(button.dataset.review))));
+      document.querySelectorAll(&quot;[data-approve-review]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openReviewConfirmModal(Number(button.dataset.approveReview), &quot;approve&quot;)));
+      document.querySelectorAll(&quot;[data-reject-review]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openReviewConfirmModal(Number(button.dataset.rejectReview), &quot;reject&quot;)));
+    }
+
+    function renderSettlement() {
+      document.getElementById(&quot;settlementRows&quot;).innerHTML = settlements.map((item, index) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${item.month}&lt;/td&gt;
+          &lt;td&gt;${regionName(item.region)}&lt;/td&gt;
+          &lt;td&gt;${item.uid}&lt;/td&gt;
+          &lt;td&gt;${item.role}&lt;/td&gt;
+          &lt;td&gt;${item.cycle}&lt;/td&gt;
+          &lt;td class=&quot;wrap&quot;&gt;${chips(salaryNames(item.salaryIds))}&lt;/td&gt;
+          &lt;td&gt;${money(item.actualCoins || item.coins)}&lt;/td&gt;
+          &lt;td&gt;${badge(item.status)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-settlement=&quot;${index}&quot;&gt;明细&lt;/button&gt;${settlementActionButton(item, index)}&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;);
+      document.querySelectorAll(&quot;[data-settlement]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openSettlementModal(Number(button.dataset.settlement))));
+      document.querySelectorAll(&quot;[data-confirm-settlement]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; confirmSettlement(Number(button.dataset.confirmSettlement))));
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add(&quot;open&quot;);
+    }
+
+    function openRegionModal(key = null) {
+      const region = key ? regions.find((item) =&gt; item.key === key) : null;
+      document.getElementById(&quot;regionCountryField&quot;).value = region ? region.key : &quot;vn&quot;;
+      document.getElementById(&quot;regionStatusField&quot;).value = region ? region.status : &quot;启用&quot;;
+      openModal(&quot;regionModal&quot;);
+    }
+
+    function openConversionModal(key) {
+      const region = regions.find((item) =&gt; item.key === key) || regions[0];
+      document.getElementById(&quot;conversionCountryField&quot;).value = regionName(region.key);
+      document.getElementById(&quot;conversionPointsField&quot;).value = region.pointsPerUsd || 10000;
+      document.getElementById(&quot;conversionCoinsField&quot;).value = region.coinsPerUsd || 9000;
+      document.getElementById(&quot;conversionStatusField&quot;).value = region.status || &quot;启用&quot;;
+      openModal(&quot;conversionModal&quot;);
+    }
+
+    function openCountryPermissionModal(key) {
+      activePermissionRegion = key;
+      document.getElementById(&quot;countryPermissionTitle&quot;).textContent = `${regionName(key)} 身份权限`;
+      renderPermissions();
+      openModal(&quot;countryPermissionModal&quot;);
+    }
+
+    function openCountrySalaryModal(key) {
+      activeSalaryRegion = key;
+      document.getElementById(&quot;countrySalaryTitle&quot;).textContent = `${regionName(key)} 薪资政策`;
+      renderCountrySalaryRows();
+      openModal(&quot;countrySalaryModal&quot;);
+    }
+
+    function closeModal(event) {
+      const modal = event.currentTarget.closest(&quot;.modal-backdrop&quot;);
+      if (modal) modal.classList.remove(&quot;open&quot;);
+    }
+
+    function closeTopModal() {
+      const opened = Array.from(document.querySelectorAll(&quot;.modal-backdrop.open&quot;));
+      const top = opened[opened.length - 1];
+      if (top) top.classList.remove(&quot;open&quot;);
+    }
+
+    function syncSalaryMethodFields() {
+      const template = document.getElementById(&quot;salaryTemplateField&quot;).value;
+      const hasTiers = template === &quot;total_tier&quot; || template === &quot;single_tier&quot; || template === &quot;target_plus_single_tier&quot;;
+      const hasTarget = template === &quot;target_salary&quot; || template === &quot;target_plus_single_tier&quot;;
+      const hasShare = template === &quot;share_percent&quot; || template === &quot;fixed_amount&quot;;
+      setPanelVisible(&quot;salaryTierPanel&quot;, hasTiers);
+      setPanelVisible(&quot;salaryTargetPanel&quot;, hasTarget);
+      setPanelVisible(&quot;salarySharePanel&quot;, hasShare);
+      setPanelVisible(&quot;salaryLimitPanel&quot;, hasTiers || hasTarget || hasShare);
+    }
+
+    function syncCycleField() {
+      const isCustom = document.getElementById(&quot;salaryCycleField&quot;).value === &quot;自定义&quot;;
+      document.getElementById(&quot;salaryCustomCycleRow&quot;).classList.toggle(&quot;hidden&quot;, !isCustom);
+    }
+
+    function renderNumber(value, placeholder = &quot;&quot;) {
+      return `&lt;input class=&quot;field&quot; type=&quot;number&quot; value=&quot;${value ?? &quot;&quot;}&quot; placeholder=&quot;${placeholder}&quot;&gt;`;
+    }
+
+    function renderSelect(value, options, labels = {}) {
+      return `&lt;select class=&quot;field&quot;&gt;${options.map((option) =&gt; `&lt;option value=&quot;${option}&quot; ${String(value) === String(option) ? &quot;selected&quot; : &quot;&quot;}&gt;${labels[option] || option}&lt;/option&gt;`).join(&quot;&quot;)}&lt;/select&gt;`;
+    }
+
+    function shareBaseOptions() {
+      const module = document.getElementById(&quot;salaryModuleField&quot;).value;
+      if (module === &quot;bd&quot;) return [&quot;bd_salary_coins&quot;];
+      if (module === &quot;downline&quot;) return [&quot;downline_salary_coins&quot;];
+      return [&quot;manual&quot;];
+    }
+
+    function renderTierRows(rows = []) {
+      document.getElementById(&quot;salaryTierRows&quot;).innerHTML = rows.map((row) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${renderNumber(row.min, &quot;最小值&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(row.max, &quot;留空为无上限&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.unit, [&quot;points&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.rewardType || &quot;percent&quot;, [&quot;percent&quot;, &quot;fixed&quot;], rewardTypeLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(row.rewardValue, &quot;数值&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.rewardUnit || &quot;%&quot;, [&quot;%&quot;, &quot;USD&quot;, &quot;coins&quot;], { &quot;%&quot;: &quot;%&quot;, ...unitLabels })}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;7&quot;&gt;暂无档位&lt;/td&gt;&lt;/tr&gt;`;
+    }
+
+    function renderShareRows(rows = []) {
+      document.getElementById(&quot;salaryShareRows&quot;).innerHTML = rows.map((row) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${renderSelect(row.base, shareBaseOptions(), baseLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(row.rate, &quot;可为空&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(row.amount, &quot;可为空&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.unit || &quot;coins&quot;, [&quot;coins&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;5&quot;&gt;暂无比例或固定金额&lt;/td&gt;&lt;/tr&gt;`;
+    }
+
+    function renderTargetRows(rows = []) {
+      document.getElementById(&quot;salaryTargetRows&quot;).innerHTML = rows.map((row) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${renderNumber(row.salary, &quot;满额薪资&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.unit || &quot;USD&quot;, [&quot;USD&quot;, &quot;coins&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(row.target, &quot;数量&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.conditionType, [&quot;guild_salary_usd_gte&quot;, &quot;object_points_gte&quot;], targetConditionLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.handling, [&quot;proportional&quot;, &quot;exclude&quot;], handlingLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;6&quot;&gt;暂无满额薪资&lt;/td&gt;&lt;/tr&gt;`;
+    }
+
+    function renderLimitRows(rows = []) {
+      document.getElementById(&quot;salaryLimitRows&quot;).innerHTML = rows.map((row) =&gt; `
+        &lt;tr&gt;
+          &lt;td&gt;${renderSelect(row.type, [&quot;direct_invite_only&quot;, &quot;current_month_invited&quot;, &quot;min_per_object_points&quot;], limitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(row.value, &quot;可为空&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.unit || &quot;-&quot;, [&quot;-&quot;, &quot;points&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;4&quot;&gt;暂无计入范围&lt;/td&gt;&lt;/tr&gt;`;
+    }
+
+    function addTierRow() {
+      const body = document.getElementById(&quot;salaryTierRows&quot;);
+      if (body.textContent.includes(&quot;暂无档位&quot;)) body.innerHTML = &quot;&quot;;
+      body.insertAdjacentHTML(&quot;beforeend&quot;, `
+        &lt;tr&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;最小值&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;留空为无上限&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;points&quot;, [&quot;points&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;percent&quot;, [&quot;percent&quot;, &quot;fixed&quot;], rewardTypeLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;数值&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;%&quot;, [&quot;%&quot;, &quot;USD&quot;, &quot;coins&quot;], { &quot;%&quot;: &quot;%&quot;, ...unitLabels })}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `);
+    }
+
+    function addShareRow() {
+      const body = document.getElementById(&quot;salaryShareRows&quot;);
+      if (body.textContent.includes(&quot;暂无比例或固定金额&quot;)) body.innerHTML = &quot;&quot;;
+      body.insertAdjacentHTML(&quot;beforeend&quot;, `
+        &lt;tr&gt;
+          &lt;td&gt;${renderSelect(shareBaseOptions()[0], shareBaseOptions(), baseLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;可为空&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;可为空&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;coins&quot;, [&quot;coins&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `);
+    }
+
+    function addTargetRow() {
+      const body = document.getElementById(&quot;salaryTargetRows&quot;);
+      if (body.textContent.includes(&quot;暂无满额薪资&quot;)) body.innerHTML = &quot;&quot;;
+      body.insertAdjacentHTML(&quot;beforeend&quot;, `
+        &lt;tr&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;满额薪资&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;USD&quot;, [&quot;USD&quot;, &quot;coins&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;数量&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;guild_salary_usd_gte&quot;, [&quot;guild_salary_usd_gte&quot;, &quot;object_points_gte&quot;], targetConditionLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;proportional&quot;, [&quot;proportional&quot;, &quot;exclude&quot;], handlingLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `);
+    }
+
+    function addLimitRow() {
+      const body = document.getElementById(&quot;salaryLimitRows&quot;);
+      if (body.textContent.includes(&quot;暂无计入范围&quot;)) body.innerHTML = &quot;&quot;;
+      body.insertAdjacentHTML(&quot;beforeend&quot;, `
+        &lt;tr&gt;
+          &lt;td&gt;${renderSelect(&quot;current_month_invited&quot;, [&quot;direct_invite_only&quot;, &quot;current_month_invited&quot;, &quot;min_per_object_points&quot;], limitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;可为空&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;-&quot;, [&quot;-&quot;, &quot;points&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+      `);
+    }
+
+    function openPermissionModal(keyIndex) {
+      const [key, index] = keyIndex.split(&quot;:&quot;);
+      const row = permissions[key][Number(index)];
+      document.getElementById(&quot;permCountry&quot;).value = regionName(key);
+      document.getElementById(&quot;permRole&quot;).value = row.role;
+      document.getElementById(&quot;permParent&quot;).value = parentRole(row.role);
+      document.getElementById(&quot;permInviteBD&quot;).checked = row.invite.includes(&quot;BD&quot;);
+      document.getElementById(&quot;permInviteGuild&quot;).checked = row.invite.includes(&quot;公会&quot;);
+      document.getElementById(&quot;permInviteSeller&quot;).checked = row.invite.includes(&quot;币商&quot;);
+      document.getElementById(&quot;permDownline&quot;).checked = (row.downline || []).length &gt; 0;
+      document.getElementById(&quot;permReward&quot;).checked = row.reward;
+      openModal(&quot;permissionModal&quot;);
+    }
+
+    function openSalaryModal(id = null) {
+      const item = id ? salaryItems.find((row) =&gt; row.id === id) : null;
+      const draft = item || {
+        region: activeSalaryRegion,
+        roles: [&quot;manager&quot;],
+        module: &quot;guild&quot;,
+        name: &quot;&quot;,
+        template: &quot;total_tier&quot;,
+        cycle: &quot;月结&quot;,
+        limits: [],
+        tiers: [],
+        shareRules: [],
+        targetRules: []
+      };
+      document.getElementById(&quot;salaryCountryField&quot;).value = draft.region;
+      document.getElementById(&quot;salaryModuleField&quot;).value = draft.module;
+      syncSalaryTemplateOptions(draft);
+      document.getElementById(&quot;salaryCycleField&quot;).value = draft.cycle;
+      document.getElementById(&quot;salaryCustomCycleField&quot;).value = draft.customMonths || 6;
+      syncCycleField();
+      document.getElementById(&quot;salaryRoleManager&quot;).checked = salaryRoles(draft).includes(&quot;manager&quot;);
+      document.getElementById(&quot;salaryRoleSuperadmin&quot;).checked = salaryRoles(draft).includes(&quot;superadmin&quot;);
+      document.getElementById(&quot;salaryRoleAdmin&quot;).checked = salaryRoles(draft).includes(&quot;admin&quot;);
+      renderTierRows(draft.tiers || []);
+      renderShareRows(draft.shareRules || []);
+      renderTargetRows(draft.targetRules || []);
+      renderLimitRows(draft.limits || []);
+      syncSalaryMethodFields();
+      openModal(&quot;salaryModal&quot;);
+    }
+
+    function memberRoleOptions(regionKey, selectedRole = &quot;&quot;) {
+      const region = regions.find((item) =&gt; item.key === regionKey);
+      const roles = region?.roles || [];
+      return `&lt;option value=&quot;&quot;&gt;请选择身份&lt;/option&gt;${roles.map((role) =&gt; `&lt;option value=&quot;${role}&quot; ${role === selectedRole ? &quot;selected&quot; : &quot;&quot;}&gt;${role}&lt;/option&gt;`).join(&quot;&quot;)}`;
+    }
+
+    function renderMemberSalaryChecks(selectedIds = []) {
+      const region = document.getElementById(&quot;memberCountryField&quot;).value;
+      const role = document.getElementById(&quot;memberRoleField&quot;).value;
+      const selected = new Set(selectedIds);
+      const box = document.getElementById(&quot;memberSalaryChecks&quot;);
+      if (!role) {
+        box.innerHTML = `&lt;span class=&quot;muted&quot;&gt;请选择身份后加载薪资项&lt;/span&gt;`;
+        return;
+      }
+      const available = salaryItems.filter((item) =&gt; item.region === region &amp;&amp; salaryRoles(item).includes(role));
+      box.innerHTML = available
+        .map((item) =&gt; `&lt;label class=&quot;check&quot;&gt;&lt;input type=&quot;checkbox&quot; ${selected.has(item.id) ? &quot;checked&quot; : &quot;&quot;}&gt; ${salaryItemLabel(item)}&lt;/label&gt;`)
+        .join(&quot;&quot;) || `&lt;span class=&quot;muted&quot;&gt;暂无可选薪资项&lt;/span&gt;`;
+    }
+
+    function syncMemberRoleOptions(selectedRole = &quot;&quot;, selectedSalaryIds = []) {
+      const region = document.getElementById(&quot;memberCountryField&quot;).value;
+      document.getElementById(&quot;memberRoleField&quot;).innerHTML = memberRoleOptions(region, selectedRole);
+      renderMemberSalaryChecks(selectedSalaryIds);
+    }
+
+    function openMemberModal(uid = &quot;&quot;) {
+      const member = uid ? members.find((row) =&gt; row.uid === uid) : null;
+      document.getElementById(&quot;memberUidField&quot;).value = member?.uid || &quot;&quot;;
+      document.getElementById(&quot;memberCountryField&quot;).value = member?.region || regions.find((region) =&gt; region.status === &quot;启用&quot;)?.key || regions[0].key;
+      document.getElementById(&quot;memberStatusField&quot;).value = member?.status || &quot;生效&quot;;
+      syncMemberRoleOptions(member?.role || &quot;&quot;, member?.salaryIds || []);
+      openModal(&quot;memberModal&quot;);
+    }
+
+    function materialItemById(type, id) {
+      return (materialCatalog[type] || []).find((item) =&gt; item.id === id);
+    }
+
+    function materialItemName(type, id) {
+      return materialItemById(type, id)?.nick || id || &quot;-&quot;;
+    }
+
+    function materialThumb(item) {
+      return `&lt;span class=&quot;material-thumb&quot;&gt;${item?.image || &quot;▣&quot;}&lt;/span&gt;`;
+    }
+
+    function renderMaterialChoices(type) {
+      const itemBox = document.getElementById(&quot;materialItemChecks&quot;);
+      const durationBox = document.getElementById(&quot;materialDurationChecks&quot;);
+      const keyword = (document.getElementById(&quot;materialSearchField&quot;).value || &quot;&quot;).trim().toLowerCase();
+      const items = (materialCatalog[type] || []).filter((item) =&gt; !keyword || item.nick.toLowerCase().includes(keyword) || item.id.toLowerCase().includes(keyword));
+      itemBox.innerHTML = type
+        ? items.map((item) =&gt; `
+          &lt;label class=&quot;material-option&quot;&gt;
+            &lt;input type=&quot;checkbox&quot; value=&quot;${item.id}&quot; ${materialDraftItems.has(item.id) ? &quot;checked&quot; : &quot;&quot;}&gt;
+            ${materialThumb(item)}
+            &lt;span&gt;&lt;strong&gt;${item.nick}&lt;/strong&gt;&lt;small&gt;${item.id}&lt;/small&gt;&lt;/span&gt;
+          &lt;/label&gt;
+        `).join(&quot;&quot;) || `&lt;span class=&quot;muted&quot;&gt;暂无匹配物料&lt;/span&gt;`
+        : `&lt;span class=&quot;muted&quot;&gt;请选择物料类型&lt;/span&gt;`;
+      durationBox.innerHTML = materialDurations.map((duration) =&gt; `&lt;label class=&quot;check&quot;&gt;&lt;input type=&quot;checkbox&quot; value=&quot;${duration}&quot; ${materialDraftDurations.has(duration) ? &quot;checked&quot; : &quot;&quot;}&gt; ${duration}&lt;/label&gt;`).join(&quot;&quot;);
+    }
+
+    function openMaterialModal(type = &quot;&quot;) {
+      const row = materialTypes.find((item) =&gt; item.type === type);
+      const selectedType = row?.type || &quot;&quot;;
+      materialDraftItems = new Set(row?.items || []);
+      materialDraftDurations = new Set(row?.durations || []);
+      document.getElementById(&quot;materialTypeField&quot;).innerHTML = `&lt;option value=&quot;&quot;&gt;请选择物料类型&lt;/option&gt;${materialTypeOrder.map((item) =&gt; `&lt;option value=&quot;${item}&quot; ${item === selectedType ? &quot;selected&quot; : &quot;&quot;}&gt;${item}&lt;/option&gt;`).join(&quot;&quot;)}`;
+      document.getElementById(&quot;materialSearchField&quot;).value = &quot;&quot;;
+      renderMaterialChoices(selectedType);
+      openModal(&quot;materialModal&quot;);
+    }
+
+    function openMaterialDetailModal(type) {
+      const row = materialTypes.find((item) =&gt; item.type === type);
+      document.getElementById(&quot;materialDetailTitle&quot;).textContent = `${type}已勾选物料`;
+      document.getElementById(&quot;materialDetailRows&quot;).innerHTML = (row?.items || []).map((id) =&gt; {
+        const item = materialItemById(type, id);
+        return `&lt;tr&gt;&lt;td&gt;${materialThumb(item)}&lt;/td&gt;&lt;td&gt;${item?.nick || id}&lt;/td&gt;&lt;td&gt;${id}&lt;/td&gt;&lt;td&gt;${type}&lt;/td&gt;&lt;/tr&gt;`;
+      }).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;4&quot;&gt;暂无物料&lt;/td&gt;&lt;/tr&gt;`;
+      openModal(&quot;materialDetailModal&quot;);
+    }
+
+    function reviewLabel(row) {
+      return reviewTabs.find((item) =&gt; item.key === row.module)?.label || row.module;
+    }
+
+    function guildAvatarSrc(row) {
+      const label = row.avatarText || (row.guildName || &quot;G&quot;).slice(0, 2).toUpperCase();
+      const color = row.avatarColor || &quot;#0ea5e9&quot;;
+      const svg = `&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;96&quot; height=&quot;96&quot; viewBox=&quot;0 0 96 96&quot;&gt;&lt;rect width=&quot;96&quot; height=&quot;96&quot; rx=&quot;18&quot; fill=&quot;${color}&quot;/&gt;&lt;circle cx=&quot;70&quot; cy=&quot;22&quot; r=&quot;14&quot; fill=&quot;rgba(255,255,255,.22)&quot;/&gt;&lt;text x=&quot;48&quot; y=&quot;56&quot; text-anchor=&quot;middle&quot; font-family=&quot;Arial&quot; font-size=&quot;26&quot; font-weight=&quot;800&quot; fill=&quot;white&quot;&gt;${label}&lt;/text&gt;&lt;/svg&gt;`;
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    }
+
+    function guildAvatarImage(row) {
+      return `&lt;img class=&quot;review-avatar&quot; src=&quot;${guildAvatarSrc(row)}&quot; alt=&quot;${row.guildName || &quot;Guild avatar&quot;}&quot;&gt;`;
+    }
+
+    function approveReview(index) {
+      const row = reviews[index];
+      row.status = &quot;Approved&quot;;
+      renderReviews();
+      showToast(row.module === &quot;guild&quot; ? &quot;已同意创建公会&quot; : &quot;已通过&quot;);
+    }
+
+    function rejectReview(index) {
+      reviews[index].status = &quot;Rejected&quot;;
+      renderReviews();
+      showToast(&quot;已拒绝&quot;);
+    }
+
+    function reviewDetailPairs(row) {
+      const common = [
+        [&quot;国家/地区&quot;, regionName(row.region)],
+        [&quot;提交人UID&quot;, row.submitter],
+        [&quot;提交时间&quot;, row.time],
+        [&quot;状态&quot;, reviewStatusLabel(row.status)]
+      ];
+      const detailMap = {
+        guild: [
+          [&quot;公会ID&quot;, row.guildId],
+          [&quot;公会名称&quot;, row.guildName],
+          [&quot;联系方式&quot;, row.contact],
+          [&quot;公会头像&quot;, guildAvatarImage(row)],
+          [&quot;公告&quot;, row.announcement]
+        ],
+        seller: [
+          [&quot;币商UID&quot;, row.sellerUid],
+          [&quot;Source App&quot;, row.sourceApp]
+        ],
+        bd: [
+          [&quot;BD UID&quot;, row.bdUid]
+        ],
+        team: [
+          [&quot;上级身份&quot;, row.submitterRole],
+          [&quot;下级UID&quot;, row.memberUid],
+          [&quot;下级身份&quot;, row.memberRole]
+        ]
+      };
+      return [...common, ...(detailMap[row.module] || [])];
+    }
+
+    function renderDetailRows(pairs) {
+      return pairs.map(([label, value]) =&gt; `&lt;tr&gt;&lt;th&gt;${label}&lt;/th&gt;&lt;td&gt;${value || &quot;-&quot;}&lt;/td&gt;&lt;/tr&gt;`).join(&quot;&quot;);
+    }
+
+    function reviewConfirmText(row, action) {
+      if (action === &quot;reject&quot;) return `确认拒绝${reviewLabel(row)}申请？`;
+      if (row.module === &quot;guild&quot;) return &quot;确认同意创建公会？&quot;;
+      if (row.module === &quot;seller&quot;) return &quot;确认同意创建币商？&quot;;
+      return `确认通过${reviewLabel(row)}申请？`;
+    }
+
+    function openReviewConfirmModal(index, action) {
+      const row = reviews[index];
+      activeReviewConfirm = { index, action };
+      document.getElementById(&quot;reviewConfirmTitle&quot;).textContent = reviewConfirmText(row, action);
+      document.getElementById(&quot;reviewConfirmRows&quot;).innerHTML = renderDetailRows(reviewDetailPairs(row));
+      const button = document.getElementById(&quot;reviewConfirmButton&quot;);
+      button.textContent = action === &quot;reject&quot; ? &quot;确认拒绝&quot; : &quot;确认通过&quot;;
+      button.className = action === &quot;reject&quot; ? &quot;btn danger&quot; : &quot;btn primary&quot;;
+      openModal(&quot;reviewConfirmModal&quot;);
+    }
+
+    function confirmReviewAction() {
+      if (!activeReviewConfirm) return;
+      const { index, action } = activeReviewConfirm;
+      const row = reviews[index];
+      activeReviewConfirm = null;
+      closeTopModal();
+      if (action === &quot;reject&quot;) {
+        rejectReview(index);
+        return;
+      }
+      if (row.module === &quot;seller&quot;) {
+        openSellerCreateModal(index);
+        return;
+      }
+      approveReview(index);
+    }
+
+    function openSellerCreateModal(index) {
+      activeSellerReviewIndex = index;
+      const row = reviews[index];
+      document.getElementById(&quot;sellerCreateUidField&quot;).value = row.sellerUid || &quot;&quot;;
+      openModal(&quot;sellerCreateModal&quot;);
+    }
+
+    function saveSellerCreate() {
+      if (activeSellerReviewIndex !== null) {
+        reviews[activeSellerReviewIndex].status = &quot;Approved&quot;;
+        activeSellerReviewIndex = null;
+      }
+      closeTopModal();
+      renderReviews();
+      showToast(&quot;已添加币商&quot;);
+    }
+
+    function openReviewModal(index) {
+      const row = reviews[index];
+      document.getElementById(&quot;reviewModalTitle&quot;).textContent = `${reviewLabel(row)}审核`;
+      document.getElementById(&quot;reviewDetailRows&quot;).innerHTML = renderDetailRows(reviewDetailPairs(row));
+      document.getElementById(&quot;reviewModalActions&quot;).innerHTML = `&lt;button class=&quot;btn soft&quot; data-close-modal&gt;关闭&lt;/button&gt;`;
+      document.querySelectorAll(&quot;#reviewModal [data-close-modal]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, closeModal));
+      openModal(&quot;reviewModal&quot;);
+    }
+
+    function settlementKey(row) {
+      return `${row.month}:${row.uid}`;
+    }
+
+    function settlementActionButton(item, index) {
+      if (item.status === &quot;已结算&quot;) {
+        return `&lt;button class=&quot;btn soft&quot; disabled&gt;已结算（${item.operator || &quot;-&quot;}）&lt;/button&gt;`;
+      }
+      if (item.status === &quot;等待发放&quot; || item.status === &quot;已提交金币审核&quot;) {
+        return `&lt;button class=&quot;btn soft&quot; disabled&gt;等待发放&lt;/button&gt;`;
+      }
+      if (item.status === &quot;金币审核拒绝&quot;) {
+        return `&lt;button class=&quot;btn primary&quot; data-confirm-settlement=&quot;${index}&quot;&gt;再次结算&lt;/button&gt;`;
+      }
+      return `&lt;button class=&quot;btn primary&quot; data-confirm-settlement=&quot;${index}&quot;&gt;确认结算&lt;/button&gt;`;
+    }
+
+    function renderSettlementSections(row) {
+      const sections = settlementObjectDetails[settlementKey(row)] || [];
+      return sections.map((section) =&gt; `
+        &lt;div class=&quot;panel&quot;&gt;
+          &lt;div class=&quot;panel-head&quot;&gt;${section.title}&lt;/div&gt;
+          &lt;div class=&quot;panel-body&quot;&gt;
+            &lt;div class=&quot;chip-row&quot; style=&quot;margin-bottom:12px&quot;&gt;
+              ${(section.summary || []).map(([label, value]) =&gt; `&lt;span class=&quot;summary-chip&quot;&gt;${label}: ${value}&lt;/span&gt;`).join(&quot;&quot;)}
+            &lt;/div&gt;
+            &lt;div class=&quot;table-wrap&quot;&gt;
+              &lt;table&gt;
+                &lt;thead&gt;&lt;tr&gt;${section.columns.map((column) =&gt; `&lt;th&gt;${column}&lt;/th&gt;`).join(&quot;&quot;)}&lt;/tr&gt;&lt;/thead&gt;
+                &lt;tbody&gt;
+                  ${section.rows.map((detailRow) =&gt; `&lt;tr&gt;${detailRow.map((cell) =&gt; `&lt;td&gt;${cell}&lt;/td&gt;`).join(&quot;&quot;)}&lt;/tr&gt;`).join(&quot;&quot;)}
+                &lt;/tbody&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      `).join(&quot;&quot;) || `&lt;div class=&quot;panel&quot;&gt;&lt;div class=&quot;panel-body&quot;&gt;暂无邀请对象明细&lt;/div&gt;&lt;/div&gt;`;
+    }
+
+    function confirmSettlement(index) {
+      activeSettlementIndex = index;
+      const row = settlements[index];
+      document.getElementById(&quot;settlementConfirmTitle&quot;).textContent = `${row.month} &#183; ${row.uid} 确认结算`;
+      document.getElementById(&quot;settlementConfirmRows&quot;).innerHTML = [
+        [&quot;国家/地区&quot;, regionName(row.region)],
+        [&quot;UID&quot;, row.uid],
+        [&quot;身份&quot;, row.role],
+        [&quot;薪资来源&quot;, salaryNames(row.salaryIds).join(&quot;、&quot;)],
+        [&quot;系统计算金币&quot;, money(row.coins)]
+      ].map(([label, value]) =&gt; `&lt;tr&gt;&lt;th&gt;${label}&lt;/th&gt;&lt;td&gt;${value}&lt;/td&gt;&lt;/tr&gt;`).join(&quot;&quot;);
+      document.getElementById(&quot;settlementActualCoinsField&quot;).value = row.actualCoins || row.coins;
+      openModal(&quot;settlementConfirmModal&quot;);
+    }
+
+    function submitSettlementConfirm() {
+      if (activeSettlementIndex === null) return;
+      const row = settlements[activeSettlementIndex];
+      const input = document.getElementById(&quot;settlementActualCoinsField&quot;).value.replace(/[,\s]/g, &quot;&quot;);
+      row.actualCoins = Number(input || row.coins);
+      row.status = &quot;等待发放&quot;;
+      activeSettlementIndex = null;
+      closeTopModal();
+      renderSettlement();
+      showToast(&quot;已提交到金币审核页面&quot;);
+    }
+
+    function openSettlementModal(index) {
+      const row = settlements[index];
+      document.getElementById(&quot;settlementModalTitle&quot;).textContent = `${row.month} &#183; ${row.uid} 结算明细`;
+      document.getElementById(&quot;settlementDetailRows&quot;).innerHTML = row.salaryIds.map((id) =&gt; {
+        const item = salaryItems.find((salary) =&gt; salary.id === id);
+        return `
+          &lt;tr&gt;
+            &lt;td&gt;${salaryItemLabel(item)}&lt;/td&gt;
+            &lt;td&gt;${salaryTypeName(item.module)}&lt;/td&gt;
+            &lt;td&gt;${templateLabels[item.template] || item.template}&lt;/td&gt;
+            &lt;td&gt;${item.cycle}&lt;/td&gt;
+            &lt;td&gt;${money(item.coins)}&lt;/td&gt;
+          &lt;/tr&gt;
+        `;
+      }).join(&quot;&quot;);
+      document.getElementById(&quot;settlementObjectDetails&quot;).innerHTML = renderSettlementSections(row);
+      openModal(&quot;settlementModal&quot;);
+    }
+
+    function bindEvents() {
+      navButtons.forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; switchView(button.dataset.view)));
+      document.querySelectorAll(&quot;[data-modal]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openModal(button.dataset.modal)));
+      document.querySelectorAll(&quot;[data-add-region]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openRegionModal()));
+      document.querySelectorAll(&quot;[data-add-salary]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openSalaryModal()));
+      document.querySelectorAll(&quot;[data-add-member]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openMemberModal()));
+      document.querySelectorAll(&quot;[data-open-material]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; openMaterialModal()));
+      document.querySelectorAll(&quot;[data-close-modal]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, closeModal));
+      document.querySelectorAll(&quot;[data-save-modal]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, (event) =&gt; { closeModal(event); showToast(&quot;已保存&quot;); }));
+      document.querySelectorAll(&quot;[data-toast]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; showToast(button.dataset.toast)));
+      document.querySelectorAll(&quot;.modal-backdrop&quot;).forEach((modal) =&gt; modal.addEventListener(&quot;click&quot;, (event) =&gt; { if (event.target === modal) modal.classList.remove(&quot;open&quot;); }));
+      document.addEventListener(&quot;keydown&quot;, (event) =&gt; { if (event.key === &quot;Escape&quot;) closeTopModal(); });
+      document.querySelectorAll(&quot;[data-material-tab]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; {
+        document.querySelectorAll(&quot;[data-material-tab]&quot;).forEach((tab) =&gt; tab.classList.toggle(&quot;active&quot;, tab === button));
+        document.querySelectorAll(&quot;[data-material-page]&quot;).forEach((page) =&gt; page.classList.toggle(&quot;hidden&quot;, page.dataset.materialPage !== button.dataset.materialTab));
+      }));
+      document.querySelectorAll(&quot;[data-review-tab]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; {
+        activeReviewTab = button.dataset.reviewTab;
+        activeReviewStatus = &quot;all&quot;;
+        document.getElementById(&quot;reviewStatusFilter&quot;).value = &quot;all&quot;;
+        document.querySelectorAll(&quot;[data-review-tab]&quot;).forEach((tab) =&gt; tab.classList.toggle(&quot;active&quot;, tab === button));
+        renderReviews();
+      }));
+      document.querySelectorAll(&quot;[data-review-search]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, () =&gt; {
+        activeReviewStatus = document.getElementById(&quot;reviewStatusFilter&quot;).value;
+        renderReviews();
+        showToast(&quot;已查询&quot;);
+      }));
+      document.querySelectorAll(&quot;[data-save-seller]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, saveSellerCreate));
+      document.getElementById(&quot;reviewConfirmButton&quot;).addEventListener(&quot;click&quot;, confirmReviewAction);
+      document.querySelectorAll(&quot;[data-submit-settlement]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, submitSettlementConfirm));
+      document.getElementById(&quot;salaryModuleField&quot;).addEventListener(&quot;change&quot;, () =&gt; {
+        syncSalaryTemplateOptions();
+        syncSalaryMethodFields();
+        renderShareRows([]);
+      });
+      document.getElementById(&quot;salaryTemplateField&quot;).addEventListener(&quot;change&quot;, syncSalaryMethodFields);
+      document.getElementById(&quot;salaryCycleField&quot;).addEventListener(&quot;change&quot;, syncCycleField);
+      document.getElementById(&quot;memberCountryField&quot;).addEventListener(&quot;change&quot;, () =&gt; syncMemberRoleOptions());
+      document.getElementById(&quot;memberRoleField&quot;).addEventListener(&quot;change&quot;, () =&gt; renderMemberSalaryChecks());
+      document.getElementById(&quot;materialTypeField&quot;).addEventListener(&quot;change&quot;, (event) =&gt; {
+        materialDraftItems = new Set();
+        materialDraftDurations = new Set();
+        document.getElementById(&quot;materialSearchField&quot;).value = &quot;&quot;;
+        renderMaterialChoices(event.target.value);
+      });
+      document.getElementById(&quot;materialSearchField&quot;).addEventListener(&quot;input&quot;, () =&gt; renderMaterialChoices(document.getElementById(&quot;materialTypeField&quot;).value));
+      document.getElementById(&quot;materialItemChecks&quot;).addEventListener(&quot;change&quot;, (event) =&gt; {
+        if (!event.target.matches(&quot;input[type=&#39;checkbox&#39;]&quot;)) return;
+        event.target.checked ? materialDraftItems.add(event.target.value) : materialDraftItems.delete(event.target.value);
+      });
+      document.getElementById(&quot;materialDurationChecks&quot;).addEventListener(&quot;change&quot;, (event) =&gt; {
+        if (!event.target.matches(&quot;input[type=&#39;checkbox&#39;]&quot;)) return;
+        event.target.checked ? materialDraftDurations.add(event.target.value) : materialDraftDurations.delete(event.target.value);
+      });
+      document.querySelectorAll(&quot;[data-add-tier]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, addTierRow));
+      document.querySelectorAll(&quot;[data-add-share]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, addShareRow));
+      document.querySelectorAll(&quot;[data-add-target]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, addTargetRow));
+      document.querySelectorAll(&quot;[data-add-limit]&quot;).forEach((button) =&gt; button.addEventListener(&quot;click&quot;, addLimitRow));
+      document.getElementById(&quot;salaryModal&quot;).addEventListener(&quot;click&quot;, (event) =&gt; {
+        const button = event.target.closest(&quot;[data-remove-row]&quot;);
+        if (button) button.closest(&quot;tr&quot;)?.remove();
+      });
+    }
+
+    function renderAll() {
+      fillRegionSelect(&quot;memberRegionFilter&quot;);
+      fillRegionSelect(&quot;reviewRegionFilter&quot;);
+      fillRegionSelect(&quot;settlementRegionFilter&quot;);
+      fillRegionOnlySelect(&quot;salaryCountryField&quot;);
+      fillRegionOnlySelect(&quot;memberCountryField&quot;);
+      fillCountryField();
+      renderRegions();
+      renderPermissions();
+      renderMembers();
+      renderMaterials();
+      renderReviews();
+      renderSettlement();
+    }
+
+    function activeModalDocId(target) {
+      const modal = target.closest(&quot;.modal-backdrop.open&quot;);
+      if (!modal) return null;
+      const map = {
+        regionModal: &quot;doc-region-edit&quot;,
+        countryPermissionModal: &quot;doc-country-permission&quot;,
+        conversionModal: &quot;doc-conversion&quot;,
+        permissionModal: &quot;doc-permission-config&quot;,
+        countrySalaryModal: &quot;doc-country-salary&quot;,
+        salaryModal: &quot;doc-salary-item&quot;,
+        memberModal: &quot;doc-member-modal&quot;,
+        materialModal: &quot;doc-material-modal&quot;,
+        materialDetailModal: &quot;doc-material-detail&quot;,
+        reviewModal: &quot;doc-review-confirm&quot;,
+        reviewConfirmModal: &quot;doc-review-confirm&quot;,
+        sellerCreateModal: &quot;doc-seller-create&quot;,
+        settlementModal: &quot;doc-settlement-detail&quot;,
+        settlementConfirmModal: &quot;doc-settlement-confirm&quot;
+      };
+      return map[modal.id] || null;
+    }
+
+    function activeReviewContext() {
+      const activeTab = document.querySelector(&quot;[data-review-tab].active&quot;);
+      const tab = activeTab ? activeTab.dataset.reviewTab : &quot;guild&quot;;
+      return {
+        guild: &quot;doc-review-guild&quot;,
+        seller: &quot;doc-review-seller&quot;,
+        bd: &quot;doc-review-bd&quot;,
+        team: &quot;doc-review-team&quot;
+      }[tab] || &quot;doc-reviews&quot;;
+    }
+
+    function activeSalaryContext() {
+      const field = document.getElementById(&quot;salaryModuleField&quot;);
+      const value = field ? field.value : &quot;&quot;;
+      return {
+        bd: &quot;doc-salary-bd&quot;,
+        guild: &quot;doc-salary-guild&quot;,
+        seller: &quot;doc-salary-seller&quot;,
+        downline: &quot;doc-salary-downline&quot;
+      }[value] || &quot;doc-salary-item&quot;;
+    }
+
+    function resolveContextDocId(target) {
+      const modalDoc = activeModalDocId(target);
+      const button = target.closest(&quot;button, [data-view], [data-region-permission], [data-permission], [data-region-conversion], [data-region-salary], [data-add-salary], [data-edit-salary], [data-edit-region], [data-add-region], [data-add-member], [data-edit-member], [data-open-material], [data-material-type], [data-material-detail], [data-material-tab], [data-review-tab], [data-review-status], [data-review], [data-approve-review], [data-reject-review], [data-settlement], [data-confirm-settlement], [data-review-search], [data-save-seller], [data-submit-settlement]&quot;);
+      if (!button) return modalDoc;
+
+      if (modalDoc === &quot;doc-salary-item&quot;) return &quot;doc-salary-item&quot;;
+
+      if (button.dataset.view === &quot;regions&quot;) return &quot;doc-regions&quot;;
+      if (button.dataset.view === &quot;members&quot;) return &quot;doc-members&quot;;
+      if (button.dataset.view === &quot;materials&quot;) return &quot;doc-materials&quot;;
+      if (button.dataset.view === &quot;reviews&quot;) return &quot;doc-reviews&quot;;
+      if (button.dataset.view === &quot;settlement&quot;) return &quot;doc-settlement&quot;;
+
+      if (button.hasAttribute(&quot;data-add-region&quot;) || button.hasAttribute(&quot;data-edit-region&quot;)) return &quot;doc-region-edit&quot;;
+      if (button.hasAttribute(&quot;data-region-conversion&quot;)) return &quot;doc-conversion&quot;;
+      if (button.hasAttribute(&quot;data-region-permission&quot;)) return &quot;doc-country-permission&quot;;
+      if (button.hasAttribute(&quot;data-permission&quot;)) return &quot;doc-permission-config&quot;;
+      if (button.hasAttribute(&quot;data-region-salary&quot;)) return &quot;doc-country-salary&quot;;
+      if (button.hasAttribute(&quot;data-add-salary&quot;) || button.hasAttribute(&quot;data-edit-salary&quot;)) return &quot;doc-salary-item&quot;;
+
+      if (button.hasAttribute(&quot;data-add-member&quot;) || button.hasAttribute(&quot;data-edit-member&quot;)) return &quot;doc-member-modal&quot;;
+
+      if (button.hasAttribute(&quot;data-open-material&quot;) || button.hasAttribute(&quot;data-material-type&quot;)) return &quot;doc-material-modal&quot;;
+      if (button.hasAttribute(&quot;data-material-detail&quot;)) return &quot;doc-material-detail&quot;;
+      if (button.dataset.materialTab === &quot;records&quot;) return &quot;doc-material-records&quot;;
+      if (button.dataset.materialTab === &quot;config&quot;) return &quot;doc-materials&quot;;
+
+      if (button.dataset.reviewTab === &quot;guild&quot;) return &quot;doc-review-guild&quot;;
+      if (button.dataset.reviewTab === &quot;seller&quot;) return &quot;doc-review-seller&quot;;
+      if (button.dataset.reviewTab === &quot;bd&quot;) return &quot;doc-review-bd&quot;;
+      if (button.dataset.reviewTab === &quot;team&quot;) return &quot;doc-review-team&quot;;
+      if (button.hasAttribute(&quot;data-review-status&quot;) || button.hasAttribute(&quot;data-review-search&quot;)) return &quot;doc-reviews&quot;;
+      if (button.hasAttribute(&quot;data-review&quot;)) return activeReviewContext();
+      if (button.hasAttribute(&quot;data-approve-review&quot;)) return activeReviewContext() === &quot;doc-review-seller&quot; ? &quot;doc-seller-create&quot; : &quot;doc-review-confirm&quot;;
+      if (button.hasAttribute(&quot;data-reject-review&quot;)) return &quot;doc-review-confirm&quot;;
+      if (button.hasAttribute(&quot;data-save-seller&quot;)) return &quot;doc-seller-create&quot;;
+
+      if (button.hasAttribute(&quot;data-settlement&quot;)) return &quot;doc-settlement-detail&quot;;
+      if (button.hasAttribute(&quot;data-confirm-settlement&quot;) || button.hasAttribute(&quot;data-submit-settlement&quot;)) return &quot;doc-settlement-confirm&quot;;
+
+      return modalDoc;
+    }
+
+    function bindContextMessenger() {
+      document.addEventListener(&quot;click&quot;, (event) =&gt; {
+        const docId = resolveContextDocId(event.target);
+        if (!docId || window.parent === window) return;
+        window.parent.postMessage({ type: &quot;gm-prd-context&quot;, docId }, &quot;*&quot;);
+      }, true);
+      document.getElementById(&quot;salaryModuleField&quot;)?.addEventListener(&quot;change&quot;, () =&gt; {
+        if (window.parent === window) return;
+        window.parent.postMessage({ type: &quot;gm-prd-context&quot;, docId: &quot;doc-salary-item&quot; }, &quot;*&quot;);
+      });
+    }
+
+    renderAll();
+    bindEvents();
+    bindContextMessenger();
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+">
+      </iframe>
+    </section>
+
+    <aside id="prdPanel" class="prd-shell">
+      <div class="sticky top-0 z-20 bg-slate-50/95 backdrop-blur border-b border-slate-200 p-4">
+        <div class="font-black">当前操作说明</div>
+        <div id="contextHint" class="text-xs text-slate-500 mt-1">点击左侧页面、按钮或弹窗，右侧只展示对应说明。</div>
+      </div>
+
+      <div class="p-4 grid gap-4">
+        <div class="context-note">
+          当前说明会跟随左侧原型点击变化；右上角按钮可手动切换常用页面说明。
+        </div>
+
+        <details id="doc-overview" class="prd-card" open>
+          <summary>
+            <span><span class="tag teal">总览</span> 评审范围与通用规则</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>系统目的</h4>
+              <ul>
+                <li>后台用于配置不同国家/地区的外管身份、功能权限、薪资政策、人员薪资项、虚拟物料权限、申请审核与月度薪资结算。</li>
+                <li>App 端保持固定模块样式，只根据当前人员权限和所在国家政策返回可展示模块与对应数据。</li>
+                <li>薪资由系统按政策自动计算，运营在后台复核后输入实际发放金币，再提交到金币审核页面。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>通用计算规则</h4>
+              <ul>
+                <li>仅审核通过的 BD、公会、币商、下级成员计入薪资。</li>
+                <li>人员状态为停用时，不再产生新的薪资数据，但历史结算记录保留。</li>
+                <li>国家/地区禁用后，不允许新增人员、启用新政策或提交新审核申请。</li>
+                <li>同一人员同一月份只允许存在一条结算记录；等待发放或已结算状态不可重复提交。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-regions" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">1</span> 国家/地区配置</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>列表字段</h4>
+              <table class="doc-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>ID</td><td>国家/地区配置记录 ID。</td></tr>
+                <tr><td>国家 / 国家En / 国家码 / 图片</td><td>国家基础展示信息；新增时国家/地区必须通过下拉选择，不由运营手填 code。</td></tr>
+                <tr><td>身份集合</td><td>当前国家启用的身份，例如 manager、superadmin、admin。</td></tr>
+                <tr><td>薪资项</td><td>当前国家已配置的薪资来源数量或名称。</td></tr>
+                <tr><td>人员</td><td>该国家已配置人员数量。</td></tr>
+                <tr><td>状态</td><td>仅启用 / 禁用。禁用后不再允许产生新申请和新结算。</td></tr>
+              </table>
+            </div>
+
+            <div class="doc-block">
+              <h4>顶部交互</h4>
+              <ul>
+                <li><strong>新增国家/地区：</strong>打开弹窗。字段包含国家/地区下拉、身份集合、状态；不需要 code 和币种输入。</li>
+                <li><strong>搜索国家/地区：</strong>按中文名、英文名、国家码模糊搜索。</li>
+                <li><strong>状态筛选：</strong>支持全部、启用、禁用。</li>
+              </ul>
+            </div>
+
+            <div class="doc-block">
+              <h4>行内按钮</h4>
+              <table class="doc-table">
+                <tr><th>按钮</th><th>打开内容</th><th>提交结果</th></tr>
+                <tr><td>编辑</td><td>国家/地区弹窗，回显国家、身份集合、状态。</td><td>保存后更新该国家基础配置。</td></tr>
+                <tr><td>换算配置</td><td>结构化配置积分、USD、金币换算比例。</td><td>供薪资政策计算引擎识别，不允许使用纯文本比例。</td></tr>
+                <tr><td>身份权限</td><td>查看并配置该国家各身份的 App 模块权限与层级关系。</td><td>勾选哪些权限，App 内就展示哪些对应模块。</td></tr>
+                <tr><td>薪资政策</td><td>进入该国家薪资项列表，可新增或编辑薪资项。</td><td>保存后作为人员配置可选薪资项。</td></tr>
+              </table>
+            </div>
+
+            <div class="doc-block">
+              <h4>身份权限弹窗字段</h4>
+              <ul>
+                <li><strong>身份：</strong>仅 manager、superadmin、admin；邀请BD属于权限和计薪来源，不作为身份集合选项。</li>
+                <li><strong>上级身份：</strong>系统按 manager &gt; superadmin &gt; admin 自动展示，不能手动修改。</li>
+                <li><strong>邀请与管理下级：</strong>展示真实下级身份，例如 manager 对应 superadmin；admin 无下级则显示 -。</li>
+                <li><strong>权限：</strong>邀请BD、邀请公会、邀请币商、邀请下级、奖励发放。奖励发放代表该身份可在 App 发放后台配置过的物料。</li>
+                <li><strong>国家图片：</strong>展示真实国旗，不展示国家码文字替代。</li>
+              </ul>
+            </div>
+
+            <div class="doc-block">
+              <h4>薪资政策弹窗字段</h4>
+              <ul>
+                <li><strong>薪资来源：</strong>BD邀请薪资、公会邀请薪资、币商邀请薪资、下级分成薪资。</li>
+                <li><strong>适用身份：</strong>选择哪些身份可使用该薪资项；同一政策可复用于多个身份。</li>
+                <li><strong>计算周期：</strong>月结、连续三个月、自定义；自定义时展示月份输入框，单位为月。</li>
+                <li><strong>算法模板：</strong>下拉选择后展示对应配置项，例如汇总业绩阶梯提成、单对象达标奖励、固定薪资+邀请奖励、下级薪资比例分成。</li>
+                <li><strong>阶梯配置：</strong>支持多档位。菲律宾公会邀请按所有公会总有效积分匹配一个档位；土耳其公会邀请按单个公会档位分别计算。</li>
+                <li><strong>达标规则：</strong>用于土耳其类政策，例如当月拉新薪资大于等于 500 USD 的公会数量达到 N 个才拿满额薪资；未达标可按比例折算。</li>
+                <li><strong>计入条件：</strong>当前统一写死为仅审核通过对象计入，不再开放运营配置。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-members" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag teal">2</span> 人员配置</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>列表字段</h4>
+              <table class="doc-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>国家/地区</td><td>人员所属政策国家；影响可选身份、权限和薪资项。</td></tr>
+                <tr><td>UID</td><td>平台用户 UID，保存前需校验存在且未被重复配置。</td></tr>
+                <tr><td>身份</td><td>manager、superadmin、admin 或其他已启用身份。</td></tr>
+                <tr><td>薪资项</td><td>从当前国家已启用薪资政策中选择，可多选。</td></tr>
+                <tr><td>状态</td><td>生效 / 停用。停用控制人员是否继续产生新薪资。</td></tr>
+                <tr><td>操作</td><td>编辑人员配置。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>查询与按钮</h4>
+              <ul>
+                <li><strong>国家筛选：</strong>默认全部，可按国家过滤人员。</li>
+                <li><strong>UID 搜索：</strong>精确或模糊搜索 UID。</li>
+                <li><strong>状态筛选：</strong>全部、生效、停用。</li>
+                <li><strong>查询：</strong>按当前条件刷新表格。</li>
+                <li><strong>配置人员：</strong>打开新增人员弹窗；新增时不预填 UID、身份、薪资项。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>人员弹窗字段</h4>
+              <ul>
+                <li><strong>UID：</strong>必填，只能输入平台已有用户 UID。</li>
+                <li><strong>国家/地区：</strong>必选，决定下方身份和薪资项可选范围。</li>
+                <li><strong>身份：</strong>来自该国家身份权限配置。</li>
+                <li><strong>薪资项：</strong>来自该国家薪资政策；新增时由运营选择，编辑时回显已配置薪资项。</li>
+                <li><strong>状态：</strong>生效 / 停用。不配置生效日期和失效日期。</li>
+                <li><strong>保存：</strong>校验 UID、国家、身份、薪资项后落库；若 UID 已配置同国家同身份，需阻止重复提交。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-materials" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag gold">3</span> 物料配置与记录</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>页面定位</h4>
+              <ul>
+                <li>物料奖励为全局能力，不按国家/地区区分。</li>
+                <li>国家/地区里的“奖励发放权限”控制哪些身份能发放；本页面控制能发放哪些虚拟物料。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>Tab：物料配置</h4>
+              <table class="doc-table">
+                <tr><th>字段/按钮</th><th>说明</th></tr>
+                <tr><td>添加物料配置</td><td>打开物料配置弹窗。</td></tr>
+                <tr><td>物料类型</td><td>座驾、头像框、麦位声浪、气泡框、进场特效、VIP、个人名片。</td></tr>
+                <tr><td>已勾选物料</td><td>列表不直接堆物料昵称，展示“详情”按钮。</td></tr>
+                <tr><td>详情</td><td>打开弹窗，展示已选物料的图片、物料昵称、商品ID、类型。</td></tr>
+                <tr><td>有效期</td><td>1天、3天、7天、30天，可多选。</td></tr>
+                <tr><td>状态</td><td>启用 / 禁用。禁用后 App 不再展示该物料类型的可发放项。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>物料配置弹窗</h4>
+              <ul>
+                <li><strong>物料类型：</strong>先选择类型，系统拉取该类型下的物料列表。</li>
+                <li><strong>物料搜索：</strong>支持按物料昵称或商品ID过滤。</li>
+                <li><strong>物料多选：</strong>默认展示列表，列表项需包含图片、昵称、商品ID；勾选即加入已选。</li>
+                <li><strong>有效期：</strong>1天、3天、7天、30天多选，至少选择一个。</li>
+                <li><strong>状态：</strong>启用 / 禁用。</li>
+                <li><strong>保存：</strong>同一物料类型下，物料ID不可重复保存。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>Tab：发放记录</h4>
+              <ul>
+                <li><strong>发放人UID：</strong>拥有奖励发放权限的外管人员 UID。</li>
+                <li><strong>接收用户ID：</strong>被发放奖励的用户 ID。</li>
+                <li><strong>物料类型 / 物料昵称：</strong>来自实际发放物料。</li>
+                <li><strong>有效期：</strong>实际选择的发放时长。</li>
+                <li><strong>状态：</strong>成功、处理中、失败；失败需保留失败原因。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-reviews" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">4</span> 审核记录</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>公共交互</h4>
+              <ul>
+                <li>按公会、币商、BD、下级成员分 Tab 处理。</li>
+                <li>每个 Tab 必须展示全部、待审核、已通过、已拒绝状态。</li>
+                <li>查询条件包含国家/地区、提交人 UID、对象 ID、状态和查询按钮。</li>
+                <li>待审核记录才展示通过/拒绝按钮；已通过、已拒绝记录只能查看。</li>
+                <li>同意和拒绝都需要二次确认弹窗，弹窗必须展示申请信息。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>Tab：公会审核</h4>
+              <table class="doc-table">
+                <tr><th>字段/按钮</th><th>说明</th></tr>
+                <tr><td>国家/地区</td><td>提交人所在国家。</td></tr>
+                <tr><td>提交人UID</td><td>提交公会创建申请的外管人员。</td></tr>
+                <tr><td>公会</td><td>展示公会名称和公会ID。</td></tr>
+                <tr><td>查看资料</td><td>打开公会资料弹窗，展示联系方式、上传头像图片、Guild name、Announcement。</td></tr>
+                <tr><td>同意创建</td><td>二次确认后通过申请，绑定公会到提交人名下。</td></tr>
+                <tr><td>拒绝</td><td>二次确认后拒绝申请，可填写或保留拒绝原因。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>Tab：币商审核</h4>
+              <ul>
+                <li><strong>列表字段：</strong>国家/地区、提交人UID、币商UID、Source App、提交时间、状态、操作。</li>
+                <li><strong>同意创建币商：</strong>先二次确认，再打开添加币商弹窗。</li>
+                <li><strong>添加币商弹窗：</strong>包含币商UID、支持的收款方式、代发权限、等级设置、取消、添加币商。</li>
+                <li><strong>添加币商成功：</strong>审核记录状态变为已通过，之后只能查看申请信息。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>Tab：BD / 下级成员审核</h4>
+              <ul>
+                <li><strong>BD 审核字段：</strong>国家/地区、提交人UID、BD UID、提交时间、状态、操作。</li>
+                <li><strong>下级成员字段：</strong>国家/地区、上级UID、上级身份、下级UID、下级身份、提交时间、状态、操作。</li>
+                <li><strong>下级身份限制：</strong>manager 是最高身份，不能作为下级身份出现；manager 可邀请 superadmin，superadmin 可邀请 admin。</li>
+                <li><strong>通过后：</strong>对象关系生效，后续薪资计算可按政策纳入统计。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-settlement" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag green">5</span> 薪资结算</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>列表字段</h4>
+              <table class="doc-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>月份</td><td>结算月份，默认本月，可筛选任意月份。</td></tr>
+                <tr><td>国家/地区</td><td>人员所属政策国家。</td></tr>
+                <tr><td>UID / 身份</td><td>外管人员 UID 和身份。</td></tr>
+                <tr><td>周期</td><td>来自薪资政策计算周期，例如月结、连续三个月。</td></tr>
+                <tr><td>薪资项</td><td>该人员当月参与计算的薪资来源。</td></tr>
+                <tr><td>金币</td><td>系统按政策计算出的应结算金币。</td></tr>
+                <tr><td>状态</td><td>待复核、等待发放、金币审核拒绝、已结算、异常。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>查询条件</h4>
+              <ul>
+                <li>支持按月份、国家/地区、身份、状态、UID 查询。</li>
+                <li>默认展示本月数据。</li>
+                <li>查询不会改变结算状态，只刷新当前列表。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>行内按钮状态</h4>
+              <ul>
+                <li><strong>明细：</strong>始终可点击，用于核对具体薪资来源和对象数据。</li>
+                <li><strong>确认结算：</strong>待复核状态可点击。</li>
+                <li><strong>再次结算：</strong>金币审核拒绝后可点击，重新提交实际发放金币。</li>
+                <li><strong>等待发放：</strong>提交金币审核后展示，不可点击。</li>
+                <li><strong>已结算（操作人）：</strong>金币发放成功后展示，不可点击。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>明细弹窗</h4>
+              <ul>
+                <li><strong>结算汇总：</strong>使用醒目但不刺眼的彩色标签展示达标数量、满额薪资、邀请奖励金币、结算金币等。</li>
+                <li><strong>邀请BD明细：</strong>展示 BD UID、BD昵称、BD月薪资金币、计入状态和结算金币。</li>
+                <li><strong>邀请公会明细：</strong>展示公会ID、公会名称、有效积分、单公会薪资USD或汇总业绩、奖励规则、结算金币。</li>
+                <li><strong>邀请币商明细：</strong>展示币商UID、币商昵称、Source App、当月充值USD、计入状态。</li>
+                <li><strong>规则展示：</strong>百分比结果用“2%（400 USD）”展示，不写成“2% + 400 USD”。</li>
+                <li><strong>金币换算：</strong>按结构化换算配置计算，例如 400 USD × 9000 = 3,600,000 金币。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>确认结算弹窗</h4>
+              <ul>
+                <li>展示基本信息：月份、国家/地区、UID、身份、薪资来源、系统计算金币。</li>
+                <li>提供实际发放金币输入框，运营输入的数值才提交到金币审核页面。</li>
+                <li>实际发放金币必须是非负整数；允许与系统计算金币不同，但需记录操作人和提交时间。</li>
+                <li>提交成功后状态变为等待发放，按钮不可再次点击。</li>
+                <li>金币审核拒绝后状态变为金币审核拒绝，可再次结算。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-region-edit" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">国家弹窗</span> 新增/编辑国家地区</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>触发入口</h4>
+              <ul>
+                <li>点击“新增国家/地区”或列表行内“编辑”。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>字段说明</h4>
+              <ul>
+                <li><strong>国家/地区：</strong>下拉选择平台已有国家，不允许手填国家码。</li>
+                <li><strong>身份集合：</strong>技术预设可选身份，运营只需勾选该国家启用哪些身份；当前仅包含 manager、superadmin、admin。</li>
+                <li><strong>状态：</strong>启用 / 禁用。禁用后不可新增人员、政策或新申请。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>提交校验</h4>
+              <ul>
+                <li>同一国家不可重复新增。</li>
+                <li>身份集合至少选择一个；身份选项由技术维护，不在该弹窗新增自定义身份。</li>
+                <li>禁用已有国家时，需保留历史人员、审核、结算记录。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-conversion" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">换算</span> 换算配置</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>字段说明</h4>
+              <ul>
+                <li><strong>国家/地区：</strong>只读，来自当前行。</li>
+                <li><strong>1 USD 对应积分：</strong>正整数，例如 10000。</li>
+                <li><strong>1 USD 对应金币：</strong>正整数，例如 9000。</li>
+                <li><strong>状态：</strong>启用 / 禁用。禁用时该国家薪资不可确认结算。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>技术要求</h4>
+              <ul>
+                <li>必须结构化保存数值，不能保存“1$=9000coins”这类文本。</li>
+                <li>薪资政策中的 USD、积分、金币换算都读取这里的配置。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-country-permission" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">身份权限</span> 国家身份权限列表</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>列表字段</h4>
+              <table class="doc-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>身份</td><td>manager、superadmin、admin。</td></tr>
+                <tr><td>上级身份</td><td>系统按层级自动展示，不允许运营改错。</td></tr>
+                <tr><td>邀请权限</td><td>可邀请 BD、公会、币商等对象。</td></tr>
+                <tr><td>邀请与管理下级</td><td>展示真实下级身份，如 superadmin、admin；无下级显示 -。</td></tr>
+                <tr><td>奖励发放</td><td>代表该身份可使用 App 的奖励发放能力。</td></tr>
+                <tr><td>状态</td><td>启用中 / 停用。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>行内“配置”</h4>
+              <ul>
+                <li>点击后打开单个身份配置弹窗，只编辑该身份的权限。</li>
+                <li>manager 无上级，superadmin 上级为 manager，admin 上级为 superadmin。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-permission-config" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">身份配置</span> 单个身份权限弹窗</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>字段说明</h4>
+              <ul>
+                <li><strong>国家/地区：</strong>只读。</li>
+                <li><strong>身份：</strong>只读，来自点击的行。</li>
+                <li><strong>上级身份：</strong>系统自动计算，只读。</li>
+                <li><strong>权限勾选：</strong>邀请BD、邀请公会、邀请币商、邀请下级、奖励发放。每一项都是 App 模块开关，勾选后该身份的 App 内才展示对应模块。</li>
+                <li><strong>邀请BD：</strong>展示 BD Center，可提交 BD UID 申请，审核通过后按政策统计邀请BD业绩。</li>
+                <li><strong>邀请公会：</strong>展示 Guild Center，可提交公会创建申请，审核通过后按政策统计邀请公会业绩。</li>
+                <li><strong>邀请币商：</strong>展示 Coin Seller Center，可提交币商申请，审核通过后按政策统计邀请币商业绩。</li>
+                <li><strong>邀请下级：</strong>展示下级成员相关入口，按身份层级提交下级成员申请。</li>
+                <li><strong>奖励发放：</strong>展示 Reward Distribution，可发放后台物料配置中启用的虚拟奖励。</li>
+                <li><strong>状态：</strong>启用 / 停用。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>保存影响</h4>
+              <ul>
+                <li>只影响该国家该身份的权限，不影响其他国家。</li>
+                <li>权限关闭后，App 不展示对应模块；历史申请和结算记录保留。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-country-salary" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">薪资政策</span> 国家薪资项列表</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>列表字段</h4>
+              <table class="doc-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>适用身份</td><td>该薪资项可分配给哪些外管身份；人员配置时只能选择该身份可用的薪资项。</td></tr>
+                <tr><td>计薪来源</td><td>邀请BD业绩、邀请公会业绩、邀请币商业绩、下级薪资。这里表示外管从哪个对象或关系中获得薪资。</td></tr>
+                <tr><td>算法模板</td><td>该薪资项采用的计算模型，例如薪资分成、总业绩阶梯、固定薪资+单对象阶梯等。</td></tr>
+                <tr><td>配置</td><td>展示核心配置摘要，例如“1组分成”“6档，合计进档”“固定薪资+5档奖励”。用于列表快速判断该项是否已配置完整。</td></tr>
+                <tr><td>计入范围</td><td>展示限制条件数量，例如“1条”。条件来自结构化下拉，如“单公会薪资不低于500 USD”。仅审核通过对象计入为系统固定规则，不在此列重复展示。</td></tr>
+                <tr><td>计算周期</td><td>月结、连续三个月、自定义。自定义周期在弹窗内填写月份。</td></tr>
+                <tr><td>分配人数</td><td>当前已有多少人员在“人员配置”中选择了该薪资项。</td></tr>
+                <tr><td>状态</td><td>启用 / 停用。停用后人员不可再新增选择，但历史配置和历史结算保留。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>按钮</h4>
+              <ul>
+                <li><strong>新增薪资项：</strong>打开薪资项弹窗，右侧说明显示新增弹窗全部字段说明。</li>
+                <li><strong>编辑：</strong>回显当前薪资项完整配置；编辑场景只需要核对和修改已有值，不重复说明每个字段。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-salary-item" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">薪资项</span> 新增/编辑薪资项弹窗</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>新增场景</h4>
+              <ul>
+                <li>点击“新增薪资项”打开空白弹窗，运营从国家/地区、计薪来源、算法模板开始配置。</li>
+                <li>右侧说明固定展示全部字段说明，不再根据计薪来源切换不同说明卡。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>基础字段</h4>
+              <table class="doc-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>国家/地区</td><td>薪资项所属国家；决定可选身份、换算配置和后续人员可选范围。</td></tr>
+                <tr><td>计薪来源</td><td>选择外管从哪里获得薪资：邀请BD业绩、邀请公会业绩、邀请币商业绩、下级薪资。该字段不是给对象发工资，而是配置外管的收益来源。</td></tr>
+                <tr><td>算法模板</td><td>选择计算模型。选择后弹窗下方展示对应配置区域，例如比例/固定金额、阶梯、计入范围。</td></tr>
+                <tr><td>计算周期</td><td>月结、连续三个月、自定义。选择自定义时显示“自定义月份（月）”输入框。</td></tr>
+                <tr><td>适用身份</td><td>多选 manager、superadmin、admin；人员配置时，只有对应身份才能选择该薪资项。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>计薪来源说明</h4>
+              <table class="doc-table">
+                <tr><th>计薪来源</th><th>计算对象</th><th>常用计算基数</th></tr>
+                <tr><td>邀请BD业绩</td><td>被该外管邀请且审核通过的 BD。</td><td>BD月薪资金币合计。</td></tr>
+                <tr><td>邀请公会业绩</td><td>被该外管邀请且审核通过的公会。</td><td>公会总有效积分、单公会有效积分、单公会薪资USD、达标公会数量。</td></tr>
+                <tr><td>邀请币商业绩</td><td>被该外管邀请且审核通过的币商。</td><td>币商月充值USD合计、单币商月充值USD。</td></tr>
+                <tr><td>下级薪资</td><td>该外管审核通过的下级成员。</td><td>下级月薪资金币合计，可按下级身份限制。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>算法模板说明</h4>
+              <table class="doc-table">
+                <tr><th>模板</th><th>用途</th><th>配置项</th></tr>
+                <tr><td>薪资分成 / 比例抽成</td><td>适合 BD 薪资分成、下级薪资分成。</td><td>计算基数、比例%、固定金额、金额单位。</td></tr>
+                <tr><td>总业绩阶梯</td><td>适合菲律宾公会/币商，先汇总业绩，再命中一个档位。</td><td>最小业绩、最大业绩、业绩单位、奖励方式、奖励值、奖励单位。</td></tr>
+                <tr><td>固定薪资+单对象阶梯</td><td>适合土耳其公会，先判断达标数量，再按单个公会档位计算奖励。</td><td>满额薪资、目标数量、未达标处理、单对象阶梯。</td></tr>
+                <tr><td>单对象达标奖励</td><td>适合未来按单个对象独立计算的国家政策。</td><td>单对象条件、档位、奖励方式和奖励值。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>比例/固定金额区域</h4>
+              <ul>
+                <li><strong>计算基数：</strong>从下拉选择，例如 BD月薪资金币合计、下级月薪资金币合计。</li>
+                <li><strong>比例%：</strong>百分比抽成，例如 1%。</li>
+                <li><strong>固定金额：</strong>如政策要求固定给 USD 或金币时填写。</li>
+                <li><strong>金额单位：</strong>USD 或 coins，系统按国家换算配置换算最终金币。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>阶梯区域</h4>
+              <ul>
+                <li><strong>最小业绩 / 最大业绩：</strong>配置档位上下限，必须连续且不可重叠。</li>
+                <li><strong>业绩单位：</strong>积分、USD、coins，按计薪来源选择可用单位。</li>
+                <li><strong>奖励方式：</strong>比例% 或固定金额。</li>
+                <li><strong>奖励值 / 奖励单位：</strong>填写具体比例或金额，例如 6%、400 USD。</li>
+                <li><strong>添加档位：</strong>新增一行档位，保存前校验上下限完整。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>计入范围区域</h4>
+              <ul>
+                <li><strong>条件类型：</strong>通过下拉选择，不能自由文本输入。例如“单公会薪资不低于500 USD”。</li>
+                <li><strong>条件值：</strong>填写数值，例如 500。</li>
+                <li><strong>单位：</strong>USD、积分、coins、个等。</li>
+                <li><strong>添加条件：</strong>新增一条结构化条件。仅审核通过对象计入为系统固定规则，不在此处配置。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>编辑场景</h4>
+              <ul>
+                <li>点击“编辑”打开弹窗时，只需要回填当前薪资项已保存的数据。</li>
+                <li>编辑说明不需要再次拆分解释字段，运营直接修改已有值并保存。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-salary-bd" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">薪资项</span> 邀请BD业绩</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>业务含义</h4>
+              <ul>
+                <li>某身份邀请 BD 后，从这些 BD 当月产生的薪资金币中获得抽成。</li>
+                <li>这里不是给 BD 配工资，而是给邀请 BD 的管理身份配置收益规则。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>可用计算基数</h4>
+              <ul>
+                <li><strong>BD月薪资金币合计：</strong>被邀请且审核通过的 BD，当月薪资金币求和。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>推荐算法模板</h4>
+              <ul>
+                <li><strong>下级薪资比例分成 / 比例抽成：</strong>配置比例，例如 1%，计算为 BD月薪资金币合计 × 1%。</li>
+                <li><strong>固定金额：</strong>如未来政策按 BD 人数固定给金币，可配置固定金额和单位。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>字段要求</h4>
+              <ul>
+                <li>适用身份可多选，例如 manager、superadmin。</li>
+                <li>计算周期支持月结、连续三个月、自定义。</li>
+                <li>若无审核通过 BD，则该项结算为 0，并在明细中显示“无计入对象”。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-salary-guild" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">薪资项</span> 邀请公会业绩</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>业务含义</h4>
+              <ul>
+                <li>某身份邀请公会后，从审核通过公会的有效积分、公会薪资或拉新达标数据中获得收益。</li>
+                <li>公会积分统一按国家换算配置处理，例如 10,000 积分 = 1 USD。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>可用计算基数</h4>
+              <ul>
+                <li><strong>邀请公会总有效积分：</strong>菲律宾类政策，先汇总所有计入公会积分，再匹配一个阶梯比例。</li>
+                <li><strong>单公会有效积分 / 单公会薪资USD：</strong>土耳其类政策，每个公会单独匹配档位。</li>
+                <li><strong>达标公会数量：</strong>用于判断满额薪资，例如单公会薪资不低于 500 USD 的公会数量达到 N 个。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>可用算法模板</h4>
+              <ul>
+                <li><strong>汇总业绩阶梯提成：</strong>如菲律宾，所有公会总积分命中一个档位，按该比例计算。</li>
+                <li><strong>固定薪资+单对象奖励：</strong>如土耳其，先判断达标公会数量是否满足满额薪资，再按每个公会档位计算邀请奖励。</li>
+                <li><strong>单对象达标奖励：</strong>每个公会独立判断档位，分别计算金币后汇总。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>注意事项</h4>
+              <ul>
+                <li>“满额薪资”按达标公会数量判断，不是单个公会达标就发一次满额薪资。</li>
+                <li>未达标按比例折算时，公式为：满额薪资 × 实际达标数量 / 目标数量。</li>
+                <li>规则展示为“2%（400 USD）”，不要展示成“2% + 400 USD”。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-salary-seller" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">薪资项</span> 邀请币商业绩</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>业务含义</h4>
+              <ul>
+                <li>某身份邀请币商后，从这些币商当月充值金额中获得抽成。</li>
+                <li>这里不是币商自己的收益配置，而是邀请币商的管理身份收益配置。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>可用计算基数</h4>
+              <ul>
+                <li><strong>邀请币商月充值USD合计：</strong>审核通过币商当月充值金额求和。</li>
+                <li><strong>单币商月充值USD：</strong>未来若政策改为每个币商单独计算，可按单对象档位配置。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>可用算法模板</h4>
+              <ul>
+                <li><strong>汇总业绩阶梯提成：</strong>如菲律宾，币商总充值命中一个档位，例如 15,000 USD 命中 4%。</li>
+                <li><strong>单对象达标奖励：</strong>如后续国家要求单币商达标，则每个币商独立计算后汇总。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>注意事项</h4>
+              <ul>
+                <li>菲律宾现有政策为每月邀请只计算当月，次月重新统计。</li>
+                <li>币商充值金额以 USD 为计算基准，再按国家换算配置转金币。</li>
+                <li>无审核通过币商或充值为 0 时，该项结算为 0。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-salary-downline" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag">薪资项</span> 下级薪资分成</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>业务含义</h4>
+              <ul>
+                <li>某身份从其审核通过的直属下级或指定层级下级的月薪资金币中获得比例分成。</li>
+                <li>适用于 manager 从 superadmin、superadmin 从 admin 等层级关系中获得分成。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>可用计算基数</h4>
+              <ul>
+                <li><strong>下级月薪资金币合计：</strong>被计入下级当月已计算薪资金币求和。</li>
+                <li><strong>指定下级身份：</strong>可限制只统计 superadmin 或 admin。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>可用算法模板</h4>
+              <ul>
+                <li><strong>下级薪资比例分成：</strong>配置比例，例如 1%，计算为下级月薪资金币合计 × 1%。</li>
+              </ul>
+            </div>
+            <div class="doc-block">
+              <h4>注意事项</h4>
+              <ul>
+                <li>下级关系必须已审核通过。</li>
+                <li>manager 为最高身份，不能作为任何人的下级。</li>
+                <li>若下级当月薪资未完成计算，该上级分成应标记异常或等待数据完成。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-member-modal" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag teal">人员弹窗</span> 新增/编辑人员</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>字段说明</h4>
+              <ul>
+                <li><strong>UID：</strong>必填，校验平台用户存在。</li>
+                <li><strong>国家/地区：</strong>必选，决定身份和薪资项可选范围。</li>
+                <li><strong>身份：</strong>来自国家身份配置。</li>
+                <li><strong>薪资项：</strong>来自该国家薪资政策，可多选；新增不预设，编辑才回显。</li>
+                <li><strong>状态：</strong>生效 / 停用，无生效日期和失效日期。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-material-modal" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag gold">物料弹窗</span> 添加/编辑物料配置</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <h4>字段说明</h4>
+              <ul>
+                <li><strong>物料类型：</strong>座驾、头像框、麦位声浪、气泡框、进场特效、VIP、个人名片。</li>
+                <li><strong>物料列表：</strong>选择类型后直接展示对应物料，支持搜索和多选。</li>
+                <li><strong>物料项：</strong>必须展示图片、物料昵称、商品ID。</li>
+                <li><strong>有效期：</strong>1天、3天、7天、30天，至少勾选一个。</li>
+                <li><strong>状态：</strong>启用 / 禁用。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-material-detail" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag gold">物料详情</span> 已勾选物料详情</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>点击“详情”打开弹窗，展示该类型下已勾选的所有物料。</li>
+                <li>字段包含图片、物料昵称、商品ID、类型。</li>
+                <li>仅查看，不在详情弹窗中编辑。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-material-records" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag gold">发放记录</span> 物料发放记录</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>字段包含发放人UID、接收用户ID、物料类型、物料昵称、有效期、发放时间、状态。</li>
+                <li>状态包括成功、处理中、失败；失败需展示失败原因。</li>
+                <li>该页面只查记录，不直接补发或撤回。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-review-guild" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">公会审核</span> 公会申请 Tab</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>展示国家/地区、提交人UID、公会、公会ID、提交时间、状态、操作。</li>
+                <li>“查看资料”展示联系方式、公会头像图片、Guild name、Announcement。</li>
+                <li>待审核状态可同意创建或拒绝；已通过/已拒绝只能查看。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-review-seller" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">币商审核</span> 币商申请 Tab</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>展示国家/地区、提交人UID、币商UID、Source App、提交时间、状态、操作。</li>
+                <li>点击“同意创建币商”需二次确认，确认后进入添加币商弹窗。</li>
+                <li>添加币商成功后，该申请变为已通过，只能查看。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-review-bd" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">BD审核</span> BD申请 Tab</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>展示国家/地区、提交人UID、BD UID、提交时间、状态、操作。</li>
+                <li>通过后 BD 与提交人形成邀请关系，后续按国家政策计入薪资。</li>
+                <li>拒绝后保留记录，不建立关系。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-review-team" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">下级成员审核</span> 团队成员申请 Tab</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>展示国家/地区、上级UID、上级身份、下级UID、下级身份、提交时间、状态、操作。</li>
+                <li>manager 是最高级，不可作为下级身份。</li>
+                <li>通过后建立层级关系，下级分成薪资可按政策计算。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-review-confirm" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">审核确认</span> 同意/拒绝二次确认</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>同意和拒绝都必须弹出二次确认。</li>
+                <li>确认弹窗必须展示申请信息：国家、提交人UID、对象ID、对象名称、提交时间。</li>
+                <li>确认后更新记录状态，并记录操作人、操作时间。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-seller-create" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">添加币商</span> 同意币商后的创建弹窗</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li><strong>币商UID：</strong>来自审核申请，可回显并允许核对。</li>
+                <li><strong>支持的收款方式：</strong>展示可用支付方式。</li>
+                <li><strong>代发权限：</strong>开关控制是否允许处理代发订单。</li>
+                <li><strong>等级设置：</strong>初级、中级、高级、超级，单选。</li>
+                <li><strong>添加币商：</strong>成功后审核状态变为已通过。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-settlement-detail" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag green">结算明细</span> 薪资来源核对</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>明细用于运营核对，不改变结算状态。</li>
+                <li>汇总标签需展示达标数量、满额薪资、邀请奖励金币、结算金币等。</li>
+                <li>按薪资来源分块展示 BD、公会、币商、下级分成明细。</li>
+                <li>规则展示必须用“2%（400 USD）”，金币按 400×9000=3,600,000 计算。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-settlement-confirm" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag green">确认结算</span> 提交金币审核</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>弹窗展示月份、国家、UID、身份、薪资来源、系统计算金币。</li>
+                <li>运营必须填写实际发放金币，实际金币才提交到金币审核页面。</li>
+                <li>提交后状态变为等待发放，按钮不可再点。</li>
+                <li>金币审核拒绝后显示再次结算；金币发放成功后显示已结算（操作人）。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
+        <details id="doc-boundary" class="prd-card context-hidden" open>
+          <summary>
+            <span><span class="tag red">边界</span> 异常与校验</span>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+          </summary>
+          <div class="prd-body">
+            <div class="doc-block">
+              <ul>
+                <li>UID 不存在、UID 已被同国家同身份配置、国家禁用、人员停用时，保存或提交必须拦截。</li>
+                <li>审核对象被拒绝后，不允许再次通过同一条记录；如需重新提交，应由 App 侧产生新申请。</li>
+                <li>薪资项删除或禁用后，不影响历史结算明细，只影响后续月份计算。</li>
+                <li>物料商品下架或禁用后，不影响历史发放记录；新发放列表不可再选择。</li>
+                <li>结算明细中若源数据缺失，状态标记为异常，不能确认结算。</li>
+                <li>所有审核、配置、结算提交需记录操作人、操作时间、前后变更内容。</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const docButtons = [...document.querySelectorAll("[data-doc-target]")];
+    const prdPanel = document.getElementById("prdPanel");
+    const contextCards = [...document.querySelectorAll(".prd-card")];
+    const contextHint = document.getElementById("contextHint");
+
+    const contextHints = {
+      "doc-overview": "当前为系统总览。点击左侧具体按钮后，将切换为对应操作说明。",
+      "doc-regions": "当前说明：国家/地区列表、筛选、行内操作。",
+      "doc-region-edit": "当前说明：新增或编辑国家/地区弹窗。",
+      "doc-conversion": "当前说明：积分、USD、金币换算配置。",
+      "doc-country-permission": "当前说明：国家身份权限列表。",
+      "doc-permission-config": "当前说明：单个身份的权限配置弹窗。",
+      "doc-country-salary": "当前说明：国家薪资政策列表。",
+      "doc-salary-item": "当前说明：新增/编辑薪资项弹窗全部字段。",
+      "doc-salary-bd": "当前说明：邀请BD业绩薪资配置。",
+      "doc-salary-guild": "当前说明：邀请公会业绩薪资配置。",
+      "doc-salary-seller": "当前说明：邀请币商业绩薪资配置。",
+      "doc-salary-downline": "当前说明：下级薪资分成配置。",
+      "doc-members": "当前说明：人员配置列表和查询。",
+      "doc-member-modal": "当前说明：新增或编辑人员弹窗。",
+      "doc-materials": "当前说明：物料配置列表。",
+      "doc-material-modal": "当前说明：添加或编辑可发放物料。",
+      "doc-material-detail": "当前说明：已勾选物料详情。",
+      "doc-material-records": "当前说明：物料发放记录。",
+      "doc-reviews": "当前说明：审核记录公共规则。",
+      "doc-review-guild": "当前说明：公会申请审核。",
+      "doc-review-seller": "当前说明：币商申请审核。",
+      "doc-review-bd": "当前说明：BD 申请审核。",
+      "doc-review-team": "当前说明：下级成员申请审核。",
+      "doc-review-confirm": "当前说明：审核同意或拒绝二次确认。",
+      "doc-seller-create": "当前说明：同意币商后添加币商。",
+      "doc-settlement": "当前说明：薪资结算列表和查询。",
+      "doc-settlement-detail": "当前说明：结算明细核对。",
+      "doc-settlement-confirm": "当前说明：确认结算并提交金币审核。",
+      "doc-boundary": "当前说明：异常与校验规则。"
+    };
+
+    function showContextDoc(id, source = "manual") {
+      const target = document.getElementById(id) || document.getElementById("doc-overview");
+      contextCards.forEach(card => card.classList.toggle("context-hidden", card !== target));
+      target.open = true;
+      prdPanel.scrollTo({ top: 0, behavior: source === "auto" ? "auto" : "smooth" });
+      contextHint.textContent = contextHints[target.id] || "点击左侧页面、按钮或弹窗，右侧只展示对应说明。";
+      setActiveDocButton(target.id);
+      setTimeout(drawConnectors, 120);
+    }
+
+    function scrollDoc(id) {
+      showContextDoc(id);
+    }
+
+    function setActiveDocButton(id) {
+      docButtons.forEach(button => button.classList.toggle("active", button.dataset.docTarget === id));
+    }
+
+    function drawConnectors() {
+      const svg = document.getElementById("connectors");
+      const layout = document.getElementById("reviewLayout");
+      const proto = document.getElementById("prototypeArea");
+      if (!svg || !layout || !proto || window.innerWidth <= 1180) return;
+      svg.querySelectorAll("path.connector").forEach(path => path.remove());
+
+      const activeCard = document.querySelector(".prd-card:not(.context-hidden)");
+      if (!activeCard) return;
+      const ratioMap = {
+        "doc-overview": .1,
+        "doc-regions": .16,
+        "doc-region-edit": .16,
+        "doc-conversion": .16,
+        "doc-country-permission": .18,
+        "doc-permission-config": .2,
+        "doc-country-salary": .22,
+        "doc-salary-item": .24,
+        "doc-salary-bd": .24,
+        "doc-salary-guild": .24,
+        "doc-salary-seller": .24,
+        "doc-salary-downline": .24,
+        "doc-members": .3,
+        "doc-member-modal": .3,
+        "doc-materials": .42,
+        "doc-material-modal": .42,
+        "doc-material-detail": .44,
+        "doc-material-records": .46,
+        "doc-reviews": .58,
+        "doc-review-guild": .58,
+        "doc-review-seller": .6,
+        "doc-review-bd": .62,
+        "doc-review-team": .64,
+        "doc-review-confirm": .66,
+        "doc-seller-create": .68,
+        "doc-settlement": .78,
+        "doc-settlement-detail": .78,
+        "doc-settlement-confirm": .82,
+        "doc-boundary": .9
+      };
+      const root = layout.getBoundingClientRect();
+      const left = proto.getBoundingClientRect();
+      const right = activeCard.getBoundingClientRect();
+      const ratio = ratioMap[activeCard.id] || .5;
+      const x1 = left.right - root.left - 8;
+      const y1 = left.top - root.top + left.height * ratio;
+      const x2 = right.left - root.left - 10;
+      const y2 = right.top - root.top + Math.min(42, right.height / 2);
+      if (y2 < 0 || y2 > root.height + 120) return;
+      const mid = x1 + Math.max(50, (x2 - x1) * .45);
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("class", "connector");
+      path.setAttribute("d", `M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`);
+      svg.appendChild(path);
+    }
+
+    function resolvePrototypeContext(target) {
+      const button = target.closest("button, [data-view], [data-region-permission], [data-permission], [data-region-conversion], [data-region-salary], [data-add-salary], [data-edit-salary], [data-edit-region], [data-add-region], [data-add-member], [data-edit-member], [data-open-material], [data-material-type], [data-material-detail], [data-material-tab], [data-review-tab], [data-review-status], [data-review], [data-approve-review], [data-reject-review], [data-settlement], [data-confirm-settlement], [data-review-search]");
+      if (!button) return null;
+
+      if (button.dataset.view === "regions") return "doc-regions";
+      if (button.dataset.view === "members") return "doc-members";
+      if (button.dataset.view === "materials") return "doc-materials";
+      if (button.dataset.view === "reviews") return "doc-reviews";
+      if (button.dataset.view === "settlement") return "doc-settlement";
+
+      if (button.hasAttribute("data-add-region") || button.hasAttribute("data-edit-region")) return "doc-region-edit";
+      if (button.hasAttribute("data-region-conversion")) return "doc-conversion";
+      if (button.hasAttribute("data-region-permission")) return "doc-country-permission";
+      if (button.hasAttribute("data-permission")) return "doc-permission-config";
+      if (button.hasAttribute("data-region-salary")) return "doc-country-salary";
+      if (button.hasAttribute("data-add-salary") || button.hasAttribute("data-edit-salary")) return "doc-salary-item";
+
+      if (button.hasAttribute("data-add-member") || button.hasAttribute("data-edit-member")) return "doc-member-modal";
+
+      if (button.hasAttribute("data-open-material") || button.hasAttribute("data-material-type")) return "doc-material-modal";
+      if (button.hasAttribute("data-material-detail")) return "doc-material-detail";
+      if (button.dataset.materialTab === "records") return "doc-material-records";
+      if (button.dataset.materialTab === "config") return "doc-materials";
+
+      if (button.dataset.reviewTab === "guild") return "doc-review-guild";
+      if (button.dataset.reviewTab === "seller") return "doc-review-seller";
+      if (button.dataset.reviewTab === "bd") return "doc-review-bd";
+      if (button.dataset.reviewTab === "team") return "doc-review-team";
+      if (button.hasAttribute("data-review-status") || button.hasAttribute("data-review-search")) return "doc-reviews";
+      if (button.hasAttribute("data-review")) {
+        const activeReviewTab = button.ownerDocument.querySelector("[data-review-tab].active");
+        const tab = activeReviewTab ? activeReviewTab.dataset.reviewTab : "guild";
+        return {
+          guild: "doc-review-guild",
+          seller: "doc-review-seller",
+          bd: "doc-review-bd",
+          team: "doc-review-team"
+        }[tab] || "doc-reviews";
+      }
+      if (button.hasAttribute("data-approve-review")) {
+        return button.textContent.includes("币商") ? "doc-seller-create" : "doc-review-confirm";
+      }
+      if (button.hasAttribute("data-reject-review")) return "doc-review-confirm";
+
+      if (button.hasAttribute("data-settlement")) return "doc-settlement-detail";
+      if (button.hasAttribute("data-confirm-settlement")) return "doc-settlement-confirm";
+      return null;
+    }
+
+    function resolveSalaryDoc(frameDoc) {
+      const field = frameDoc && frameDoc.getElementById ? frameDoc.getElementById("salaryModuleField") : null;
+      const value = field ? field.value : "";
+      return {
+        bd: "doc-salary-bd",
+        guild: "doc-salary-guild",
+        seller: "doc-salary-seller",
+        downline: "doc-salary-downline"
+      }[value] || "doc-salary-item";
+    }
+
+    function bindPrototypeContext() {
+      const frame = document.getElementById("prototypeFrame");
+      let frameDoc;
+      try {
+        frameDoc = frame.contentDocument || frame.contentWindow.document;
+      } catch (error) {
+        contextHint.textContent = "浏览器限制了 iframe 读取时，仍可用右上角按钮手动切换说明。";
+        return;
+      }
+      if (!frameDoc || frameDoc.__contextBound) return;
+      frameDoc.__contextBound = true;
+      frameDoc.addEventListener("click", event => {
+        const docId = resolvePrototypeContext(event.target);
+        if (docId) showContextDoc(docId, "auto");
+      }, true);
+    }
+
+    docButtons.forEach(button => button.addEventListener("click", () => scrollDoc(button.dataset.docTarget)));
+    window.addEventListener("message", event => {
+      const payload = event.data || {};
+      if (payload.type !== "gm-prd-context" || !payload.docId) return;
+      showContextDoc(payload.docId, "auto");
+    });
+    prdPanel.addEventListener("scroll", () => requestAnimationFrame(drawConnectors));
+    window.addEventListener("resize", drawConnectors);
+    window.addEventListener("load", () => {
+      showContextDoc("doc-overview", "auto");
+      const frame = document.getElementById("prototypeFrame");
+      frame.addEventListener("load", () => {
+        bindPrototypeContext();
+        drawConnectors();
+      });
+      setTimeout(bindPrototypeContext, 800);
+      drawConnectors();
+    });
+    document.querySelectorAll(".prd-card").forEach(card => card.addEventListener("toggle", () => requestAnimationFrame(drawConnectors)));
+  </script>
+</body>
+</html>
