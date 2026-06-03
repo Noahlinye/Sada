@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>任务中心管理后台原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --panel: #ffffff;
+      --ink: #182230;
+      --muted: #667085;
+      --line: #e4e7ec;
+      --brand: #6d28d9;
+      --brand-2: #7c3aed;
+      --green: #12b76a;
+      --orange: #f79009;
+      --red: #f04438;
+      --blue: #2e90fa;
+      --note: #dcfce7;
+      --note-border: #86efac;
+      --wire: #22c55e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    .prototype-shell {
+      display: grid;
+      grid-template-columns: minmax(1040px, 1fr) 380px;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .prototype-main { min-width: 0; padding: 24px; }
+
+    .notes-panel {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-left: 1px solid #d0d5dd;
+      background: #f8fafc;
+      padding: 20px 16px;
+      z-index: 3;
+    }
+
+    .connection-layer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .admin-frame {
+      display: grid;
+      grid-template-columns: 232px 1fr;
+      min-height: calc(100vh - 48px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 16px 36px rgba(16, 24, 40, .08);
+    }
+
+    .sidebar {
+      background: #101828;
+      color: #fff;
+      padding: 20px 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+
+    .brand strong { display: block; font-size: 15px; line-height: 1.1; }
+    .brand span { color: #98a2b3; font-size: 12px; }
+
+    .nav { display: grid; gap: 6px; margin-top: 18px; }
+
+    .nav button {
+      height: 40px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 12px;
+      background: transparent;
+      color: #d0d5dd;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav button.active { background: rgba(255, 255, 255, .12); color: #fff; }
+
+    .content-frame {
+      display: grid;
+      grid-template-rows: 64px 1fr;
+      min-width: 0;
+      background: #f8fafc;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .92);
+    }
+
+    .topbar-title span { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .topbar-title strong { display: block; margin-top: 2px; font-size: 18px; }
+
+    .page { display: none; padding: 20px 24px 28px; }
+    .page.active { display: block; }
+    .page-grid { display: grid; gap: 16px; }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    }
+
+    .card-pad { padding: 16px; }
+    .card-title { margin: 0; font-size: 16px; font-weight: 800; }
+    .card-desc { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .kpi { padding: 14px; }
+    .kpi span { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .kpi strong { display: block; margin-top: 8px; font-size: 22px; line-height: 1; }
+    .kpi em { display: block; margin-top: 8px; color: var(--green); font-size: 12px; font-style: normal; font-weight: 700; }
+
+    .stats-summary { padding: 16px 18px; }
+    .summary-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .summary-title { margin: 0; font-size: 16px; font-weight: 900; }
+    .summary-desc { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .summary-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .summary-item {
+      min-height: 92px;
+      padding: 12px;
+      border: 1px solid #eaecf0;
+      border-radius: 10px;
+      background: #f9fafb;
+    }
+    .summary-item span { display: block; color: #667085; font-size: 12px; font-weight: 800; }
+    .summary-item strong { display: block; margin-top: 8px; color: #101828; font-size: 24px; line-height: 1; }
+    .summary-item em { display: block; margin-top: 8px; color: #12b76a; font-size: 12px; font-style: normal; font-weight: 800; }
+
+    .metric-help { position: relative; flex: none; }
+    .metric-help-button {
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #d6bbfb;
+      border-radius: 16px;
+      padding: 0 12px;
+      background: #f4ebff;
+      color: #6941c6;
+      font-size: 12px;
+      font-weight: 850;
+      cursor: help;
+    }
+    .metric-help-panel {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 360px;
+      display: none;
+      border: 1px solid #d6bbfb;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      box-shadow: 0 18px 36px rgba(16, 24, 40, .16);
+      z-index: 32;
+    }
+    .metric-help:hover .metric-help-panel,
+    .metric-help:focus-within .metric-help-panel { display: block; }
+    .metric-help-panel h4 { margin: 0 0 8px; font-size: 13px; font-weight: 900; }
+    .metric-help-panel p { margin: 0; color: #475467; font-size: 12px; line-height: 1.6; }
+    .metric-help-panel p + p { margin-top: 6px; }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 132px 148px 150px 150px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 14px;
+    }
+
+    .toolbar.analytics-toolbar {
+      grid-template-columns: minmax(280px, 360px) 170px auto 1fr;
+      align-items: end;
+      overflow: visible;
+    }
+
+    .analytics-toolbar > .btn { margin-top: 18px; }
+
+    .toolbar.task {
+      grid-template-columns: 150px 140px 140px 1fr auto auto;
+    }
+
+    .toolbar.trace {
+      grid-template-columns: 150px 150px 140px 1fr auto;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      background: #fff;
+      color: #101828;
+      outline: none;
+    }
+
+    input, select { height: 36px; padding: 0 10px; }
+    textarea { min-height: 76px; padding: 10px; resize: none; line-height: 1.5; }
+
+    .filter-field { display: grid; gap: 6px; min-width: 0; }
+    .filter-field.date-filter { position: relative; }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #475467;
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1;
+    }
+
+    .range-picker { display: grid; gap: 8px; }
+
+    .range-input {
+      display: grid;
+      grid-template-columns: 1fr 28px 1fr 28px;
+      align-items: center;
+      height: 36px;
+      border: 1px solid #d0d5dd;
+      border-radius: 9px;
+      background: #fff;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .range-input span {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 10px;
+      color: #667085;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .range-input em {
+      color: #98a2b3;
+      font-style: normal;
+      text-align: center;
+      font-weight: 850;
+    }
+
+    .range-input i { color: #667085; text-align: center; }
+
+    .calendar-popover {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 8px);
+      width: min(640px, calc(100vw - 460px));
+      display: none;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 14px 30px rgba(16, 24, 40, .12);
+      z-index: 35;
+    }
+
+    .range-picker.open .calendar-popover { display: block; }
+
+    .calendar-head {
+      display: grid;
+      grid-template-columns: 28px 1fr 1fr 28px;
+      align-items: center;
+      height: 42px;
+      border-bottom: 1px solid var(--line);
+      color: #101828;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .calendar-head span:first-child,
+    .calendar-head span:last-child { color: #98a2b3; font-size: 18px; font-weight: 700; }
+
+    .calendar-months { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 12px 16px 16px; }
+    .calendar-month { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px 10px; text-align: center; }
+    .calendar-month b { color: #344054; font-size: 13px; font-weight: 850; }
+    .calendar-month span { color: #344054; font-size: 13px; line-height: 24px; border-radius: 4px; cursor: pointer; }
+    .calendar-month .muted { color: #c0c4cc; }
+    .calendar-month .selected { outline: 1px solid #2e90fa; color: #1d4ed8; background: #eff8ff; }
+    .calendar-month .in-range { background: #eff8ff; color: #1d4ed8; }
+    .calendar-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); background: #f9fafb; }
+
+    .btn {
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 14px;
+      background: #fff;
+      color: #344054;
+      font-weight: 750;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .btn.primary { border-color: var(--brand); background: var(--brand); color: #fff; }
+    .btn.danger { border-color: #fecdca; background: #fff5f4; color: #b42318; }
+
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; white-space: nowrap; font-size: 13px; }
+    th { color: #475467; background: #f9fafb; font-size: 12px; font-weight: 800; }
+    td { color: #344054; }
+    .table-wrap { overflow: hidden; }
+
+    .badge { display: inline-flex; align-items: center; height: 24px; border-radius: 12px; padding: 0 8px; font-size: 12px; font-weight: 750; }
+    .badge.green { background: #ecfdf3; color: #027a48; }
+    .badge.orange { background: #fff6ed; color: #b54708; }
+    .badge.red { background: #fef3f2; color: #b42318; }
+    .badge.purple { background: #f4ebff; color: #6941c6; }
+    .badge.gray { background: #f2f4f7; color: #475467; }
+    .badge.blue { background: #eff8ff; color: #175cd3; }
+
+    .two-col { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+    .three-col { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .chart {
+      height: 230px;
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      padding: 18px 4px 26px;
+    }
+
+    .bar {
+      flex: 1;
+      border-radius: 8px 8px 0 0;
+      background: linear-gradient(180deg, #7c3aed, #06b6d4);
+      position: relative;
+    }
+
+    .bar span {
+      position: absolute;
+      left: 50%;
+      bottom: -22px;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+
+    .type-overview {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .type-card {
+      display: grid;
+      gap: 12px;
+      min-height: 176px;
+      padding: 14px;
+      border: 1px solid #e9d7fe;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbf9ff 100%);
+    }
+
+    .type-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .type-card h3 { margin: 0; font-size: 15px; font-weight: 850; }
+    .type-card .share { color: var(--brand); font-size: 12px; font-weight: 850; }
+    .type-card strong { font-size: 24px; line-height: 1; }
+    .type-card small { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-weight: 750; }
+
+    .metric-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #475467;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .metric-line span { display: inline-flex; align-items: center; gap: 5px; }
+
+    .progress { height: 8px; border-radius: 4px; background: #eaecf0; overflow: hidden; }
+    .progress span { display: block; height: 100%; border-radius: inherit; background: var(--brand-2); }
+
+    .form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .form-field { display: grid; gap: 6px; }
+    .form-field label { color: #475467; font-size: 12px; font-weight: 750; }
+    .wide-2 { grid-column: span 2; }
+    .wide-4 { grid-column: span 4; }
+
+    .upload-box {
+      min-height: 76px;
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      border: 1px dashed #b692f6;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fbfaff;
+    }
+
+    .upload-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #f4ebff;
+      color: var(--brand);
+      font-size: 18px;
+    }
+
+    .upload-copy strong { display: block; color: #344054; font-size: 13px; }
+    .upload-copy span { display: block; margin-top: 4px; color: #667085; font-size: 12px; line-height: 1.35; }
+    .upload-box input[type="file"] { display: none; }
+
+    .condition-shell { display: grid; gap: 14px; }
+    .condition-panel { display: none; }
+    .condition-panel.active { display: grid; gap: 14px; }
+
+    .condition-card {
+      border: 1px solid #e9d7fe;
+      border-radius: 12px;
+      padding: 14px;
+      background: #fcfaff;
+    }
+
+    .condition-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .condition-head h4 { margin: 0; font-size: 14px; font-weight: 900; }
+    .condition-head span { color: #667085; font-size: 12px; font-weight: 750; }
+
+    .condition-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+
+    .host-mode-panel { display: none; }
+    .host-mode-panel.active { display: grid; gap: 12px; }
+
+    .tier-table {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .tier-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .tier-row:first-child { border-top: 0; background: #f9fafb; color: #475467; font-size: 12px; font-weight: 850; }
+    .tier-row strong { color: #344054; font-size: 13px; }
+    .tier-row input { height: 34px; }
+
+    .readonly-field {
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      padding: 0 10px;
+      background: #f9fafb;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .reward-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .condition-note {
+      border: 1px solid #fedf89;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fffaeb;
+      color: #93370d;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .is-hidden { display: none !important; }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 36px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      padding: 0 10px;
+      background: #fff;
+    }
+
+    .switch { width: 42px; height: 24px; border-radius: 12px; background: var(--brand); position: relative; }
+    .switch:after { content: ""; position: absolute; right: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { display: inline-flex; align-items: center; height: 30px; border: 1px solid var(--line); border-radius: 15px; padding: 0 10px; background: #fff; color: #344054; font-size: 12px; font-weight: 700; }
+    .chip.active { border-color: #c7b5ff; background: #f4ebff; color: #6941c6; }
+
+    .warning { border: 1px solid #fedf89; background: #fffaeb; color: #93370d; border-radius: 10px; padding: 12px; line-height: 1.5; font-size: 13px; }
+
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      background: rgba(16, 24, 40, .48);
+      z-index: 40;
+    }
+
+    .modal-mask.show { display: flex; }
+
+    .modal {
+      width: min(940px, calc(100vw - 64px));
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(16, 24, 40, .24);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-body { display: grid; gap: 16px; padding: 18px 20px; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line); background: #f9fafb; }
+
+    .note-page { display: none; }
+    .note-page.active { display: grid; gap: 12px; }
+    .note-title { margin: 0 0 8px; color: #166534; font-size: 18px; font-weight: 900; }
+    .note-card { border: 1px solid #d0d5dd; border-radius: 12px; background: #fff; padding: 14px; color: var(--ink); box-shadow: 0 1px 2px rgba(16, 24, 40, .05); }
+    .note-card h3 { margin: 0 0 10px; color: #101828; font-size: 15px; font-weight: 900; }
+    .note-card p { margin: 0; color: #344054; font-size: 13px; line-height: 1.65; }
+    .note-card ul { margin: 0; padding-left: 18px; color: #344054; font-size: 13px; line-height: 1.65; }
+    .note-section { display: grid; gap: 10px; padding-top: 12px; margin-top: 12px; border-top: 1px solid #e4e7ec; }
+    .note-section:first-of-type { padding-top: 0; margin-top: 0; border-top: 0; }
+    .note-section h4 { margin: 0; color: #166534; font-size: 13px; font-weight: 900; }
+    .note-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .note-list li { color: #344054; font-size: 12px; line-height: 1.55; }
+    .note-list strong { color: #101828; font-weight: 900; }
+    .note-block { border: 1px solid #e4e7ec; border-radius: 10px; padding: 10px; background: #f8fafc; }
+    .note-block h4 { margin: 0 0 6px; color: #101828; font-size: 13px; font-weight: 900; }
+    .note-block p { color: #475467; font-size: 12px; line-height: 1.55; }
+    .note-block p + p { margin-top: 4px; }
+    .note-chip { display: inline-flex; align-items: center; height: 22px; border-radius: 11px; padding: 0 8px; background: #ecfdf3; color: #027a48; font-size: 11px; font-weight: 850; }
+
+    .connect-src { position: relative; }
+    .connect-src.show-link::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border: 2px solid rgba(34, 197, 94, .55);
+      border-radius: 14px;
+      pointer-events: none;
+    }
+
+    .note-card.show-link { outline: 2px solid rgba(34, 197, 94, .55); outline-offset: 2px; }
+
+    @media (max-width: 1200px) {
+      .prototype-shell { grid-template-columns: 1fr; }
+      .notes-panel { position: static; height: auto; }
+      .admin-frame { grid-template-columns: 1fr; }
+      .kpi-grid, .two-col, .three-col, .form-grid, .condition-grid, .reward-row, .summary-metrics { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="connection-layer" id="connectionLayer"></svg>
+
+  <div class="prototype-shell">
+    <main class="prototype-main">
+      <div class="admin-frame">
+        <aside class="sidebar">
+          <div class="brand">
+            <div class="brand-mark"><i class="fa-solid fa-list-check"></i></div>
+            <div>
+              <strong>Task Center Admin</strong>
+              <span>任务中心管理后台</span>
+            </div>
+          </div>
+          <nav class="nav">
+            <button class="active" data-page="analytics"><i class="fa-solid fa-chart-line"></i>任务数据统计</button>
+            <button data-page="tasks"><i class="fa-solid fa-table-list"></i>任务配置</button>
+            <button data-page="trace"><i class="fa-solid fa-user-clock"></i>用户与奖励记录</button>
+          </nav>
+        </aside>
+
+        <section class="content-frame">
+          <header class="topbar">
+            <div class="topbar-title">
+              <span>运营后台 / 任务中心</span>
+              <strong id="pageTitle">任务数据统计</strong>
+            </div>
+            <button class="btn"><i class="fa-solid fa-rotate-right"></i>刷新</button>
+          </header>
+
+          <section class="page active" data-page-panel="analytics">
+            <div class="page-grid">
+              <div class="card toolbar analytics-toolbar connect-src" data-connect="analytics-filter">
+                <div class="filter-field date-filter">
+                  <label class="field-label">日期范围</label>
+                  <div class="range-picker" id="analyticsDatePicker">
+                    <button class="range-input" type="button" id="dateRangeTrigger">
+                      <span id="startDateText">开始日期</span>
+                      <em>→</em>
+                      <span id="endDateText">结束日期</span>
+                      <i class="fa-regular fa-calendar"></i>
+                    </button>
+                    <div class="calendar-popover" id="dateCalendar">
+                      <div class="calendar-head">
+                        <span>‹‹</span>
+                        <strong>2026 年 6 月</strong>
+                        <strong>2026 年 7 月</strong>
+                        <span>››</span>
+                      </div>
+                      <div class="calendar-months">
+                        <div class="calendar-month">
+                          <b>一</b><b>二</b><b>三</b><b>四</b><b>五</b><b>六</b><b>日</b>
+                          <span data-date="2026-06-01">1</span><span data-date="2026-06-02">2</span><span data-date="2026-06-03">3</span><span data-date="2026-06-04">4</span><span data-date="2026-06-05">5</span><span data-date="2026-06-06">6</span><span data-date="2026-06-07">7</span>
+                          <span data-date="2026-06-08">8</span><span data-date="2026-06-09">9</span><span data-date="2026-06-10">10</span><span data-date="2026-06-11">11</span><span data-date="2026-06-12">12</span><span data-date="2026-06-13">13</span><span data-date="2026-06-14">14</span>
+                          <span data-date="2026-06-15">15</span><span data-date="2026-06-16">16</span><span data-date="2026-06-17">17</span><span data-date="2026-06-18">18</span><span data-date="2026-06-19">19</span><span data-date="2026-06-20">20</span><span data-date="2026-06-21">21</span>
+                          <span data-date="2026-06-22">22</span><span data-date="2026-06-23">23</span><span data-date="2026-06-24">24</span><span data-date="2026-06-25">25</span><span data-date="2026-06-26">26</span><span data-date="2026-06-27">27</span><span data-date="2026-06-28">28</span>
+                          <span data-date="2026-06-29">29</span><span data-date="2026-06-30">30</span><span class="muted">1</span><span class="muted">2</span><span class="muted">3</span><span class="muted">4</span><span class="muted">5</span>
+                        </div>
+                        <div class="calendar-month">
+                          <b>一</b><b>二</b><b>三</b><b>四</b><b>五</b><b>六</b><b>日</b>
+                          <span class="muted">29</span><span class="muted">30</span><span data-date="2026-07-01">1</span><span data-date="2026-07-02">2</span><span data-date="2026-07-03">3</span><span data-date="2026-07-04">4</span><span data-date="2026-07-05">5</span>
+                          <span data-date="2026-07-06">6</span><span data-date="2026-07-07">7</span><span data-date="2026-07-08">8</span><span data-date="2026-07-09">9</span><span data-date="2026-07-10">10</span><span data-date="2026-07-11">11</span><span data-date="2026-07-12">12</span>
+                          <span data-date="2026-07-13">13</span><span data-date="2026-07-14">14</span><span data-date="2026-07-15">15</span><span data-date="2026-07-16">16</span><span data-date="2026-07-17">17</span><span data-date="2026-07-18">18</span><span data-date="2026-07-19">19</span>
+                          <span data-date="2026-07-20">20</span><span data-date="2026-07-21">21</span><span data-date="2026-07-22">22</span><span data-date="2026-07-23">23</span><span data-date="2026-07-24">24</span><span data-date="2026-07-25">25</span><span data-date="2026-07-26">26</span>
+                          <span data-date="2026-07-27">27</span><span data-date="2026-07-28">28</span><span data-date="2026-07-29">29</span><span data-date="2026-07-30">30</span><span data-date="2026-07-31">31</span><span class="muted">1</span><span class="muted">2</span>
+                        </div>
+                      </div>
+                      <div class="calendar-actions">
+                        <button class="btn" type="button" id="dateClear">清空</button>
+                        <button class="btn primary" type="button" id="dateApply">确定</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="filter-field">
+                  <label class="field-label">任务类型</label>
+                  <select><option>全部任务类型</option><option>Regular</option><option>Guild</option><option>Events</option></select>
+                </div>
+                <button class="btn primary">查询</button>
+              </div>
+
+              <div class="card stats-summary connect-src" data-connect="analytics-kpis">
+                <div class="summary-head">
+                  <div>
+                    <h2 class="summary-title">周期总览</h2>
+                    <p class="summary-desc">展示当前筛选条件下的任务访问、完成和奖励发放结果。</p>
+                  </div>
+                  <div class="metric-help">
+                    <button class="metric-help-button" type="button"><i class="fa-regular fa-circle-question"></i> 指标说明</button>
+                    <div class="metric-help-panel">
+                      <h4>字段口径</h4>
+                      <p>访问用户 UV：进入任务中心页面的去重用户数。</p>
+                      <p>完成用户 UV：至少完成 1 个任务的去重用户数。</p>
+                      <p>完成次数：任务完成事件总数，同一用户完成多个任务分别计数。</p>
+                      <p>已领取积分：领取成功并完成入账的积分总量。</p>
+                      <p>装扮发放数：虚拟装扮奖励发放成功的总次数。</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="summary-metrics">
+                  <div class="summary-item"><span>访问用户 UV</span><strong>18,240</strong><em>进入任务中心去重用户</em></div>
+                  <div class="summary-item"><span>完成用户 UV</span><strong>6,832</strong><em>完成至少 1 个任务</em></div>
+                  <div class="summary-item"><span>完成次数</span><strong>21,908</strong><em>任务完成事件数</em></div>
+                  <div class="summary-item"><span>已领取积分</span><strong>1,280,600</strong><em>领取成功积分</em></div>
+                  <div class="summary-item"><span>装扮发放数</span><strong>3,462</strong><em>虚拟奖励成功数</em></div>
+                </div>
+              </div>
+
+              <div class="card card-pad connect-src" data-connect="analytics-type-overview">
+                <div class="section-head">
+                  <div>
+                    <h2 class="card-title">任务类型完成表现</h2>
+                    <p class="card-desc">按任务类型汇总完成次数、完成用户和奖励发放，便于快速判断哪类任务贡献最高。</p>
+                  </div>
+                  <span class="badge blue">按完成占比展示</span>
+                </div>
+                <div class="type-overview">
+                  <div class="type-card">
+                    <div class="type-card-head"><h3>Regular</h3><span class="share">完成占比 61%</span></div>
+                    <div><strong>13,420</strong><small>完成次数</small></div>
+                    <div class="progress"><span style="width: 61%;"></span></div>
+                    <div class="metric-line"><span>完成用户</span><b>4,920</b></div>
+                    <div class="metric-line"><span>已领取积分</span><b>804,000</b></div>
+                    <div class="metric-line"><span>装扮发放数</span><b>216</b></div>
+                  </div>
+                  <div class="type-card">
+                    <div class="type-card-head"><h3>Guild</h3><span class="share">完成占比 22%</span></div>
+                    <div><strong>4,890</strong><small>完成次数</small></div>
+                    <div class="progress"><span style="width: 22%;"></span></div>
+                    <div class="metric-line"><span>完成用户</span><b>1,340</b></div>
+                    <div class="metric-line"><span>已领取积分</span><b>286,600</b></div>
+                    <div class="metric-line"><span>装扮发放数</span><b>524</b></div>
+                  </div>
+                  <div class="type-card">
+                    <div class="type-card-head"><h3>Events</h3><span class="share">完成占比 17%</span></div>
+                    <div><strong>3,698</strong><small>完成次数</small></div>
+                    <div class="progress"><span style="width: 17%;"></span></div>
+                    <div class="metric-line"><span>完成用户</span><b>1,172</b></div>
+                    <div class="metric-line"><span>已领取积分</span><b>190,000</b></div>
+                    <div class="metric-line"><span>装扮发放数</span><b>3,462</b></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" data-page-panel="tasks">
+            <div class="page-grid">
+              <div class="card toolbar task connect-src" data-connect="tasks-filter">
+                <select><option>全部任务类型</option><option>Regular</option><option>Guild</option><option>Events</option></select>
+                <select><option>全部状态</option><option>草稿</option><option>已上线</option><option>已下线</option></select>
+                <select><option>全部奖励</option><option>积分</option><option>物料装扮</option></select>
+                <input placeholder="搜索任务 ID / 标题">
+                <button class="btn primary">查询</button>
+                <button class="btn" data-open-task-modal="new"><i class="fa-solid fa-plus"></i>新建任务</button>
+              </div>
+
+              <div class="card table-wrap connect-src" data-connect="tasks-table">
+                <table>
+                  <thead>
+                    <tr><th>任务 ID</th><th>任务标题</th><th>类型</th><th>分组</th><th>奖励</th><th>状态</th><th>生效时间</th><th>排序</th><th>操作</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>T10086</td><td>First top-up</td><td><span class="badge purple">Regular</span></td><td>Newbie Tasks</td><td>600 积分</td><td><span class="badge green">已上线</span></td><td>2026-06-01</td><td>10</td><td><button class="text-purple-700 font-bold" data-open-task-modal="edit">编辑</button> / 数据 / 下线</td></tr>
+                    <tr><td>T10091</td><td>Go live for 60 minutes</td><td><span class="badge purple">Guild</span></td><td>Tasks for guild</td><td>1,200 积分</td><td><span class="badge green">已上线</span></td><td>2026-06-01</td><td>20</td><td><button class="text-purple-700 font-bold" data-open-task-modal="edit">编辑</button> / 数据 / 下线</td></tr>
+                    <tr><td>T10102</td><td>Complete the party challenge</td><td><span class="badge purple">Events</span></td><td>Event Tasks</td><td>Starlight Entrance</td><td><span class="badge orange">待上线</span></td><td>2026-06-02</td><td>30</td><td><button class="text-purple-700 font-bold" data-open-task-modal="edit">编辑</button> / 上线 / 复制</td></tr>
+                    <tr><td>T10106</td><td>Share the party link</td><td><span class="badge purple">Events</span></td><td>Event Tasks</td><td>800 积分</td><td><span class="badge gray">草稿</span></td><td>-</td><td>40</td><td><button class="text-purple-700 font-bold" data-open-task-modal="edit">编辑</button> / 删除</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" data-page-panel="trace">
+            <div class="page-grid">
+              <div class="card toolbar trace connect-src" data-connect="trace-filter">
+                <input placeholder="用户 ID">
+                <input placeholder="任务 ID">
+                <select><option>全部发放状态</option><option>成功</option><option>失败</option></select>
+                <input placeholder="时间范围：2026-06-01 - 2026-06-02">
+                <button class="btn primary">查询</button>
+              </div>
+
+              <div class="card table-wrap connect-src" data-connect="trace-record-table">
+                <table>
+                  <thead>
+                    <tr><th>记录 ID</th><th>用户 ID</th><th>任务 ID</th><th>任务标题</th><th>类型</th><th>完成进度</th><th>完成时间</th><th>奖励类型</th><th>奖励内容</th><th>发放状态</th><th>失败原因</th><th>操作</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>R90021</td><td>U839201</td><td>T10086</td><td>First top-up</td><td>Regular</td><td>1/1</td><td>10:12:23</td><td>积分</td><td>600</td><td><span class="badge green">成功</span></td><td>-</td><td>详情</td></tr>
+                    <tr><td>R90038</td><td>U883019</td><td>T10092</td><td>Receive 10 room gifts</td><td>Guild</td><td>10/10</td><td>11:40:02</td><td>物料装扮</td><td>Neon Host Badge</td><td><span class="badge red">失败</span></td><td>装扮库存不足</td><td><button class="text-purple-700 font-bold">重发</button></td></tr>
+                    <tr><td>R90052</td><td>U847221</td><td>T10106</td><td>Share the party link</td><td>Events</td><td>1/1</td><td>12:08:31</td><td>积分</td><td>800</td><td><span class="badge green">成功</span></td><td>-</td><td>详情</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <aside class="notes-panel">
+      <div class="note-page active" data-note-page="analytics">
+        <h2 class="note-title">任务数据统计字段说明</h2>
+        <div class="note-card" data-note="analytics-filter">
+          <h3>筛选区字段</h3>
+          <ul>
+            <li>日期范围：默认收起，仅展示开始日期、结束日期和日历图标。</li>
+            <li>打开日历：点击日期范围输入框后弹出双月日历面板。</li>
+            <li>选择日期：第一次点击设置开始日期，第二次点击设置结束日期；若第二次日期早于开始日期，则自动交换起止日期。</li>
+            <li>关闭日历：点击确定或点击控件外部关闭；点击清空后重置起止日期。</li>
+            <li>任务类型：筛选 Regular、Guild、Events 或全部。</li>
+          </ul>
+        </div>
+        <div class="note-card" data-note="analytics-kpis">
+          <h3>核心指标定义</h3>
+          <ul>
+            <li>访问用户 UV：统计周期内进入任务中心页面的去重用户数。</li>
+            <li>完成用户 UV：统计周期内至少完成 1 个任务的去重用户数。</li>
+            <li>完成次数：统计周期内任务完成事件总数，同一用户完成多个任务分别计数。</li>
+            <li>已领取积分：统计周期内用户领取成功并完成入账的积分总量。</li>
+            <li>装扮发放数：虚拟装扮奖励发放成功的总次数。</li>
+          </ul>
+        </div>
+        <div class="note-card" data-note="analytics-type-overview">
+          <h3>任务类型完成表现</h3>
+          <ul>
+            <li>任务类型：展示 Regular、Guild、Events 三类任务的汇总结果。</li>
+            <li>完成次数：该类型任务在统计周期内产生的完成事件总数。</li>
+            <li>完成用户：该类型下至少完成 1 个任务的去重用户数。</li>
+            <li>已领取积分：该类型下所有积分奖励领取成功并入账的总积分。</li>
+            <li>装扮发放数：该类型下所有虚拟装扮奖励发放成功的数量。</li>
+            <li>完成占比：该类型完成次数 / 全部类型完成次数，用于顶部百分比和进度条。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="note-page" data-note-page="tasks">
+        <h2 class="note-title">任务配置字段说明</h2>
+        <div class="note-card" data-note="tasks-filter">
+          <h3>查询与新建</h3>
+          <ul>
+            <li>任务类型：筛选 Regular、Guild、Events。</li>
+            <li>任务状态：筛选草稿、已上线、已下线等配置状态。</li>
+            <li>奖励类型：筛选积分任务或物料装扮任务。</li>
+            <li>新建任务：打开任务配置弹窗。</li>
+          </ul>
+        </div>
+        <div class="note-card" data-note="tasks-table">
+          <h3>列表字段</h3>
+          <ul>
+            <li>任务 ID：后台生成的唯一标识。</li>
+            <li>任务标题：前端任务卡展示标题。</li>
+            <li>展示 Tab / 分组：决定任务展示在哪个 Tab 和哪个分组下。</li>
+            <li>奖励：展示积分数量或虚拟装扮名称。</li>
+            <li>排序：同分组内按排序值从小到大展示。</li>
+            <li>编辑：点击后打开同一个任务配置弹窗。</li>
+          </ul>
+        </div>
+        <div class="note-card" data-note="task-modal">
+          <h3>新建 / 编辑弹窗字段</h3>
+          <div class="note-section">
+            <h4>入口与展示限制</h4>
+            <ul class="note-list">
+              <li><strong>展示 Tab：</strong>Regular 可选 Newbie Tasks / Daily Tasks；Guild 固定 Tasks for guild；Events 固定 Event Tasks。</li>
+              <li><strong>Guild 适用对象：</strong>选择 Guild 时展示，可选“仅主播”或“公会内所有人”。</li>
+              <li><strong>Events：</strong>不展示任务条件配置，只在任务说明下方展示“活动积分”输入框。</li>
+            </ul>
+          </div>
+          <div class="note-section">
+            <h4>基础信息</h4>
+            <ul class="note-list">
+              <li><strong>任务标题：</strong>App 任务卡主标题，建议使用简短英文。</li>
+              <li><strong>图标资源：</strong>通过上传组件选择 PNG / JPG / WebP，上传成功后由后端返回资源 ID 或 URL。</li>
+              <li><strong>排序值：</strong>同一分组内按数值从小到大展示。</li>
+              <li><strong>任务说明：</strong>点击 App 任务卡标题后的问号时展示，说明任务达成规则。</li>
+            </ul>
+          </div>
+          <div class="note-section">
+            <h4>任务行为条件</h4>
+            <ul class="note-list">
+              <li><strong>Regular：</strong>支持充值、上麦、送礼、收礼、商城消费、购买 VIP、玩游戏。</li>
+              <li><strong>Guild：</strong>支持 Regular 的全部行为，并额外支持主播任务。</li>
+              <li><strong>充值：</strong>首充 / 非首充；目标值填写美元金额。</li>
+              <li><strong>上麦：</strong>目标值填写分钟，按有效上麦时长判断。</li>
+              <li><strong>送礼 / 收礼：</strong>可按礼物个数或金币价值判断；指定礼物时填写礼物 ID。</li>
+              <li><strong>商城 / VIP / 游戏：</strong>商城和 VIP 无需目标值；游戏目标值填写金币下注金额。</li>
+            </ul>
+          </div>
+          <div class="note-section">
+            <h4>主播任务</h4>
+            <ul class="note-list">
+              <li><strong>新手福利：</strong>成为主播后 7 天内生效，一次配置 1 小时、2 小时、3 小时三个积分档位。</li>
+              <li><strong>App 展示：</strong>展示为一张“新手福利”任务卡，进度为累计有效上麦时长，目标展示到 3 小时。</li>
+              <li><strong>里程碑发放：</strong>达到 1h / 2h / 3h 时分别发放对应积分；已发放档位不重复发放。</li>
+              <li><strong>非新人主播：</strong>引用主播档位系统返回的当天时长要求和档位奖励，不在任务中心维护 A-L 明细。</li>
+              <li><strong>奖励方式：</strong>选择“引用档位奖励”时隐藏固定积分输入；选择“固定积分”时才填写固定积分。</li>
+            </ul>
+          </div>
+          <div class="note-section">
+            <h4>奖励与动作</h4>
+            <ul class="note-list">
+              <li><strong>积分奖励：</strong>仅展示奖励值输入框。</li>
+              <li><strong>物料装扮：</strong>仅展示物料 ID 输入框。</li>
+              <li><strong>行动按钮：</strong>按钮文案由前端按任务状态和行为类型生成。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="note-page" data-note-page="trace">
+        <h2 class="note-title">用户与奖励记录字段说明</h2>
+        <div class="note-card" data-note="trace-filter">
+          <h3>查询条件</h3>
+          <ul>
+            <li>用户 ID：查询指定用户的任务进度和奖励记录。</li>
+            <li>任务 ID：查询指定任务在用户侧的完成和发放情况。</li>
+            <li>发放状态：仅支持成功、失败；进行中的任务不进入奖励发放记录。</li>
+            <li>时间范围：查询任务完成并触发奖励发放的时间区间。</li>
+          </ul>
+        </div>
+        <div class="note-card" data-note="trace-record-table">
+          <h3>用户任务与奖励记录字段</h3>
+          <ul>
+            <li>记录 ID：奖励发放记录唯一标识。</li>
+            <li>完成进度：展示任务完成时的最终进度，如 10/10。</li>
+            <li>完成时间：任务达成并触发奖励发放的服务端时间。</li>
+            <li>奖励类型：积分或物料装扮。</li>
+            <li>发放状态：仅展示成功或失败。</li>
+            <li>失败原因：发放失败时展示服务端返回原因；成功时显示 -。</li>
+            <li>操作：失败记录展示重发按钮；成功记录仅支持查看详情。</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="modal-mask" id="taskModal">
+    <div class="modal connect-src" data-connect="task-modal">
+      <div class="modal-head">
+        <div>
+          <h2 class="card-title" id="taskModalTitle">新建任务</h2>
+        </div>
+        <button class="btn" data-close-modal><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="card card-pad">
+          <h3 class="card-title">基础信息</h3>
+          <div class="form-grid mt-4">
+            <div class="form-field wide-2"><label>任务标题</label><input id="modalTaskTitle" value="Complete your first top-up"></div>
+            <div class="form-field"><label>展示 Tab</label><select id="displayTab"><option value="regular">Regular</option><option value="guild">Guild</option><option value="events">Events</option></select></div>
+            <div class="form-field"><label>任务分组</label><select id="taskGroup"></select></div>
+            <div class="form-field wide-2">
+              <label>图标资源</label>
+              <label class="upload-box">
+                <span class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                <span class="upload-copy">
+                  <strong>上传任务图标</strong>
+                  <span>支持 PNG / JPG / WebP，建议 160 x 160 px，上传后生成资源 ID。</span>
+                </span>
+                <span class="btn">选择文件</span>
+                <input type="file" accept="image/png,image/jpeg,image/webp">
+              </label>
+            </div>
+            <div class="form-field"><label>排序值</label><input value="10"></div>
+            <div class="form-field wide-4"><label>任务说明</label><textarea>Make any successful top-up for the first time. Once the payment is confirmed, the points will be added to your daily earnings automatically.</textarea></div>
+            <div class="form-field wide-2 is-hidden" id="eventMinPointsField"><label>活动积分</label><input placeholder="≥ 输入积分"></div>
+          </div>
+        </div>
+        <div class="card card-pad" id="conditionConfigCard">
+          <h3 class="card-title">任务条件配置</h3>
+          <div class="condition-shell mt-4">
+            <div class="form-grid">
+              <div class="form-field"><label>任务行为类型</label><select id="conditionTaskType"></select></div>
+              <div class="form-field is-hidden" id="guildAudienceField"><label>适用对象</label><select><option>仅主播</option><option>公会内所有人</option></select></div>
+              <div class="form-field"><label>统计周期</label><select><option>一次性</option><option>每日</option><option>活动周期</option></select></div>
+              <div class="form-field"><label>展示进度</label><select><option>根据条件展示</option><option>不展示</option></select></div>
+              <div class="form-field"><label>跳转地址</label><input value="app://wallet/topup"></div>
+            </div>
+
+            <div class="condition-panel active" data-condition-panel="topup">
+              <div class="condition-card">
+                <div class="condition-head"><h4>充值任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><select><option>首充</option><option>非首充</option></select></div>
+                  <div class="form-field"><label>通用达成条件</label><div class="readonly-field">充值金额（含多方）</div></div>
+                  <div class="form-field"><label>目标数值</label><input placeholder="输入美元"></div>
+                </div>
+              </div>
+              <div class="reward-row">
+                <div class="form-field"><label>奖励类型</label><select class="reward-type-select"><option value="points">积分</option><option value="material">物料装扮</option></select></div>
+                <div class="form-field"><label class="reward-value-label">奖励值</label><input class="reward-value-input" value="600" placeholder="输入积分值"></div>
+                <div class="form-field"><label>备注</label><input placeholder="选填"></div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="mic">
+              <div class="condition-card">
+                <div class="condition-head"><h4>上麦任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><div class="readonly-field">非闭麦</div></div>
+                  <div class="form-field"><label>通用达成条件</label><div class="readonly-field">上麦时长</div></div>
+                  <div class="form-field"><label>目标数值</label><input placeholder="分钟"></div>
+                </div>
+              </div>
+              <div class="reward-row">
+                <div class="form-field"><label>奖励类型</label><select class="reward-type-select"><option value="points">积分</option><option value="material">物料装扮</option></select></div>
+                <div class="form-field"><label class="reward-value-label">奖励值</label><input class="reward-value-input" value="1200" placeholder="输入积分值"></div>
+                <div class="form-field"><label>备注</label><input placeholder="选填"></div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="sendGift">
+              <div class="condition-card">
+                <div class="condition-head"><h4>送礼任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><select><option>任意礼物</option><option>指定礼物</option></select></div>
+                  <div class="form-field"><label>通用达成条件</label><select><option>礼物个数</option><option>金币价值</option></select></div>
+                  <div class="form-field"><label>目标数值</label><input placeholder="数量或金币价值"></div>
+                  <div class="form-field"><label>礼物 ID</label><input placeholder="指定礼物时填写"></div>
+                </div>
+              </div>
+              <div class="reward-row">
+                <div class="form-field"><label>奖励类型</label><select class="reward-type-select"><option value="points">积分</option><option value="material">物料装扮</option></select></div>
+                <div class="form-field"><label class="reward-value-label">奖励值</label><input class="reward-value-input" value="600" placeholder="输入积分值"></div>
+                <div class="form-field"><label>备注</label><input value="指定礼物时输入对应礼物 ID"></div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="receiveGift">
+              <div class="condition-card">
+                <div class="condition-head"><h4>收礼任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><select><option>任意礼物</option><option>指定礼物</option></select></div>
+                  <div class="form-field"><label>通用达成条件</label><select><option>礼物个数</option><option>金币价值</option></select></div>
+                  <div class="form-field"><label>目标数值</label><input placeholder="数量或金币价值"></div>
+                  <div class="form-field"><label>礼物 ID</label><input placeholder="指定礼物时填写"></div>
+                </div>
+              </div>
+              <div class="reward-row">
+                <div class="form-field"><label>奖励类型</label><select class="reward-type-select"><option value="points">积分</option><option value="material">物料装扮</option></select></div>
+                <div class="form-field"><label class="reward-value-label">奖励值</label><input class="reward-value-input" value="600" placeholder="输入积分值"></div>
+                <div class="form-field"><label>备注</label><input value="指定礼物时输入对应礼物 ID"></div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="shop">
+              <div class="condition-card">
+                <div class="condition-head"><h4>商城消费任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><div class="readonly-field">购买</div></div>
+                  <div class="form-field"><label>通用达成条件</label><div class="readonly-field">购买任意商城物品</div></div>
+                  <div class="form-field"><label>目标数值</label><div class="readonly-field">无需填写</div></div>
+                </div>
+              </div>
+              <div class="reward-row">
+                <div class="form-field"><label>奖励类型</label><select class="reward-type-select"><option value="points">积分</option><option value="material">物料装扮</option></select></div>
+                <div class="form-field"><label class="reward-value-label">奖励值</label><input class="reward-value-input" value="600" placeholder="输入积分值"></div>
+                <div class="form-field"><label>备注</label><input placeholder="选填"></div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="vip">
+              <div class="condition-card">
+                <div class="condition-head"><h4>购买 VIP 任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><div class="readonly-field">购买</div></div>
+                  <div class="form-field"><label>通用达成条件</label><div class="readonly-field">购买任意 VIP</div></div>
+                  <div class="form-field"><label>目标数值</label><div class="readonly-field">无需填写</div></div>
+                </div>
+              </div>
+              <div class="reward-row">
+                <div class="form-field"><label>奖励类型</label><select class="reward-type-select"><option value="points">积分</option><option value="material">物料装扮</option></select></div>
+                <div class="form-field"><label class="reward-value-label">奖励值</label><input class="reward-value-input" value="600" placeholder="输入积分值"></div>
+                <div class="form-field"><label>备注</label><input placeholder="选填"></div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="game">
+              <div class="condition-card">
+                <div class="condition-head"><h4>玩游戏任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><div class="readonly-field">仅限概率游戏</div></div>
+                  <div class="form-field"><label>通用达成条件</label><div class="readonly-field">下注金额</div></div>
+                  <div class="form-field"><label>目标数值</label><input placeholder="金币（自定义）"></div>
+                </div>
+              </div>
+              <div class="reward-row">
+                <div class="form-field"><label>奖励类型</label><select class="reward-type-select"><option value="points">积分</option><option value="material">物料装扮</option></select></div>
+                <div class="form-field"><label class="reward-value-label">奖励值</label><input class="reward-value-input" value="600" placeholder="输入积分值"></div>
+                <div class="form-field"><label>备注</label><input placeholder="选填"></div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="host">
+              <div class="condition-card">
+                <div class="condition-head"><h4>主播任务条件</h4></div>
+                <div class="condition-grid mb-4">
+                  <div class="form-field"><label>主播任务模式</label><select id="hostBenefitMode"><option value="newbie">新手福利</option><option value="nonNewbie">非新人主播</option></select></div>
+                  <div class="form-field"><label>达成方式</label><div class="readonly-field">累计有效上麦时长</div></div>
+                  <div class="form-field"><label>规则来源</label><div class="readonly-field">主播档位系统</div></div>
+                </div>
+
+                <div class="host-mode-panel active" data-host-mode-panel="newbie">
+                  <div class="condition-grid">
+                    <div class="form-field"><label>新人周期</label><input value="7 天内"></div>
+                    <div class="form-field"><label>主播身份要求</label><div class="readonly-field">加入公会且为新主播</div></div>
+                    <div class="form-field"><label>统计周期</label><div class="readonly-field">一次性</div></div>
+                  </div>
+                  <div class="tier-table">
+                    <div class="tier-row"><span>达成门槛</span><span>奖励类型</span><span>奖励值</span></div>
+                    <div class="tier-row"><strong>上麦满 1 小时</strong><span>积分</span><input value="1200"></div>
+                    <div class="tier-row"><strong>上麦满 2 小时</strong><span>积分</span><input value="2400"></div>
+                    <div class="tier-row"><strong>上麦满 3 小时</strong><span>积分</span><input value="3600"></div>
+                  </div>
+                  <div class="condition-note">App 展示为一张“新手福利”任务卡：展示 0/3 小时总进度和 1h / 2h / 3h 奖励里程碑；达到某个里程碑后发放对应积分，已发放档位不重复发放。</div>
+                </div>
+
+                <div class="host-mode-panel" data-host-mode-panel="nonNewbie">
+                  <div class="condition-grid">
+                    <div class="form-field"><label>档位规则来源</label><select><option>当前主播档位规则 A-L</option><option>指定公会档位规则</option></select></div>
+                    <div class="form-field"><label>达成条件</label><div class="readonly-field">当天有效上麦时长 ≥ 当前档位要求</div></div>
+                    <div class="form-field"><label>目标数值</label><div class="readonly-field">由档位规则返回</div></div>
+                    <div class="form-field"><label>奖励方式</label><select id="hostRewardMode"><option value="fixed">固定积分</option><option value="tier">引用档位奖励</option></select></div>
+                    <div class="form-field" id="hostFixedPointsField"><label>固定积分</label><input value="1200"></div>
+                    <div class="form-field"><label>备注</label><input value="不在任务中心配置 A-L 档位明细"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="condition-panel" data-condition-panel="activity">
+              <div class="condition-card">
+                <div class="condition-head"><h4>活动任务条件</h4></div>
+                <div class="condition-grid">
+                  <div class="form-field"><label>条件</label><div class="readonly-field">无需配置</div></div>
+                  <div class="form-field"><label>通用达成条件</label><div class="readonly-field">由活动规则决定</div></div>
+                  <div class="form-field"><label>目标数值</label><div class="readonly-field">无需填写</div></div>
+                </div>
+              </div>
+              <div class="condition-note">活动任务不在任务中心后台配置奖励；奖励由活动侧直接发放，任务中心仅展示任务卡片与跳转入口。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" data-close-modal>取消</button>
+        <button class="btn">保存草稿</button>
+        <button class="btn primary">提交上线</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const titles = {
+      analytics: '任务数据统计',
+      tasks: '任务配置',
+      trace: '用户与奖励记录'
+    };
+
+    const navButtons = Array.from(document.querySelectorAll('.nav button'));
+    const pages = Array.from(document.querySelectorAll('[data-page-panel]'));
+    const notePages = Array.from(document.querySelectorAll('[data-note-page]'));
+    const pageTitle = document.getElementById('pageTitle');
+    const svg = document.getElementById('connectionLayer');
+    const taskModal = document.getElementById('taskModal');
+    const taskModalTitle = document.getElementById('taskModalTitle');
+    const modalTaskTitle = document.getElementById('modalTaskTitle');
+    const displayTab = document.getElementById('displayTab');
+    const taskGroup = document.getElementById('taskGroup');
+    const conditionConfigCard = document.getElementById('conditionConfigCard');
+    const eventMinPointsField = document.getElementById('eventMinPointsField');
+    const guildAudienceField = document.getElementById('guildAudienceField');
+    const conditionTaskType = document.getElementById('conditionTaskType');
+    const conditionPanels = Array.from(document.querySelectorAll('[data-condition-panel]'));
+    const rewardTypeSelects = Array.from(document.querySelectorAll('.reward-type-select'));
+    const hostBenefitMode = document.getElementById('hostBenefitMode');
+    const hostModePanels = Array.from(document.querySelectorAll('[data-host-mode-panel]'));
+    const hostRewardMode = document.getElementById('hostRewardMode');
+    const hostFixedPointsField = document.getElementById('hostFixedPointsField');
+    const datePicker = document.getElementById('analyticsDatePicker');
+    const dateRangeTrigger = document.getElementById('dateRangeTrigger');
+    const startDateText = document.getElementById('startDateText');
+    const endDateText = document.getElementById('endDateText');
+    const dateApply = document.getElementById('dateApply');
+    const dateClear = document.getElementById('dateClear');
+    const dateCells = Array.from(document.querySelectorAll('[data-date]'));
+    let selectedStart = '2026-07-01';
+    let selectedEnd = '2026-07-30';
+
+    const groupOptionsByTab = {
+      regular: [
+        { value: 'newbie', label: 'Newbie Tasks' },
+        { value: 'daily', label: 'Daily Tasks' }
+      ],
+      guild: [
+        { value: 'guild', label: 'Tasks for guild' }
+      ],
+      events: [
+        { value: 'event', label: 'Event Tasks' }
+      ]
+    };
+
+    const conditionOptionsByTab = {
+      regular: [
+        { value: 'topup', label: '充值' },
+        { value: 'mic', label: '上麦' },
+        { value: 'sendGift', label: '送礼' },
+        { value: 'receiveGift', label: '收礼' },
+        { value: 'shop', label: '商城消费' },
+        { value: 'vip', label: '购买 VIP' },
+        { value: 'game', label: '玩游戏' }
+      ],
+      guild: [
+        { value: 'topup', label: '充值' },
+        { value: 'mic', label: '上麦' },
+        { value: 'sendGift', label: '送礼' },
+        { value: 'receiveGift', label: '收礼' },
+        { value: 'shop', label: '商城消费' },
+        { value: 'vip', label: '购买 VIP' },
+        { value: 'game', label: '玩游戏' },
+        { value: 'host', label: '主播任务' }
+      ],
+      events: []
+    };
+
+    function setSelectOptions(select, options) {
+      const previous = select.value;
+      select.innerHTML = '';
+      options.forEach(option => {
+        const node = document.createElement('option');
+        node.value = option.value;
+        node.textContent = option.label;
+        select.appendChild(node);
+      });
+      if (options.some(option => option.value === previous)) select.value = previous;
+    }
+
+    function setPage(page) {
+      navButtons.forEach(button => button.classList.toggle('active', button.dataset.page === page));
+      pages.forEach(panel => panel.classList.toggle('active', panel.dataset.pagePanel === page));
+      notePages.forEach(panel => panel.classList.toggle('active', panel.dataset.notePage === page));
+      pageTitle.textContent = titles[page] || '任务中心管理后台';
+      closeTaskModal();
+      requestAnimationFrame(drawConnections);
+    }
+
+    function openTaskModal(mode) {
+      taskModalTitle.textContent = mode === 'new' ? '新建任务' : '编辑任务';
+      modalTaskTitle.value = mode === 'new' ? '' : 'Complete your first top-up';
+      displayTab.value = 'regular';
+      updateTabRules();
+      taskModal.classList.add('show');
+      requestAnimationFrame(drawConnections);
+    }
+
+    function closeTaskModal() {
+      taskModal.classList.remove('show');
+      requestAnimationFrame(drawConnections);
+    }
+
+    function updateDateRangeView() {
+      startDateText.textContent = selectedStart || '开始日期';
+      endDateText.textContent = selectedEnd || '结束日期';
+      dateCells.forEach(cell => {
+        const date = cell.dataset.date;
+        cell.classList.toggle('selected', date === selectedStart || date === selectedEnd);
+        cell.classList.toggle('in-range', !!selectedStart && !!selectedEnd && date > selectedStart && date < selectedEnd);
+      });
+    }
+
+    function closeDatePicker() {
+      datePicker.classList.remove('open');
+      requestAnimationFrame(drawConnections);
+    }
+
+    function updateConditionPanel() {
+      if (conditionConfigCard.classList.contains('is-hidden')) {
+        conditionPanels.forEach(panel => panel.classList.remove('active'));
+        requestAnimationFrame(drawConnections);
+        return;
+      }
+      conditionPanels.forEach(panel => {
+        panel.classList.toggle('active', panel.dataset.conditionPanel === conditionTaskType.value);
+      });
+      requestAnimationFrame(drawConnections);
+    }
+
+    function updateRewardField(select) {
+      const rewardRow = select.closest('.reward-row');
+      if (!rewardRow) return;
+      const label = rewardRow.querySelector('.reward-value-label');
+      const input = rewardRow.querySelector('.reward-value-input');
+      const isMaterial = select.value === 'material';
+      label.textContent = isMaterial ? '物料 ID' : '奖励值';
+      input.placeholder = isMaterial ? '输入物料 ID' : '输入积分值';
+      if (isMaterial && /^\d+$/.test(input.value)) input.value = '';
+    }
+
+    function updateHostBenefitMode() {
+      hostModePanels.forEach(panel => {
+        panel.classList.toggle('active', panel.dataset.hostModePanel === hostBenefitMode.value);
+      });
+      updateHostRewardMode();
+      requestAnimationFrame(drawConnections);
+    }
+
+    function updateHostRewardMode() {
+      if (!hostRewardMode || !hostFixedPointsField) return;
+      hostFixedPointsField.classList.toggle('is-hidden', hostRewardMode.value === 'tier');
+      requestAnimationFrame(drawConnections);
+    }
+
+    function updateTabRules() {
+      const tab = displayTab.value;
+      const isEvents = tab === 'events';
+      setSelectOptions(taskGroup, groupOptionsByTab[tab]);
+      setSelectOptions(conditionTaskType, conditionOptionsByTab[tab]);
+      eventMinPointsField.classList.toggle('is-hidden', !isEvents);
+      guildAudienceField.classList.toggle('is-hidden', tab !== 'guild');
+      conditionConfigCard.classList.toggle('is-hidden', isEvents);
+      updateConditionPanel();
+    }
+
+    function isVisible(element) {
+      return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
+    }
+
+    function drawConnections() {
+      svg.innerHTML = '';
+      document.querySelectorAll('.show-link').forEach(el => el.classList.remove('show-link'));
+
+      const activePage = document.querySelector('.page.active');
+      const activeNotes = document.querySelector('.note-page.active');
+      if (!activePage || !activeNotes) return;
+
+      const sourceRoot = taskModal.classList.contains('show') ? taskModal : activePage;
+      const sources = Array.from(sourceRoot.querySelectorAll('[data-connect]')).filter(isVisible).slice(0, 4);
+      sources.forEach(source => {
+        const key = source.dataset.connect;
+        const target = activeNotes.querySelector(`[data-note="${key}"]`);
+        if (!target) return;
+
+        const sourceRect = source.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const startX = sourceRect.right;
+        const startY = sourceRect.top + sourceRect.height / 2;
+        const endX = targetRect.left;
+        const endY = targetRect.top + targetRect.height / 2;
+        if (endY < 0 || endY > window.innerHeight) return;
+
+        source.classList.add('show-link');
+        target.classList.add('show-link');
+
+        const midX = (startX + endX) / 2;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', 'var(--wire)');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('stroke-dasharray', '6 5');
+        path.setAttribute('opacity', '.86');
+        svg.appendChild(path);
+
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', endX);
+        dot.setAttribute('cy', endY);
+        dot.setAttribute('r', '4');
+        dot.setAttribute('fill', 'var(--wire)');
+        svg.appendChild(dot);
+      });
+    }
+
+    navButtons.forEach(button => button.addEventListener('click', () => setPage(button.dataset.page)));
+    document.querySelectorAll('[data-open-task-modal]').forEach(button => {
+      button.addEventListener('click', () => openTaskModal(button.dataset.openTaskModal));
+    });
+    document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', closeTaskModal));
+    displayTab.addEventListener('change', updateTabRules);
+    conditionTaskType.addEventListener('change', updateConditionPanel);
+    hostBenefitMode.addEventListener('change', updateHostBenefitMode);
+    hostRewardMode.addEventListener('change', updateHostRewardMode);
+    rewardTypeSelects.forEach(select => {
+      select.addEventListener('change', () => updateRewardField(select));
+    });
+    dateRangeTrigger.addEventListener('click', event => {
+      event.stopPropagation();
+      datePicker.classList.toggle('open');
+      requestAnimationFrame(drawConnections);
+    });
+    dateCells.forEach(cell => {
+      cell.addEventListener('click', event => {
+        event.stopPropagation();
+        const date = cell.dataset.date;
+        if (!selectedStart || selectedEnd) {
+          selectedStart = date;
+          selectedEnd = '';
+        } else if (date < selectedStart) {
+          selectedEnd = selectedStart;
+          selectedStart = date;
+        } else {
+          selectedEnd = date;
+        }
+        updateDateRangeView();
+      });
+    });
+    dateApply.addEventListener('click', event => {
+      event.stopPropagation();
+      closeDatePicker();
+    });
+    dateClear.addEventListener('click', event => {
+      event.stopPropagation();
+      selectedStart = '';
+      selectedEnd = '';
+      updateDateRangeView();
+    });
+    document.addEventListener('click', event => {
+      if (!datePicker.contains(event.target)) closeDatePicker();
+    });
+    taskModal.addEventListener('click', event => {
+      if (event.target === taskModal) closeTaskModal();
+    });
+    window.addEventListener('resize', drawConnections);
+    document.querySelector('.notes-panel').addEventListener('scroll', drawConnections);
+    updateDateRangeView();
+    updateTabRules();
+    updateConditionPanel();
+    updateHostBenefitMode();
+    updateHostRewardMode();
+    rewardTypeSelects.forEach(updateRewardField);
+    drawConnections();
+  </script>
+</body>
+</html>
