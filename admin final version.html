@@ -683,7 +683,7 @@
           &lt;div class=&quot;panel-body&quot;&gt;
             &lt;div class=&quot;table-wrap&quot;&gt;
               &lt;table&gt;
-                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;条件类型&lt;/th&gt;&lt;th&gt;条件值&lt;/th&gt;&lt;th&gt;单位&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+                &lt;thead&gt;&lt;tr&gt;&lt;th&gt;范围类型&lt;/th&gt;&lt;th&gt;规则&lt;/th&gt;&lt;th&gt;条件值&lt;/th&gt;&lt;th&gt;单位&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
                 &lt;tbody id=&quot;salaryLimitRows&quot;&gt;&lt;/tbody&gt;
               &lt;/table&gt;
             &lt;/div&gt;
@@ -971,7 +971,19 @@
     const limitLabels = {
       direct_invite_only: &quot;仅直属邀请对象计入&quot;,
       current_month_invited: &quot;仅当月邀请对象计入&quot;,
+      guild_salary_usd_gte: &quot;单公会薪资不低于&quot;,
+      seller_recharge_usd_gte: &quot;单币商月充值不低于&quot;,
+      bd_salary_coins_gte: &quot;单BD薪资金币不低于&quot;,
       min_per_object_points: &quot;单对象积分不低于&quot;
+    };
+
+    const limitGroupLabels = {
+      direct_invite_only: &quot;对象层级&quot;,
+      current_month_invited: &quot;邀请时间&quot;,
+      guild_salary_usd_gte: &quot;对象门槛&quot;,
+      seller_recharge_usd_gte: &quot;对象门槛&quot;,
+      bd_salary_coins_gte: &quot;对象门槛&quot;,
+      min_per_object_points: &quot;对象门槛&quot;
     };
 
     const handlingLabels = {
@@ -1075,7 +1087,7 @@
         ],
         shareRules: [],
         limits: [
-          { type: &quot;min_per_object_points&quot;, value: 5000000, unit: &quot;points&quot;, handling: &quot;exclude&quot; }
+          { type: &quot;guild_salary_usd_gte&quot;, value: 500, unit: &quot;USD&quot;, handling: &quot;exclude&quot; }
         ],
         tiers: [
           { min: 200000000, max: &quot;&quot;, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 4, rewardUnit: &quot;%&quot; },
@@ -1102,7 +1114,7 @@
         ],
         shareRules: [],
         limits: [
-          { type: &quot;min_per_object_points&quot;, value: 5000000, unit: &quot;points&quot;, handling: &quot;exclude&quot; }
+          { type: &quot;guild_salary_usd_gte&quot;, value: 500, unit: &quot;USD&quot;, handling: &quot;exclude&quot; }
         ],
         tiers: [
           { min: 200000000, max: &quot;&quot;, unit: &quot;points&quot;, rewardType: &quot;percent&quot;, rewardValue: 2, rewardUnit: &quot;%&quot; },
@@ -1687,15 +1699,34 @@
       `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;6&quot;&gt;暂无满额薪资&lt;/td&gt;&lt;/tr&gt;`;
     }
 
+    function limitOptions() {
+      return [&quot;direct_invite_only&quot;, &quot;current_month_invited&quot;, &quot;guild_salary_usd_gte&quot;, &quot;seller_recharge_usd_gte&quot;, &quot;bd_salary_coins_gte&quot;, &quot;min_per_object_points&quot;];
+    }
+
+    function limitNeedsValue(type) {
+      return [&quot;guild_salary_usd_gte&quot;, &quot;seller_recharge_usd_gte&quot;, &quot;bd_salary_coins_gte&quot;, &quot;min_per_object_points&quot;].includes(type);
+    }
+
+    function renderLimitValue(row) {
+      if (!limitNeedsValue(row.type)) return `&lt;input class=&quot;field&quot; value=&quot;-&quot; disabled&gt;`;
+      return renderNumber(row.value, &quot;数值&quot;);
+    }
+
+    function renderLimitUnit(row) {
+      if (!limitNeedsValue(row.type)) return `&lt;select class=&quot;field&quot; disabled&gt;&lt;option&gt;-&lt;/option&gt;&lt;/select&gt;`;
+      return renderSelect(row.unit || &quot;USD&quot;, [&quot;USD&quot;, &quot;points&quot;, &quot;coins&quot;], unitLabels);
+    }
+
     function renderLimitRows(rows = []) {
       document.getElementById(&quot;salaryLimitRows&quot;).innerHTML = rows.map((row) =&gt; `
         &lt;tr&gt;
-          &lt;td&gt;${renderSelect(row.type, [&quot;direct_invite_only&quot;, &quot;current_month_invited&quot;, &quot;min_per_object_points&quot;], limitLabels)}&lt;/td&gt;
-          &lt;td&gt;${renderNumber(row.value, &quot;可为空&quot;)}&lt;/td&gt;
-          &lt;td&gt;${renderSelect(row.unit || &quot;-&quot;, [&quot;-&quot;, &quot;points&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;span class=&quot;badge blue&quot;&gt;${limitGroupLabels[row.type] || &quot;对象门槛&quot;}&lt;/span&gt;&lt;/td&gt;
+          &lt;td&gt;${renderSelect(row.type, limitOptions(), limitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderLimitValue(row)}&lt;/td&gt;
+          &lt;td&gt;${renderLimitUnit(row)}&lt;/td&gt;
           &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
         &lt;/tr&gt;
-      `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;4&quot;&gt;暂无计入范围&lt;/td&gt;&lt;/tr&gt;`;
+      `).join(&quot;&quot;) || `&lt;tr&gt;&lt;td colspan=&quot;5&quot;&gt;暂无计入范围&lt;/td&gt;&lt;/tr&gt;`;
     }
 
     function addTierRow() {
@@ -1748,9 +1779,10 @@
       if (body.textContent.includes(&quot;暂无计入范围&quot;)) body.innerHTML = &quot;&quot;;
       body.insertAdjacentHTML(&quot;beforeend&quot;, `
         &lt;tr&gt;
-          &lt;td&gt;${renderSelect(&quot;current_month_invited&quot;, [&quot;direct_invite_only&quot;, &quot;current_month_invited&quot;, &quot;min_per_object_points&quot;], limitLabels)}&lt;/td&gt;
-          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;可为空&quot;)}&lt;/td&gt;
-          &lt;td&gt;${renderSelect(&quot;-&quot;, [&quot;-&quot;, &quot;points&quot;, &quot;USD&quot;], unitLabels)}&lt;/td&gt;
+          &lt;td&gt;&lt;span class=&quot;badge blue&quot;&gt;对象门槛&lt;/span&gt;&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;guild_salary_usd_gte&quot;, limitOptions(), limitLabels)}&lt;/td&gt;
+          &lt;td&gt;${renderNumber(&quot;&quot;, &quot;数值&quot;)}&lt;/td&gt;
+          &lt;td&gt;${renderSelect(&quot;USD&quot;, [&quot;USD&quot;, &quot;points&quot;, &quot;coins&quot;], unitLabels)}&lt;/td&gt;
           &lt;td&gt;&lt;button class=&quot;btn soft&quot; data-remove-row&gt;删除&lt;/button&gt;&lt;/td&gt;
         &lt;/tr&gt;
       `);
@@ -2717,7 +2749,7 @@
                 <tr><td>计薪来源</td><td>邀请BD业绩、邀请公会业绩、邀请币商业绩、下级薪资。这里表示外管从哪个对象或关系中获得薪资。</td></tr>
                 <tr><td>算法模板</td><td>该薪资项采用的计算模型，例如薪资分成、总业绩阶梯、固定薪资+单对象阶梯等。</td></tr>
                 <tr><td>配置</td><td>展示核心配置摘要，例如“1组分成”“6档，合计进档”“固定薪资+5档奖励”。用于列表快速判断该项是否已配置完整。</td></tr>
-                <tr><td>计入范围</td><td>展示限制条件数量，例如“1条”。条件来自结构化下拉，如“单公会薪资不低于500 USD”。仅审核通过对象计入为系统固定规则，不在此列重复展示。</td></tr>
+                <tr><td>计入范围</td><td>展示已配置的对象范围或对象门槛数量，例如“1条”。它用于限定哪些邀请对象参与该薪资项计算，不等同于审核状态；仅审核通过对象计入为系统固定规则。</td></tr>
                 <tr><td>计算周期</td><td>月结、连续三个月、自定义。自定义周期在弹窗内填写月份。</td></tr>
                 <tr><td>分配人数</td><td>当前已有多少人员在“人员配置”中选择了该薪资项。</td></tr>
                 <tr><td>状态</td><td>启用 / 停用。停用后人员不可再新增选择，但历史配置和历史结算保留。</td></tr>
@@ -2798,11 +2830,32 @@
             </div>
             <div class="doc-block">
               <h4>计入范围区域</h4>
+              <table class="doc-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>范围类型</td><td>系统根据规则自动展示，分为邀请时间、对象层级、对象门槛。</td></tr>
+                <tr><td>规则</td><td>下拉选择结构化规则，不能自由文本输入。</td></tr>
+                <tr><td>条件值</td><td>只有对象门槛类规则才需要填写，例如 500；时间范围和层级范围不需要填写，显示 -。</td></tr>
+                <tr><td>单位</td><td>对象门槛类规则选择 USD、积分或 coins；时间范围和层级范围显示 -。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>计入范围规则类型</h4>
+              <table class="doc-table">
+                <tr><th>范围类型</th><th>规则示例</th><th>是否需要条件值</th><th>用途</th></tr>
+                <tr><td>邀请时间</td><td>仅当月邀请对象计入</td><td>否</td><td>用于币商等只统计当月新增邀请对象的政策。</td></tr>
+                <tr><td>对象层级</td><td>仅直属邀请对象计入</td><td>否</td><td>用于只统计本人一级邀请对象，不统计下级团队邀请对象的政策。</td></tr>
+                <tr><td>对象门槛</td><td>单公会薪资不低于</td><td>是，例如 500 USD</td><td>用于土耳其类政策，只有达到门槛的公会才进入满额薪资或邀请奖励计算。</td></tr>
+                <tr><td>对象门槛</td><td>单币商月充值不低于</td><td>是，例如 2,000 USD</td><td>用于未来按单币商充值达标后才计入的政策。</td></tr>
+                <tr><td>对象门槛</td><td>单BD薪资金币不低于</td><td>是，例如 100,000 coins</td><td>用于未来按 BD 薪资达标后才计入的政策。</td></tr>
+              </table>
+            </div>
+            <div class="doc-block">
+              <h4>配置例子</h4>
               <ul>
-                <li><strong>条件类型：</strong>通过下拉选择，不能自由文本输入。例如“单公会薪资不低于500 USD”。</li>
-                <li><strong>条件值：</strong>填写数值，例如 500。</li>
-                <li><strong>单位：</strong>USD、积分、coins、个等。</li>
-                <li><strong>添加条件：</strong>新增一条结构化条件。仅审核通过对象计入为系统固定规则，不在此处配置。</li>
+                <li><strong>菲律宾公会：</strong>计入范围可配置“仅直属邀请对象计入”；公会连续三个月计算由“计算周期”控制，不在条件值里填写。</li>
+                <li><strong>菲律宾币商：</strong>计入范围可配置“仅当月邀请对象计入”；条件值和单位应为 -。</li>
+                <li><strong>土耳其公会：</strong>计入范围应配置“对象门槛：单公会薪资不低于 500 USD”，不是“仅当月邀请对象计入 500 USD”。</li>
+                <li><strong>审核规则：</strong>仅审核通过对象计入是系统固定前置条件，不在计入范围里配置。</li>
               </ul>
             </div>
             <div class="doc-block">
