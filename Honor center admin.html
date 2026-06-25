@@ -1,0 +1,2804 @@
+<!doctype html>
+<!--
+  Prototype HTML: Sada 荣誉中心后台配置原型。
+  左侧为可交互后台界面，右侧为产品需求说明与标注区；抽屉、弹窗、筛选、分页均为前端演示交互。
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>荣誉中心后台 - 勋章配置</title>
+  <style>
+    :root {
+      --bg: #f3f5f9;
+      --panel: #fff;
+      --line: #dfe6f1;
+      --line-strong: #c7d3e3;
+      --text: #1f2a3d;
+      --muted: #718096;
+      --blue: #2f80ed;
+      --blue-soft: #eaf3ff;
+      --green: #18b79b;
+      --green-soft: #e8faf6;
+      --amber: #f4bf4f;
+      --red: #ef5b73;
+      --shadow: 0 16px 42px rgba(23, 37, 61, 0.13);
+      --req-panel-width: max(280px, 18vw);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button { cursor: pointer; }
+
+    .prototype-shell {
+      height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 82fr) minmax(280px, 18fr);
+      overflow: hidden;
+    }
+
+    .prototype-workspace {
+      min-width: 0;
+      height: 100vh;
+      overflow: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .requirements-panel {
+      height: 100vh;
+      overflow: auto;
+      position: relative;
+      z-index: 30;
+      padding: 20px 18px 28px;
+      border-left: 1px solid #dfb761;
+      background: linear-gradient(180deg, #fff7e3 0%, #fff2cf 100%);
+      color: #4a3310;
+      box-shadow: -12px 0 28px rgba(122, 80, 12, 0.08);
+    }
+
+    .requirements-panel h2 {
+      margin: 0;
+      color: #3a2609;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .req-kicker {
+      margin-bottom: 7px;
+      color: #9a6b18;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .req-lead {
+      margin: 10px 0 14px;
+      color: #71501b;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .req-card {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #e6c777;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.62);
+      transition: 0.16s ease;
+    }
+
+    .req-card.callout-active,
+    .req-card:hover {
+      border-color: #d58a00;
+      background: #fffaf0;
+      box-shadow: 0 8px 18px rgba(151, 93, 4, 0.16);
+    }
+
+    .req-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      color: #3a2609;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .req-num {
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #d58a00;
+      color: #fff;
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+
+    .req-card p,
+    .req-card li {
+      color: #604416;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .req-card p { margin: 0; }
+
+    .req-view { display: none; }
+    .req-view.active { display: block; }
+
+    .req-context {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      margin: 4px 0 2px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #ffe7a7;
+      color: #694912;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .req-card ul {
+      margin: 7px 0 0;
+      padding-left: 17px;
+    }
+
+    .req-section-title {
+      margin: 18px 0 8px;
+      color: #3a2609;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .req-mini {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .req-mini span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: #ffe7a7;
+      color: #694912;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field-spec {
+      margin: 8px 0 0;
+      display: grid;
+      gap: 7px;
+    }
+
+    .field-spec div {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: #604416;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .field-spec dt {
+      color: #3a2609;
+      font-weight: 850;
+    }
+
+    .field-spec dd {
+      margin: 0;
+    }
+
+    .prototype-connector-svg {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 28;
+    }
+
+    .connector-line {
+      fill: none;
+      stroke: rgba(213, 138, 0, 0.42);
+      stroke-width: 1.2;
+      stroke-dasharray: 4 5;
+      transition: 0.16s ease;
+    }
+
+    .connector-line.callout-active {
+      stroke: #d58a00;
+      stroke-width: 1.8;
+      stroke-dasharray: none;
+      filter: drop-shadow(0 0 4px rgba(213, 138, 0, 0.35));
+    }
+
+    .connector-dot {
+      fill: #d58a00;
+      stroke: #fff7e3;
+      stroke-width: 2;
+    }
+
+    .connector-label {
+      fill: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    [data-callout] {
+      transition: outline-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+      outline: 2px solid transparent;
+      outline-offset: 3px;
+    }
+
+    [data-callout].callout-active {
+      outline-color: #d58a00;
+      box-shadow: 0 0 0 5px rgba(213, 138, 0, 0.14);
+    }
+
+    .mobile-mode-switch {
+      display: none;
+      gap: 6px;
+      margin: 12px 0 0;
+    }
+
+    .mobile-mode-switch button {
+      height: 28px;
+      padding: 0 9px;
+      border: 1px solid #d7ad52;
+      border-radius: 6px;
+      background: #fff8e9;
+      color: #6b4b16;
+      font-weight: 700;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 232px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #182235;
+      color: #d8e0ee;
+      padding: 18px 14px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px;
+      margin-bottom: 18px;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      background: var(--blue);
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .menu-title {
+      margin: 18px 10px 8px;
+      color: #8fa0bb;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .menu-item {
+      width: 100%;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #d8e0ee;
+      text-align: left;
+      font-weight: 650;
+    }
+
+    .menu-item + .menu-item { margin-top: 4px; }
+
+    .menu-item.active {
+      background: #243653;
+      color: #fff;
+    }
+
+    .menu-item .tag {
+      min-width: 22px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #aebbd0;
+      font-size: 12px;
+    }
+
+    .main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 28px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .breadcrumb {
+      color: #8793a6;
+      font-size: 12px;
+    }
+
+    .top-actions,
+    .row-actions,
+    .filter-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .page {
+      padding: 20px 28px 32px;
+    }
+
+    .page-view { display: none; }
+    .page-view.active { display: block; }
+
+    .page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+    }
+
+    .page-head h1 {
+      font-size: 22px;
+      font-weight: 750;
+    }
+
+    .page-head p,
+    .empty p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .btn {
+      height: 34px;
+      padding: 0 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fff;
+      color: #344258;
+      font-weight: 650;
+    }
+
+    .btn.primary {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn.soft {
+      border-color: #c9ddff;
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .btn.danger {
+      border-color: #ffd1da;
+      background: #fff5f7;
+      color: var(--red);
+    }
+
+    .btn.text {
+      height: auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--blue);
+    }
+
+    .compact-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: -4px 0 14px;
+    }
+
+    .compact-stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .compact-stat b {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(30, 45, 70, 0.04);
+      overflow: hidden;
+    }
+
+    .panel + .panel { margin-top: 14px; }
+
+    .panel-head {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 750;
+    }
+
+    .panel-body { padding: 18px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #eef3f8;
+      color: #667487;
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .pill.blue {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .pill.green {
+      background: var(--green-soft);
+      color: #10866f;
+    }
+
+    .pill.gold {
+      background: #fff2cc;
+      color: #76570c;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(4, minmax(128px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 22px;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field { min-width: 0; }
+    .field.hidden,
+    .hidden { display: none !important; }
+
+    label,
+    .label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 22px;
+      margin-bottom: 7px;
+      color: #4b596d;
+      font-size: 13px;
+    }
+
+    .required { color: var(--red); }
+
+    .control,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: 0.15s ease;
+    }
+
+    .control,
+    select {
+      height: 36px;
+      padding: 0 11px;
+    }
+
+    textarea {
+      min-height: 78px;
+      padding: 9px 11px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .control:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.12);
+    }
+
+    .control.readonly {
+      color: #738197;
+      background: #f4f7fb;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .radio-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      min-height: 36px;
+    }
+
+    .radio {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      color: #344258;
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1280px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f8fafd;
+      color: #667487;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    td {
+      color: #2a374d;
+      font-size: 13px;
+    }
+
+    .badge-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 190px;
+    }
+
+    .badge-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f7cf65, #7c3c16);
+      color: #fff;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .badge-sub {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .medal-thumb {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: radial-gradient(circle at 28% 24%, #fff4aa, #f2b94a 34%, #84431c 68%, #29170e);
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+    }
+
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #fbfcfe;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-btn {
+      min-width: 30px;
+      height: 30px;
+      padding: 0 9px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fff;
+      color: #344258;
+      cursor: pointer;
+    }
+
+    .page-btn.active {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .page-btn:disabled {
+      color: #b8c1cf;
+      cursor: not-allowed;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .status.on {
+      background: var(--green-soft);
+      color: #10866f;
+    }
+
+    .status.off {
+      background: #eef2f7;
+      color: #667487;
+    }
+
+    .drawer-mask,
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      right: var(--req-panel-width);
+      background: rgba(13, 23, 38, 0.38);
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.18s ease;
+      z-index: 50;
+    }
+
+    .drawer-mask.open,
+    .modal-mask.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: var(--req-panel-width);
+      width: min(680px, calc(82vw - 64px));
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      box-shadow: -22px 0 44px rgba(16, 30, 52, 0.18);
+      transform: translateX(calc(100% + var(--req-panel-width)));
+      transition: 0.2s ease;
+      z-index: 60;
+    }
+
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-head,
+    .drawer-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .drawer-foot {
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      justify-content: flex-end;
+    }
+
+    .drawer-head h2,
+    .modal-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: #667487;
+      font-size: 18px;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow: auto;
+      padding: 18px 20px 22px;
+      background: #f8fafd;
+    }
+
+    .section-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .section-card + .section-card { margin-top: 14px; }
+
+    .section-card h3 {
+      margin: 0;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+      font-size: 15px;
+    }
+
+    .section-card .card-body { padding: 16px; }
+
+    .upload-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .upload-row.in-basic {
+      margin-top: 16px;
+    }
+
+    .upload-box {
+      height: 96px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      background: #f8fbff;
+      color: #738197;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-box input,
+    .upload-box img { display: none; }
+
+    .title-preview {
+      margin-top: 8px;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfe;
+    }
+
+    .title-img {
+      width: 76px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #551817, #d69a2f, #24100a);
+      color: #fff0ba;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .title-thumb {
+      width: 94px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: linear-gradient(90deg, #301116, #b82921 45%, #e9c270 72%, #171014);
+      color: #ffe9a6;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16);
+    }
+
+    .title-upload {
+      aspect-ratio: 3 / 1;
+      height: auto;
+      min-height: 96px;
+    }
+
+    .switch-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #344258;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .source-summary {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      color: #4b596d;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .source-summary b {
+      color: var(--text);
+    }
+
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: min(680px, calc(100vw - 32px));
+      max-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      transform: translate(-50%, -48%) scale(0.98);
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.18s ease;
+      z-index: 70;
+      overflow: hidden;
+    }
+
+    .modal.open {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-head,
+    .modal-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-foot {
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .modal-body {
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .sort-row {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sort-row:last-child { border-bottom: 0; }
+
+    .empty {
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .empty h2 {
+      font-size: 20px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 22px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #1d2636;
+      color: #fff;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: 0.18s ease;
+      z-index: 90;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      body {
+        overflow: auto;
+      }
+
+      .prototype-shell {
+        height: auto;
+        display: block;
+        overflow: visible;
+      }
+
+      .prototype-workspace,
+      .requirements-panel {
+        height: auto;
+        overflow: visible;
+      }
+
+      .requirements-panel {
+        border-left: 0;
+        border-top: 1px solid #dfb761;
+      }
+
+      .drawer,
+      .drawer-mask,
+      .modal-mask {
+        right: 0;
+      }
+
+      .drawer {
+        width: min(840px, 100vw);
+        transform: translateX(100%);
+      }
+
+      .prototype-connector-svg {
+        display: none;
+      }
+
+      .mobile-mode-switch {
+        display: flex;
+      }
+
+      body.mobile-interface-only .requirements-panel {
+        display: none;
+      }
+
+      .app,
+      .filter-grid,
+      .grid,
+      .grid.three,
+      .upload-row {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .topbar,
+      .page-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="prototype-shell">
+    <section class="prototype-workspace" id="prototypeWorkspace">
+      <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <span>Sada Admin</span>
+      </div>
+      <div class="menu-title">荣誉中心管理</div>
+      <button class="menu-item active" type="button" data-page-target="medalPage">
+        <span>勋章配置</span>
+        <span class="tag">128</span>
+      </button>
+      <button class="menu-item" type="button" data-page-target="titlePage">
+        <span>称号配置</span>
+        <span class="tag">46</span>
+      </button>
+    </aside>
+
+    <section class="main">
+      <header class="topbar">
+        <div>
+          <div class="breadcrumb">荣誉中心管理 / <span id="breadcrumbLeaf">勋章配置</span></div>
+        </div>
+      </header>
+
+      <main class="page">
+        <section class="page-view active" id="medalPage">
+          <div class="page-head">
+            <div>
+              <h1>勋章配置</h1>
+            </div>
+            <div class="top-actions" data-callout="drawer">
+              <button class="btn soft" type="button" data-open-sort>类目排序</button>
+              <button class="btn primary" type="button" data-open-drawer="create">新增勋章</button>
+            </div>
+          </div>
+
+          <div class="compact-stats">
+            <span class="compact-stat">勋章总数 <b>128</b></span>
+            <span class="compact-stat">有效配置 <b>112</b></span>
+            <span class="compact-stat">仅墙隐藏 <b>9</b></span>
+            <span class="compact-stat">停用 <b>7</b></span>
+          </div>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div class="panel-title">筛选查询</div>
+              <div class="filter-actions">
+                <button class="btn" type="button" data-toast="筛选条件已重置">重置</button>
+                <button class="btn primary" type="button" data-toast="查询完成">查询</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="filter-grid">
+                <div class="field">
+                  <label for="keyword">搜索</label>
+                  <input class="control" id="keyword" placeholder="运营备注 / 勋章名称 / 勋章ID">
+                </div>
+                <div class="field">
+                  <label>勋章归属</label>
+                  <select>
+                    <option>全部</option>
+                    <option>个人勋章</option>
+                    <option>房间勋章</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>勋章分类</label>
+                  <select>
+                    <option>全部</option>
+                    <option>财富等级</option>
+                    <option>魅力等级</option>
+                    <option>活动</option>
+                    <option>成就</option>
+                    <option>自定义</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>等级</label>
+                  <select>
+                    <option>全部</option>
+                    <option>B级</option>
+                    <option>A级</option>
+                    <option>S级</option>
+                    <option>SS级</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>状态</label>
+                  <select>
+                    <option>全部</option>
+                    <option>有效</option>
+                    <option>停用</option>
+                    <option>仅勋章墙隐藏</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" data-callout="list">
+            <div class="panel-head">
+              <div class="panel-title">勋章列表 <span class="pill">每页最多 10 条</span></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>勋章ID</th>
+                    <th>勋章名称</th>
+                    <th>勋章图片</th>
+                    <th>归属</th>
+                    <th>分类</th>
+                    <th>类目内排行</th>
+                    <th>等级与荣誉积分</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>10086</strong></td>
+                    <td><strong>صانع الثروة</strong></td>
+                    <td><div class="medal-thumb">SS</div></td>
+                    <td>个人勋章</td>
+                    <td>财富等级</td>
+                    <td>100</td>
+                    <td><span class="pill gold">SS级 / 700分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10052</strong></td>
+                    <td><strong>ملك الغرفة</strong></td>
+                    <td><div class="medal-thumb">S</div></td>
+                    <td>房间勋章</td>
+                    <td>活动</td>
+                    <td>80</td>
+                    <td><span class="pill gold">S级 / 300分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10031</strong></td>
+                    <td><strong>جامع البطاقات</strong></td>
+                    <td><div class="medal-thumb">A</div></td>
+                    <td>个人勋章</td>
+                    <td>成就</td>
+                    <td>220</td>
+                    <td><span class="pill gold">A级 / 100分</span></td>
+                    <td><span class="status off">停用</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10029</strong></td>
+                    <td><strong>نجم الجاذبية</strong></td>
+                    <td><div class="medal-thumb">S</div></td>
+                    <td>个人勋章</td>
+                    <td>魅力等级</td>
+                    <td>90</td>
+                    <td><span class="pill gold">S级 / 300分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10018</strong></td>
+                    <td><strong>فارس الهدايا</strong></td>
+                    <td><div class="medal-thumb">A</div></td>
+                    <td>个人勋章</td>
+                    <td>成就</td>
+                    <td>230</td>
+                    <td><span class="pill gold">A级 / 100分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10016</strong></td>
+                    <td><strong>بطل اللعبة</strong></td>
+                    <td><div class="medal-thumb">B</div></td>
+                    <td>个人勋章</td>
+                    <td>成就</td>
+                    <td>240</td>
+                    <td><span class="pill gold">B级 / 50分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10012</strong></td>
+                    <td><strong>صوت المسرح</strong></td>
+                    <td><div class="medal-thumb">B</div></td>
+                    <td>个人勋章</td>
+                    <td>自定义</td>
+                    <td>10</td>
+                    <td><span class="pill gold">B级 / 50分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10009</strong></td>
+                    <td><strong>قاعة الكنز</strong></td>
+                    <td><div class="medal-thumb">SS</div></td>
+                    <td>房间勋章</td>
+                    <td>自定义</td>
+                    <td>20</td>
+                    <td><span class="pill gold">SS级 / 700分</span></td>
+                    <td><span class="status off">停用</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10007</strong></td>
+                    <td><strong>أصدقاء الغرفة</strong></td>
+                    <td><div class="medal-thumb">A</div></td>
+                    <td>房间勋章</td>
+                    <td>成就</td>
+                    <td>130</td>
+                    <td><span class="pill gold">A级 / 100分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>10003</strong></td>
+                    <td><strong>ضوء الاحتفال</strong></td>
+                    <td><div class="medal-thumb">S</div></td>
+                    <td>个人勋章</td>
+                    <td>活动</td>
+                    <td>70</td>
+                    <td><span class="pill gold">S级 / 300分</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td>
+                      <button class="btn text" type="button" data-open-drawer="edit">编辑</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span>共 128 条记录，当前第 1 / 13 页，最多 10 条 / 页</span>
+              <div class="pagination">
+                <button class="page-btn" type="button" disabled>上一页</button>
+                <button class="page-btn active" type="button">1</button>
+                <button class="page-btn" type="button" data-toast="切换到第 2 页">2</button>
+                <button class="page-btn" type="button" data-toast="切换到第 3 页">3</button>
+                <button class="page-btn" type="button" data-toast="切换到第 4 页">4</button>
+                <button class="page-btn" type="button" data-toast="切换到第 2 页">下一页</button>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="page-view" id="titlePage">
+          <div class="page-head">
+            <div>
+              <h1>称号配置</h1>
+            </div>
+            <div class="top-actions">
+              <button class="btn soft" type="button" data-open-title-sort>类目排序</button>
+              <button class="btn primary" type="button" data-open-title-drawer="create">新增称号</button>
+            </div>
+          </div>
+
+          <div class="compact-stats">
+            <span class="compact-stat">称号总数 <b>46</b></span>
+            <span class="compact-stat">有效配置 <b>39</b></span>
+            <span class="compact-stat">仅墙隐藏 <b>4</b></span>
+            <span class="compact-stat">停用 <b>3</b></span>
+          </div>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div class="panel-title">筛选查询</div>
+              <div class="filter-actions">
+                <button class="btn" type="button" data-toast="筛选条件已重置">重置</button>
+                <button class="btn primary" type="button" data-toast="查询完成">查询</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="filter-grid">
+                <div class="field">
+                  <label for="titleKeyword">搜索</label>
+                  <input class="control" id="titleKeyword" placeholder="运营备注 / 称号名称 / 称号ID">
+                </div>
+                <div class="field">
+                  <label>称号归属</label>
+                  <select>
+                    <option>全部</option>
+                    <option>个人称号</option>
+                    <option>房间称号</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>称号分类</label>
+                  <select>
+                    <option>全部</option>
+                    <option>财富等级</option>
+                    <option>魅力等级</option>
+                    <option>活动</option>
+                    <option>成就</option>
+                    <option>自定义</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>等级</label>
+                  <select>
+                    <option>全部</option>
+                    <option>B级</option>
+                    <option>A级</option>
+                    <option>S级</option>
+                    <option>SS级</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>状态</label>
+                  <select>
+                    <option>全部</option>
+                    <option>有效</option>
+                    <option>停用</option>
+                    <option>仅称号墙隐藏</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div class="panel-title">称号列表 <span class="pill">每页最多 10 条</span></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>称号ID</th>
+                    <th>称号名称</th>
+                    <th>称号图片</th>
+                    <th>归属</th>
+                    <th>分类</th>
+                    <th>类目内排行</th>
+                    <th>等级与荣誉积分</th>
+                    <th>匹配勋章</th>
+                    <th>来源配置</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>20086</strong></td>
+                    <td><strong>ملك الثروة</strong></td>
+                    <td><div class="title-thumb">ملك</div></td>
+                    <td>个人称号</td>
+                    <td>财富等级</td>
+                    <td>100</td>
+                    <td><span class="pill gold">SS级 / 700分</span></td>
+                    <td>10086｜صانع الثروة</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20052</strong></td>
+                    <td><strong>سيد الغرفة</strong></td>
+                    <td><div class="title-thumb">ROOM</div></td>
+                    <td>房间称号</td>
+                    <td>活动</td>
+                    <td>80</td>
+                    <td><span class="pill gold">S级 / 300分</span></td>
+                    <td>10052｜ملك الغرفة</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20031</strong></td>
+                    <td><strong>جامع الكنوز</strong></td>
+                    <td><div class="title-thumb">GIFT</div></td>
+                    <td>个人称号</td>
+                    <td>成就</td>
+                    <td>220</td>
+                    <td><span class="pill gold">A级 / 100分</span></td>
+                    <td>10031｜جامع البطاقات</td>
+                    <td><span class="pill">单独配置</span></td>
+                    <td><span class="status off">停用</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20029</strong></td>
+                    <td><strong>نجم السحر</strong></td>
+                    <td><div class="title-thumb">TOP2</div></td>
+                    <td>个人称号</td>
+                    <td>魅力等级</td>
+                    <td>90</td>
+                    <td><span class="pill gold">S级 / 300分</span></td>
+                    <td>10029｜نجم الجاذبية</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20018</strong></td>
+                    <td><strong>فارس الهدايا</strong></td>
+                    <td><div class="title-thumb">GIFT</div></td>
+                    <td>个人称号</td>
+                    <td>成就</td>
+                    <td>230</td>
+                    <td><span class="pill gold">A级 / 100分</span></td>
+                    <td>10018｜فارس الهدايا</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20016</strong></td>
+                    <td><strong>بطل الحظ</strong></td>
+                    <td><div class="title-thumb">GAME</div></td>
+                    <td>个人称号</td>
+                    <td>成就</td>
+                    <td>240</td>
+                    <td><span class="pill gold">B级 / 50分</span></td>
+                    <td>10016｜بطل اللعبة</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20012</strong></td>
+                    <td><strong>صوت النجوم</strong></td>
+                    <td><div class="title-thumb">MIC</div></td>
+                    <td>个人称号</td>
+                    <td>自定义</td>
+                    <td>10</td>
+                    <td><span class="pill gold">B级 / 50分</span></td>
+                    <td>无</td>
+                    <td><span class="pill">单独配置</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20009</strong></td>
+                    <td><strong>قاعة الملوك</strong></td>
+                    <td><div class="title-thumb">VIP</div></td>
+                    <td>房间称号</td>
+                    <td>自定义</td>
+                    <td>20</td>
+                    <td><span class="pill gold">SS级 / 700分</span></td>
+                    <td>10009｜قاعة الكنز</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status off">停用</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20007</strong></td>
+                    <td><strong>أصدقاء المجد</strong></td>
+                    <td><div class="title-thumb">TEAM</div></td>
+                    <td>房间称号</td>
+                    <td>成就</td>
+                    <td>130</td>
+                    <td><span class="pill gold">A级 / 100分</span></td>
+                    <td>10007｜أصدقاء الغرفة</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>20003</strong></td>
+                    <td><strong>ضوء الاحتفال</strong></td>
+                    <td><div class="title-thumb">EVENT</div></td>
+                    <td>个人称号</td>
+                    <td>活动</td>
+                    <td>70</td>
+                    <td><span class="pill gold">S级 / 300分</span></td>
+                    <td>10003｜ضوء الاحتفال</td>
+                    <td><span class="pill green">复用勋章</span></td>
+                    <td><span class="status on">有效</span></td>
+                    <td><button class="btn text" type="button" data-open-title-drawer="edit">编辑</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span>共 46 条记录，当前第 1 / 5 页，最多 10 条 / 页</span>
+              <div class="pagination">
+                <button class="page-btn" type="button" disabled>上一页</button>
+                <button class="page-btn active" type="button">1</button>
+                <button class="page-btn" type="button" data-toast="切换到第 2 页">2</button>
+                <button class="page-btn" type="button" data-toast="切换到第 3 页">3</button>
+                <button class="page-btn" type="button" data-toast="切换到第 4 页">4</button>
+                <button class="page-btn" type="button" data-toast="切换到第 2 页">下一页</button>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </section>
+      </div>
+    </section>
+
+    <aside class="requirements-panel" id="requirementsPanel">
+      <div class="req-kicker">PRODUCT REQUIREMENT</div>
+      <h2>荣誉中心后台配置需求说明</h2>
+      <p class="req-lead" data-requirement-lead>
+        根据当前操作展示对应字段说明，用于评审配置项含义和前后台展示关系。
+      </p>
+
+      <div class="mobile-mode-switch">
+        <button type="button" data-mobile-mode="interface">仅界面</button>
+        <button type="button" data-mobile-mode="both">界面+说明</button>
+      </div>
+
+      <section class="req-view active" data-req-view="list">
+        <span class="req-context">列表管理</span>
+        <article class="req-card" data-req="list">
+          <div class="req-title"><span class="req-num">1</span>列表与分页</div>
+          <p>用于查看、检索和进入编辑荣誉资产配置，每页最多展示 10 条记录。</p>
+          <ul>
+            <li>ID：荣誉资产的唯一数字标识。</li>
+            <li>名称/图片：前台展示的阿语名称和资源缩略图。</li>
+            <li>归属/分类/排行：决定资产所在模块、前台分组和类目内展示顺序。</li>
+            <li>等级与荣誉积分：展示该资产等级及对应荣誉分。</li>
+          </ul>
+        </article>
+        <article class="req-card">
+          <div class="req-title">筛选与动作</div>
+          <p>用于按运营备注、名称、ID、归属、分类、等级和状态定位配置项。新增按钮进入创建流程，类目排序用于维护前台分组顺序。</p>
+        </article>
+      </section>
+
+      <section class="req-view" data-req-view="drawer">
+        <span class="req-context"><span data-asset-label>勋章</span>新增/编辑字段说明</span>
+        <article class="req-card" data-req="drawer">
+          <div class="req-title"><span class="req-num">2</span>配置模块</div>
+          <p>用于维护荣誉资产的展示信息、获得条件和详情页来源入口。</p>
+          <ul>
+            <li>基础信息：配置归属、分类、名称、等级、素材和匹配关系。</li>
+            <li>达成口径：配置获得该资产需要达到的业务指标和目标值。</li>
+            <li>详情来源卡片：配置详情页中来源卡片的文案、图标和跳转地址。</li>
+          </ul>
+        </article>
+
+        <article class="req-card" data-medal-copy>
+          <div class="req-title">勋章基础信息字段</div>
+          <dl class="field-spec">
+            <div><dt>归属</dt><dd>个人勋章或房间勋章，决定可选达成口径范围。</dd></div>
+            <div><dt>分类</dt><dd>用于控制勋章在财富等级、魅力等级、活动、成就或自定义分组下展示。</dd></div>
+            <div><dt>自定义标题</dt><dd>用于自定义分类在前台展示的分组名称。</dd></div>
+            <div><dt>阿语信息</dt><dd>用于前台展示的勋章名称和描述。</dd></div>
+            <div><dt>排序</dt><dd>类目内排行控制同一分类下勋章展示顺序；类目排序在独立弹窗维护。</dd></div>
+            <div><dt>等级</dt><dd>用于定义勋章等级及对应荣誉积分：B 50、A 100、S 300、SS 700。</dd></div>
+            <div><dt>状态</dt><dd>用于控制配置生效、墙内隐藏或停用。</dd></div>
+            <div><dt>备注</dt><dd>用于后台检索和运营内部记录。</dd></div>
+          </dl>
+        </article>
+
+        <article class="req-card" data-medal-copy>
+          <div class="req-title">勋章素材与匹配称号</div>
+          <dl class="field-spec">
+            <div><dt>默认图片</dt><dd>用于勋章普通展示状态。</dd></div>
+            <div><dt>高亮图片</dt><dd>用于勋章获得或高亮展示状态。</dd></div>
+            <div><dt>动效资源</dt><dd>用于获得动画、详情展示或重点展示场景。</dd></div>
+            <div><dt>匹配称号</dt><dd>用于关联该勋章对应的称号，并在详情页展示称号信息。</dd></div>
+          </dl>
+        </article>
+
+        <article class="req-card hidden" data-title-copy>
+          <div class="req-title">称号基础信息字段</div>
+          <dl class="field-spec">
+            <div><dt>归属</dt><dd>个人称号或房间称号，决定可选达成口径范围。</dd></div>
+            <div><dt>分类</dt><dd>用于控制称号在财富等级、魅力等级、活动、成就或自定义分组下展示。</dd></div>
+            <div><dt>自定义标题</dt><dd>用于自定义分类在前台展示的分组名称。</dd></div>
+            <div><dt>阿语信息</dt><dd>用于前台展示的称号名称和描述。</dd></div>
+            <div><dt>排序</dt><dd>类目内排行控制同一分类下称号展示顺序。</dd></div>
+            <div><dt>等级</dt><dd>用于定义称号等级及对应荣誉积分：B 50、A 100、S 300、SS 700。</dd></div>
+            <div><dt>状态</dt><dd>用于控制配置生效、墙内隐藏或停用。</dd></div>
+            <div><dt>备注</dt><dd>用于后台检索和运营内部记录。</dd></div>
+          </dl>
+        </article>
+
+        <article class="req-card hidden" data-title-copy>
+          <div class="req-title">称号素材与匹配勋章</div>
+          <dl class="field-spec">
+            <div><dt>静态图片</dt><dd>用于称号横版静态展示。</dd></div>
+            <div><dt>动效资源</dt><dd>用于称号获得或详情页动效展示。</dd></div>
+            <div><dt>匹配勋章</dt><dd>用于关联该称号对应的勋章，并在详情页展示勋章信息。</dd></div>
+            <div><dt>来源复用</dt><dd>用于读取匹配勋章的详情来源卡片配置。</dd></div>
+          </dl>
+        </article>
+
+        <article class="req-card">
+          <div class="req-title">有效期与发放时长</div>
+          <dl class="field-spec">
+            <div><dt>永久有效</dt><dd>用户获得后长期保留。</dd></div>
+            <div><dt>跟随活动</dt><dd>有效期使用活动奖励配置中的奖励时长。</dd></div>
+            <div><dt>获得后时长</dt><dd>从用户获得资产时开始计算有效时长。</dd></div>
+          </dl>
+        </article>
+
+        <article class="req-card">
+          <div class="req-title">达成口径字段</div>
+          <dl class="field-spec">
+            <div><dt>达成口径</dt><dd>用于选择资产获得所依据的业务指标。</dd></div>
+            <div><dt>目标值</dt><dd>用于配置达成门槛，单位随口径变化。</dd></div>
+            <div><dt>规则说明</dt><dd>用于展示当前口径的统计方式。</dd></div>
+            <div><dt>活动门槛</dt><dd>用于配置房间活动次数口径下的单场金币金额和报名人数要求。</dd></div>
+          </dl>
+        </article>
+
+        <article class="req-card">
+          <div class="req-title">详情来源卡片字段</div>
+          <dl class="field-spec">
+            <div><dt>标题/描述</dt><dd>用于详情页来源卡片的主文案和补充说明。</dd></div>
+            <div><dt>跳转类型</dt><dd>用于区分 App 内路由或 H5 页面。</dd></div>
+            <div><dt>路由地址</dt><dd>用于配置来源卡片点击后的目标地址。</dd></div>
+            <div><dt>过期时间</dt><dd>用于控制来源卡片跳转入口的可用时间。</dd></div>
+            <div><dt>入口图标</dt><dd>用于来源卡片左侧图标展示。</dd></div>
+          </dl>
+        </article>
+      </section>
+
+      <section class="req-view" data-req-view="rules">
+        <span class="req-context">达成口径字段说明</span>
+        <article class="req-card" data-req="rules">
+          <div class="req-title"><span class="req-num">3</span>达成口径</div>
+          <p>用于配置荣誉资产获得所依据的业务指标和达成目标。</p>
+          <ul>
+            <li>个人口径：送礼、收礼、上麦、邀请、卡片、游戏、充值、幸运礼物、财富等级、魅力等级。</li>
+            <li>房间口径：房间收礼、房间内送礼人数、房间上麦人数、房间举办活动次数。</li>
+            <li>活动门槛：用于配置房间活动次数口径的单场金额和人数条件。</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="req-view" data-req-view="source">
+        <span class="req-context">详情来源卡片字段说明</span>
+        <article class="req-card" data-req="source">
+          <div class="req-title"><span class="req-num">4</span>详情来源与复用</div>
+          <p>用于配置详情页来源卡片的展示内容和跳转入口。</p>
+          <ul>
+            <li>卡片标题/描述：来源卡片的展示文案。</li>
+            <li>跳转类型/路由地址：来源卡片的点击目标。</li>
+            <li>来源复用：用于称号读取匹配勋章的来源卡片配置。</li>
+          </ul>
+        </article>
+      </section>
+    </aside>
+
+    <svg class="prototype-connector-svg" id="prototypeConnectors" aria-hidden="true">
+      <g id="connectorLayer"></g>
+    </svg>
+  </div>
+
+  <div class="drawer-mask" id="drawerMask"></div>
+  <aside class="drawer" id="badgeDrawer" aria-hidden="true" data-callout="drawer">
+    <div class="drawer-head">
+      <div>
+        <h2 id="drawerTitle">新增勋章</h2>
+      </div>
+      <button class="icon-btn" type="button" data-close-drawer>×</button>
+    </div>
+
+    <div class="drawer-body">
+      <section data-callout="drawer">
+        <div class="section-card">
+          <h3>基础信息</h3>
+          <div class="card-body">
+            <div class="grid three">
+              <div class="field">
+                <div class="label"><span class="required">*</span>勋章归属</div>
+                <div class="radio-row" id="ownerGroup">
+                  <label class="radio"><input checked name="owner" type="radio" value="personal">个人勋章</label>
+                  <label class="radio"><input name="owner" type="radio" value="room">房间勋章</label>
+                </div>
+              </div>
+              <div class="field">
+                <label for="category"><span class="required">*</span>勋章分类</label>
+                <select id="category"></select>
+              </div>
+              <div class="field hidden" id="categoryTitleField">
+                <label for="categoryTitle"><span class="required">*</span>自定义分类标题</label>
+                <input class="control" id="categoryTitle" value="Custom Medals">
+              </div>
+              <div class="field">
+                <label for="arName"><span class="required">*</span>阿语名称</label>
+                <input class="control" id="arName" value="صانع الثروة">
+              </div>
+              <div class="field">
+                <label for="arDesc">阿语描述</label>
+                <input class="control" id="arDesc" value="أرسل الهدايا للوصول إلى القيمة المطلوبة.">
+              </div>
+              <div class="field">
+                <label for="medalSort">类目内排序</label>
+                <input class="control" id="medalSort" type="number" value="100">
+                <div class="hint">类目排序在“类目排序”弹窗中统一维护。</div>
+              </div>
+              <div class="field">
+                <label for="medalGrade">勋章等级</label>
+                <select id="medalGrade">
+                  <option value="B">B级（50荣誉分）</option>
+                  <option value="A">A级（100荣誉分）</option>
+                  <option selected value="S">S级（300荣誉分）</option>
+                  <option value="SS">SS级（700荣誉分）</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="label"><span class="required">*</span>有效期规则</div>
+                <div class="radio-row" id="validityGroup">
+                  <label class="radio"><input checked name="validity" type="radio" value="permanent">永久有效</label>
+                  <label class="radio"><input name="validity" type="radio" value="activity">跟随活动奖励时长</label>
+                  <label class="radio"><input name="validity" type="radio" value="duration">获得后有效时长</label>
+                </div>
+              </div>
+              <div class="field hidden" id="rewardDurationField">
+                <label for="rewardDuration">获得后有效时长</label>
+                <div class="grid">
+                  <input class="control" id="rewardDuration" type="number" value="30">
+                  <select id="rewardDurationUnit">
+                    <option selected>天</option>
+                    <option>小时</option>
+                    <option>月</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <div class="label"><span class="required">*</span>显示状态</div>
+                <div class="radio-row">
+                  <label class="radio"><input checked name="visible" type="radio">有效</label>
+                  <label class="radio"><input name="visible" type="radio">仅勋章墙隐藏</label>
+                  <label class="radio"><input name="visible" type="radio">停用</label>
+                </div>
+              </div>
+              <div class="field">
+                <label for="manualTag">运营备注</label>
+                <input class="control" id="manualTag" value="Wealth medal for current honor rule.">
+              </div>
+              <div class="field">
+                <label for="matchTitle">匹配称号</label>
+                <select id="matchTitle">
+                  <option value="none" data-name="无" data-img="--">无，不关联称号</option>
+                  <option selected value="sada-king" data-name="Sada King" data-img="ملك">Sada King</option>
+                  <option value="royal-voice" data-name="Royal Voice" data-img="VOICE">Royal Voice</option>
+                  <option value="gift-master" data-name="Gift Master" data-img="GIFT">Gift Master</option>
+                  <option value="room-legend" data-name="Room Legend" data-img="ROOM">Room Legend</option>
+                </select>
+                <div class="title-preview" id="titlePreview">
+                  <div class="title-img" data-title-img>ملك</div>
+                  <div>
+                    <strong data-title-name>Sada King</strong>
+                    <div class="hint">前台详情页展示称号昵称和称号图片。</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="upload-row in-basic">
+              <div class="field">
+                <label>默认图片</label>
+                <label class="upload-box">
+                  <input type="file" accept="image/*">
+                  <span>上传</span>
+                  <img alt="">
+                </label>
+              </div>
+              <div class="field">
+                <label>高亮图片</label>
+                <label class="upload-box">
+                  <input type="file" accept="image/*">
+                  <span>上传</span>
+                  <img alt="">
+                </label>
+              </div>
+              <div class="field">
+                <label>动效</label>
+                <label class="upload-box">
+                  <input type="file" accept="image/*,video/*">
+                  <span>上传</span>
+                  <img alt="">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-callout="rules">
+        <div class="section-card">
+          <h3>达成口径</h3>
+          <div class="card-body">
+            <div class="grid three">
+              <div class="field">
+                <label for="conditionType"><span class="required">*</span>达成口径</label>
+                <select id="conditionType"></select>
+              </div>
+              <div class="field hidden" id="activityCoinField">
+                <label for="activityCoinMin"><span class="required">*</span>单场最低金币金额</label>
+                <input class="control" id="activityCoinMin" type="number" value="500000">
+              </div>
+              <div class="field hidden" id="activitySignupField">
+                <label for="activitySignupMin"><span class="required">*</span>最低报名人数</label>
+                <input class="control" id="activitySignupMin" type="number" value="20">
+              </div>
+              <div class="field">
+                <label for="target"><span class="required">*</span>目标值 <span class="pill" id="targetUnit">金币</span></label>
+                <input class="control" id="target" type="number" value="500000000">
+              </div>
+              <div class="field">
+                <label for="conditionNote">规则说明</label>
+                <input class="control readonly" id="conditionNote" readonly value="根据用户送出的礼物总金币数量累计，幸运礼物按10%计算。">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-callout="source">
+        <div class="section-card">
+          <h3>详情来源卡片</h3>
+          <div class="card-body">
+            <div class="grid three">
+              <div class="field">
+                <label for="sourceCardTitle"><span class="required">*</span>卡片标题</label>
+                <input class="control" id="sourceCardTitle" value="豪华礼物挑战">
+              </div>
+              <div class="field">
+                <label for="sourceCardDesc">卡片描述</label>
+                <input class="control" id="sourceCardDesc" value="完成指定礼物任务后查看活动详情。">
+              </div>
+              <div class="field">
+                <label for="routeType"><span class="required">*</span>跳转类型</label>
+                <select id="routeType">
+                  <option selected>App内路由</option>
+                  <option>H5页面</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="routePath"><span class="required">*</span>路由地址</label>
+                <input class="control" id="routePath" value="sada://event/luxury-gift?id=1323366456">
+              </div>
+              <div class="field">
+                <label for="sourceOfflineAt">跳转过期时间</label>
+                <input class="control" id="sourceOfflineAt" type="datetime-local">
+                <div class="hint">到期后 App 侧自动展示 Offline。</div>
+              </div>
+              <div class="field">
+                <label>入口图标</label>
+                <label class="upload-box">
+                  <input type="file" accept="image/*">
+                  <span>上传</span>
+                  <img alt="">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="drawer-foot">
+      <button class="btn" type="button" data-close-drawer>取消</button>
+      <button class="btn" type="button" data-toast="草稿已保存">保存草稿</button>
+      <button class="btn primary" type="button" data-toast="勋章配置已保存">保存并发布</button>
+    </div>
+  </aside>
+
+  <aside class="drawer" id="titleDrawer" aria-hidden="true" data-callout="drawer">
+    <div class="drawer-head">
+      <div>
+        <h2 id="titleDrawerTitle">新增称号</h2>
+      </div>
+      <button class="icon-btn" type="button" data-close-title-drawer>×</button>
+    </div>
+
+    <div class="drawer-body">
+      <section data-callout="drawer">
+        <div class="section-card">
+          <h3>基础信息</h3>
+          <div class="card-body">
+            <div class="grid three">
+              <div class="field">
+                <div class="label"><span class="required">*</span>称号归属</div>
+                <div class="radio-row" id="titleOwnerGroup">
+                  <label class="radio"><input checked name="titleOwner" type="radio" value="personal">个人称号</label>
+                  <label class="radio"><input name="titleOwner" type="radio" value="room">房间称号</label>
+                </div>
+              </div>
+              <div class="field">
+                <label for="titleCategory"><span class="required">*</span>称号分类</label>
+                <select id="titleCategory"></select>
+              </div>
+              <div class="field hidden" id="titleCategoryTitleField">
+                <label for="titleCategoryTitle"><span class="required">*</span>自定义分类标题</label>
+                <input class="control" id="titleCategoryTitle" value="Custom Titles">
+              </div>
+              <div class="field">
+                <label for="titleArName"><span class="required">*</span>阿语名称</label>
+                <input class="control" id="titleArName" value="ملك الثروة">
+              </div>
+              <div class="field">
+                <label for="titleArDesc">阿语描述</label>
+                <input class="control" id="titleArDesc" value="لقب مخصص لإنجازات الشرف.">
+              </div>
+              <div class="field">
+                <label for="titleSort">类目内排序</label>
+                <input class="control" id="titleSort" type="number" value="100">
+                <div class="hint">类目排序在“类目排序”弹窗中统一维护。</div>
+              </div>
+              <div class="field">
+                <label for="titleGrade">称号等级</label>
+                <select id="titleGrade">
+                  <option value="B">B级（50荣誉分）</option>
+                  <option value="A">A级（100荣誉分）</option>
+                  <option selected value="S">S级（300荣誉分）</option>
+                  <option value="SS">SS级（700荣誉分）</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="label"><span class="required">*</span>有效期规则</div>
+                <div class="radio-row" id="titleValidityGroup">
+                  <label class="radio"><input checked name="titleValidity" type="radio" value="permanent">永久有效</label>
+                  <label class="radio"><input name="titleValidity" type="radio" value="activity">跟随活动奖励时长</label>
+                  <label class="radio"><input name="titleValidity" type="radio" value="duration">获得后有效时长</label>
+                </div>
+              </div>
+              <div class="field hidden" id="titleRewardDurationField">
+                <label for="titleRewardDuration">获得后有效时长</label>
+                <div class="grid">
+                  <input class="control" id="titleRewardDuration" type="number" value="30">
+                  <select id="titleRewardDurationUnit">
+                    <option selected>天</option>
+                    <option>小时</option>
+                    <option>月</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <div class="label"><span class="required">*</span>显示状态</div>
+                <div class="radio-row">
+                  <label class="radio"><input checked name="titleVisible" type="radio">有效</label>
+                  <label class="radio"><input name="titleVisible" type="radio">仅称号墙隐藏</label>
+                  <label class="radio"><input name="titleVisible" type="radio">停用</label>
+                </div>
+              </div>
+              <div class="field">
+                <label for="titleManualTag">运营备注</label>
+                <input class="control" id="titleManualTag" value="Title config follows matched medal source by default.">
+              </div>
+              <div class="field">
+                <label for="titleMatchMedal">匹配勋章</label>
+                <select id="titleMatchMedal">
+                  <option value="none" data-name="无" data-img="--" data-card-title="-" data-card-desc="-" data-route-type="-" data-route-path="-" data-offline="-">无，不关联勋章</option>
+                  <option selected value="10086" data-name="صانع الثروة" data-img="SS" data-card-title="豪华礼物挑战" data-card-desc="完成指定礼物任务后查看活动详情。" data-route-type="App内路由" data-route-path="sada://event/luxury-gift?id=1323366456" data-offline="2026-08-31 23:59">10086｜صانع الثروة</option>
+                  <option value="10052" data-name="ملك الغرفة" data-img="S" data-card-title="房间活动榜" data-card-desc="查看本期房间活动与报名情况。" data-route-type="H5页面" data-route-path="https://sada.example.com/event/room-king" data-offline="跟随活动结束">10052｜ملك الغرفة</option>
+                  <option value="10031" data-name="جامع البطاقات" data-img="A" data-card-title="卡片收集任务" data-card-desc="前往卡片中心查看收集进度。" data-route-type="App内路由" data-route-path="sada://cards/collection" data-offline="长期有效">10031｜جامع البطاقات</option>
+                  <option value="10029" data-name="نجم الجاذبية" data-img="S" data-card-title="魅力等级说明" data-card-desc="查看魅力等级成长路径。" data-route-type="App内路由" data-route-path="sada://profile/charm-level" data-offline="长期有效">10029｜نجم الجاذبية</option>
+                </select>
+                <div class="title-preview" id="medalPreview">
+                  <div class="medal-thumb" data-medal-img>SS</div>
+                  <div>
+                    <strong data-medal-name>صانع الثروة</strong>
+                    <div class="hint">前台称号详情页展示匹配勋章名称和勋章图片。</div>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <div class="label">来源配置策略</div>
+                <label class="switch-line">
+                  <input checked id="inheritMedalSource" type="checkbox">
+                  复用匹配勋章的详情来源卡片
+                </label>
+                <div class="hint">匹配勋章变更后，默认同步读取该勋章的标题、描述、跳转类型、路由地址和过期时间。</div>
+              </div>
+              <div class="field" id="inheritedSourceSummary" data-callout="source">
+                <label>已复用的来源配置</label>
+                <div class="source-summary">
+                  <span>卡片标题：<b data-source-card-title>豪华礼物挑战</b></span>
+                  <span>卡片描述：<b data-source-card-desc>完成指定礼物任务后查看活动详情。</b></span>
+                  <span>跳转类型：<b data-source-route-type>App内路由</b></span>
+                  <span>路由地址：<b data-source-route-path>sada://event/luxury-gift?id=1323366456</b></span>
+                  <span>过期时间：<b data-source-offline>2026-08-31 23:59</b></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="upload-row in-basic">
+              <div class="field">
+                <label>静态图片（横版）</label>
+                <label class="upload-box title-upload">
+                  <input type="file" accept="image/*">
+                  <span>上传</span>
+                  <img alt="">
+                </label>
+              </div>
+              <div class="field">
+                <label>动效资源</label>
+                <label class="upload-box title-upload">
+                  <input type="file" accept="image/*,video/*">
+                  <span>上传</span>
+                  <img alt="">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-callout="rules">
+        <div class="section-card">
+          <h3>达成口径</h3>
+          <div class="card-body">
+            <div class="grid three">
+              <div class="field">
+                <label for="titleConditionType"><span class="required">*</span>达成口径</label>
+                <select id="titleConditionType"></select>
+              </div>
+              <div class="field hidden" id="titleActivityCoinField">
+                <label for="titleActivityCoinMin"><span class="required">*</span>单场最低金币金额</label>
+                <input class="control" id="titleActivityCoinMin" type="number" value="500000">
+              </div>
+              <div class="field hidden" id="titleActivitySignupField">
+                <label for="titleActivitySignupMin"><span class="required">*</span>最低报名人数</label>
+                <input class="control" id="titleActivitySignupMin" type="number" value="20">
+              </div>
+              <div class="field">
+                <label for="titleTarget"><span class="required">*</span>目标值 <span class="pill" id="titleTargetUnit">金币</span></label>
+                <input class="control" id="titleTarget" type="number" value="500000000">
+              </div>
+              <div class="field">
+                <label for="titleConditionNote">规则说明</label>
+                <input class="control readonly" id="titleConditionNote" readonly value="根据用户送出的礼物总金币数量累计，幸运礼物按10%计算。">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="titleSourceManualSection" data-callout="source">
+        <div class="section-card">
+          <h3>详情来源卡片</h3>
+          <div class="card-body">
+            <div class="grid three">
+              <div class="field">
+                <label for="titleSourceCardTitle"><span class="required">*</span>卡片标题</label>
+                <input class="control" id="titleSourceCardTitle" value="称号来源说明">
+              </div>
+              <div class="field">
+                <label for="titleSourceCardDesc">卡片描述</label>
+                <input class="control" id="titleSourceCardDesc" value="查看该称号关联活动或任务详情。">
+              </div>
+              <div class="field">
+                <label for="titleRouteType"><span class="required">*</span>跳转类型</label>
+                <select id="titleRouteType">
+                  <option selected>App内路由</option>
+                  <option>H5页面</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="titleRoutePath"><span class="required">*</span>路由地址</label>
+                <input class="control" id="titleRoutePath" value="sada://title/source?id=20086">
+              </div>
+              <div class="field">
+                <label for="titleSourceOfflineAt">跳转过期时间</label>
+                <input class="control" id="titleSourceOfflineAt" type="datetime-local">
+                <div class="hint">到期后 App 侧自动展示 Offline。</div>
+              </div>
+              <div class="field">
+                <label>入口图标</label>
+                <label class="upload-box">
+                  <input type="file" accept="image/*">
+                  <span>上传</span>
+                  <img alt="">
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="drawer-foot">
+      <button class="btn" type="button" data-close-title-drawer>取消</button>
+      <button class="btn" type="button" data-toast="草稿已保存">保存草稿</button>
+      <button class="btn primary" type="button" data-toast="称号配置已保存">保存并发布</button>
+    </div>
+  </aside>
+
+  <div class="modal-mask" id="modalMask"></div>
+  <section class="modal" id="sortModal" aria-hidden="true">
+    <div class="modal-head">
+      <h2>类目排序管理</h2>
+      <button class="icon-btn" type="button" data-close-sort>×</button>
+    </div>
+    <div class="modal-body">
+      <div class="sort-row"><strong>财富等级</strong><input class="control" type="number" value="10"></div>
+      <div class="sort-row"><strong>魅力等级</strong><input class="control" type="number" value="20"></div>
+      <div class="sort-row"><strong>活动</strong><input class="control" type="number" value="30"></div>
+      <div class="sort-row"><strong>成就</strong><input class="control" type="number" value="40"></div>
+      <div class="sort-row"><strong>自定义</strong><input class="control" type="number" value="50"></div>
+      <div class="hint">保存后影响前台 Medals Tab 的类目展示顺序。单个勋章的类目内排序在勋章编辑抽屉中维护。</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" data-close-sort>取消</button>
+      <button class="btn primary" type="button" data-close-sort data-toast="类目排序已保存">保存</button>
+    </div>
+  </section>
+
+  <section class="modal" id="titleSortModal" aria-hidden="true">
+    <div class="modal-head">
+      <h2>称号类目排序管理</h2>
+      <button class="icon-btn" type="button" data-close-title-sort>×</button>
+    </div>
+    <div class="modal-body">
+      <div class="sort-row"><strong>财富等级</strong><input class="control" type="number" value="10"></div>
+      <div class="sort-row"><strong>魅力等级</strong><input class="control" type="number" value="20"></div>
+      <div class="sort-row"><strong>活动</strong><input class="control" type="number" value="30"></div>
+      <div class="sort-row"><strong>成就</strong><input class="control" type="number" value="40"></div>
+      <div class="sort-row"><strong>自定义</strong><input class="control" type="number" value="50"></div>
+      <div class="hint">保存后影响前台 Titles Tab 的类目展示顺序。单个称号的类目内排序在称号编辑抽屉中维护。</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" data-close-title-sort>取消</button>
+      <button class="btn primary" type="button" data-close-title-sort data-toast="称号类目排序已保存">保存</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast">已保存</div>
+
+  <script>
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+    const categories = [
+      { value: 'wealth', label: '财富等级', title: 'Wealth Levels', validity: 'permanent', defaults: { personal: 'personal_wealth_level', room: 'room_receive_coin' } },
+      { value: 'charm', label: '魅力等级', title: 'Charm Levels', validity: 'permanent', defaults: { personal: 'personal_charm_level', room: 'room_gift_user_count' } },
+      { value: 'activity', label: '活动', title: 'Activity Medals', validity: 'activity', defaults: { personal: 'personal_card_collect_count', room: 'room_activity_count' } },
+      { value: 'achievement', label: '成就', title: 'Achievement Medals', validity: 'permanent', defaults: { personal: 'personal_mic_duration', room: 'room_mic_user_count' } },
+      { value: 'custom', label: '自定义', title: 'Custom Medals', validity: 'permanent', defaults: { personal: 'personal_gift_coin', room: 'room_receive_coin' } }
+    ];
+
+    const conditionGroups = {
+      personal: [
+        { value: 'personal_gift_coin', label: '送礼金币累计', unit: '金币', target: 500000000, note: '根据用户送出的礼物总金币数量累计，幸运礼物按10%计算。' },
+        { value: 'personal_receive_coin', label: '收礼金币累计', unit: '金币', target: 500000000, note: '根据用户收到的礼物总金币数量累计，幸运礼物按10%计算。' },
+        { value: 'personal_mic_duration', label: '上麦时长', unit: '分钟', target: 600, note: '以分钟为单位，用户闭麦则不计算时长。' },
+        { value: 'personal_invite_count', label: '邀请人数累计', unit: '人', target: 20, note: '按用户通过邀请功能绑定的人数累计。' },
+        { value: 'personal_card_collect_count', label: '收集卡片数量累计', unit: '张', target: 100, note: '累计开启卡片数量，仅统计开启宝箱获得，不包括别人赠送。' },
+        { value: 'personal_card_win_coin', label: '从卡片赢取金币数累计', unit: '金币', target: 1000000, note: '累计从开启卡套中赚取的金币数量。' },
+        { value: 'personal_game_consume_coin', label: '游戏消耗金币数累计', unit: '金币', target: 1000000, note: '概率游戏累计消耗的金币数量。' },
+        { value: 'personal_game_win_coin', label: '游戏赢取金币数累计', unit: '金币', target: 1000000, note: '从概率游戏赢取的金币数量，不包括社交类游戏。' },
+        { value: 'personal_recharge_usd', label: '充值金额累计', unit: '美元', target: 1000, note: '以美元为单位累计，包含币商充值。' },
+        { value: 'personal_lucky_consume_coin', label: '幸运礼物消耗的金币数', unit: '金币', target: 1000000, note: '幸运礼物消耗金币按10%计算。' },
+        { value: 'personal_lucky_win_coin', label: '幸运礼物赢取的金币数', unit: '金币', target: 1000000, note: '累计幸运礼物赢取金额。' },
+        { value: 'personal_wealth_level', label: '个人财富等级', unit: '等级', target: 50, note: '按用户个人财富等级达成。' },
+        { value: 'personal_charm_level', label: '个人魅力等级', unit: '等级', target: 50, note: '按用户个人魅力等级达成。' }
+      ],
+      room: [
+        { value: 'room_receive_coin', label: '房间收礼金币数', unit: '金币', target: 1000000000, note: '在房间收到的礼物金币数累计，不包括私聊页面。' },
+        { value: 'room_gift_user_count', label: '房间内送礼人数', unit: '人', target: 100, note: '在房间内送礼给麦上/麦下用户的人数，须去重。' },
+        { value: 'room_mic_user_count', label: '房间上麦人数', unit: '人', target: 80, note: '上麦不低于10分钟且未闭麦的人数，须去重。' },
+        { value: 'room_activity_count', label: '房间举办活动次数', unit: '次', target: 10, activityGate: true, note: '房间举办活动次数，单场活动需满足金币金额和报名人数门槛。' }
+      ]
+    };
+
+    function owner() {
+      return $('input[name="owner"]:checked').value;
+    }
+
+    function selectedCategory() {
+      return $('#category').value;
+    }
+
+    function currentCategoryConfig() {
+      return categories.find((item) => item.value === selectedCategory()) || categories[0];
+    }
+
+    function currentCondition() {
+      const group = conditionGroups[owner()] || conditionGroups.personal;
+      return group.find((item) => item.value === $('#conditionType').value) || group[0];
+    }
+
+    function fillCategories() {
+      const select = $('#category');
+      const currentValue = select.value || 'wealth';
+      const firstFill = !select.options.length;
+      select.innerHTML = '';
+      categories.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        select.appendChild(option);
+      });
+      select.value = categories.some((item) => item.value === currentValue) ? currentValue : 'wealth';
+      syncCategoryDefaults(firstFill);
+      fillConditions(firstFill);
+    }
+
+    function syncCategoryDefaults(force) {
+      const current = currentCategoryConfig();
+      const isCustom = current.value === 'custom';
+      $('#categoryTitleField').classList.toggle('hidden', !isCustom);
+      if (!isCustom || force || !$('#categoryTitle').dataset.touched) {
+        $('#categoryTitle').value = current.title;
+      }
+      if (force || !$('#validityGroup').dataset.touched) {
+        $(`input[name="validity"][value="${current.validity}"]`).checked = true;
+      }
+      syncValidityFields();
+    }
+
+    function fillConditions(force) {
+      const select = $('#conditionType');
+      const group = conditionGroups[owner()] || conditionGroups.personal;
+      const defaultValue = currentCategoryConfig().defaults[owner()];
+      const currentValue = select.value;
+      select.innerHTML = '';
+      group.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        select.appendChild(option);
+      });
+      const shouldUseDefault = force || !select.dataset.touched || !group.some((item) => item.value === currentValue);
+      select.value = shouldUseDefault ? defaultValue : currentValue;
+      syncConditionFields(shouldUseDefault);
+    }
+
+    function syncConditionFields(applyDefaults) {
+      const condition = currentCondition();
+      $('#activityCoinField').classList.toggle('hidden', !condition.activityGate);
+      $('#activitySignupField').classList.toggle('hidden', !condition.activityGate);
+      $('#targetUnit').textContent = condition.unit;
+      if (applyDefaults || !$('#target').dataset.touched) {
+        $('#target').value = condition.target;
+      }
+      $('#conditionNote').value = condition.note;
+    }
+
+    function syncValidityFields() {
+      const validity = $('input[name="validity"]:checked').value;
+      $('#rewardDurationField').classList.toggle('hidden', validity !== 'duration');
+    }
+
+    function syncTitlePreview() {
+      const option = $('#matchTitle').selectedOptions[0];
+      const isNone = option.value === 'none';
+      $('#titlePreview').classList.toggle('hidden', isNone);
+      $('[data-title-name]').textContent = option.dataset.name;
+      $('[data-title-img]').textContent = option.dataset.img;
+    }
+
+    function titleOwner() {
+      return $('input[name="titleOwner"]:checked').value;
+    }
+
+    function selectedTitleCategory() {
+      return $('#titleCategory').value;
+    }
+
+    function currentTitleCategoryConfig() {
+      return categories.find((item) => item.value === selectedTitleCategory()) || categories[0];
+    }
+
+    function currentTitleCondition() {
+      const group = conditionGroups[titleOwner()] || conditionGroups.personal;
+      return group.find((item) => item.value === $('#titleConditionType').value) || group[0];
+    }
+
+    function fillTitleCategories() {
+      const select = $('#titleCategory');
+      const currentValue = select.value || 'wealth';
+      const firstFill = !select.options.length;
+      select.innerHTML = '';
+      categories.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        select.appendChild(option);
+      });
+      select.value = categories.some((item) => item.value === currentValue) ? currentValue : 'wealth';
+      syncTitleCategoryDefaults(firstFill);
+      fillTitleConditions(firstFill);
+    }
+
+    function syncTitleCategoryDefaults(force) {
+      const current = currentTitleCategoryConfig();
+      const isCustom = current.value === 'custom';
+      $('#titleCategoryTitleField').classList.toggle('hidden', !isCustom);
+      if (!isCustom || force || !$('#titleCategoryTitle').dataset.touched) {
+        $('#titleCategoryTitle').value = isCustom ? 'Custom Titles' : current.title;
+      }
+      if (force || !$('#titleValidityGroup').dataset.touched) {
+        $(`input[name="titleValidity"][value="${current.validity}"]`).checked = true;
+      }
+      syncTitleValidityFields();
+    }
+
+    function fillTitleConditions(force) {
+      const select = $('#titleConditionType');
+      const group = conditionGroups[titleOwner()] || conditionGroups.personal;
+      const defaultValue = currentTitleCategoryConfig().defaults[titleOwner()];
+      const currentValue = select.value;
+      select.innerHTML = '';
+      group.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        select.appendChild(option);
+      });
+      const shouldUseDefault = force || !select.dataset.touched || !group.some((item) => item.value === currentValue);
+      select.value = shouldUseDefault ? defaultValue : currentValue;
+      syncTitleConditionFields(shouldUseDefault);
+    }
+
+    function syncTitleConditionFields(applyDefaults) {
+      const condition = currentTitleCondition();
+      $('#titleActivityCoinField').classList.toggle('hidden', !condition.activityGate);
+      $('#titleActivitySignupField').classList.toggle('hidden', !condition.activityGate);
+      $('#titleTargetUnit').textContent = condition.unit;
+      if (applyDefaults || !$('#titleTarget').dataset.touched) {
+        $('#titleTarget').value = condition.target;
+      }
+      $('#titleConditionNote').value = condition.note;
+    }
+
+    function syncTitleValidityFields() {
+      const validity = $('input[name="titleValidity"]:checked').value;
+      $('#titleRewardDurationField').classList.toggle('hidden', validity !== 'duration');
+    }
+
+    function syncMedalPreview() {
+      const option = $('#titleMatchMedal').selectedOptions[0];
+      const isNone = option.value === 'none';
+      const inherit = $('#inheritMedalSource');
+      $('#medalPreview').classList.toggle('hidden', isNone);
+      inherit.disabled = isNone;
+      if (isNone) {
+        inherit.checked = false;
+      }
+      $('[data-medal-name]').textContent = option.dataset.name;
+      $('[data-medal-img]').textContent = option.dataset.img;
+      $('[data-source-card-title]').textContent = option.dataset.cardTitle;
+      $('[data-source-card-desc]').textContent = option.dataset.cardDesc;
+      $('[data-source-route-type]').textContent = option.dataset.routeType;
+      $('[data-source-route-path]').textContent = option.dataset.routePath;
+      $('[data-source-offline]').textContent = option.dataset.offline;
+      syncTitleSourceMode();
+    }
+
+    function syncTitleSourceMode() {
+      const hasMatchedMedal = $('#titleMatchMedal').value !== 'none';
+      const inherit = hasMatchedMedal && $('#inheritMedalSource').checked;
+      $('#inheritedSourceSummary').classList.toggle('hidden', !inherit);
+      $('#titleSourceManualSection').classList.toggle('hidden', inherit);
+    }
+
+    function setAssetContext(type) {
+      const isTitle = type === 'title';
+      $$('[data-asset-label]').forEach((node) => {
+        node.textContent = isTitle ? '称号' : '勋章';
+      });
+      $$('[data-medal-copy]').forEach((node) => node.classList.toggle('hidden', isTitle));
+      $$('[data-title-copy]').forEach((node) => node.classList.toggle('hidden', !isTitle));
+    }
+
+    function showRequirementView(name, assetType) {
+      if (assetType) {
+        setAssetContext(assetType);
+      }
+      const viewName = name || 'list';
+      $$('.req-view').forEach((view) => {
+        view.classList.toggle('active', view.dataset.reqView === viewName);
+      });
+      const lead = $('[data-requirement-lead]');
+      const leadMap = {
+        list: '当前说明聚焦列表管理、搜索条件和分页规则。',
+        drawer: '当前说明聚焦新增/编辑抽屉字段，和左侧打开的配置表单保持同步。',
+        rules: '当前说明聚焦达成口径字段：运营配置目标，技术处理统计和发放。',
+        source: '当前说明聚焦详情来源卡片，以及称号复用匹配勋章来源的配置方式。'
+      };
+      lead.textContent = leadMap[viewName] || leadMap.list;
+      requestAnimationFrame(drawConnectors);
+    }
+
+    function openDrawer(mode) {
+      setAssetContext('medal');
+      showRequirementView('drawer', 'medal');
+      $('#drawerTitle').textContent = mode === 'edit' ? '编辑勋章' : '新增勋章';
+      $('#drawerMask').classList.add('open');
+      $('#badgeDrawer').classList.add('open');
+      $('#badgeDrawer').setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(drawConnectors);
+    }
+
+    function closeDrawer() {
+      $('#badgeDrawer').classList.remove('open');
+      $('#badgeDrawer').setAttribute('aria-hidden', 'true');
+      if (!$('#titleDrawer').classList.contains('open')) {
+        $('#drawerMask').classList.remove('open');
+        showRequirementView('list');
+      }
+      requestAnimationFrame(drawConnectors);
+    }
+
+    function openTitleDrawer(mode) {
+      setAssetContext('title');
+      showRequirementView('drawer', 'title');
+      $('#titleDrawerTitle').textContent = mode === 'edit' ? '编辑称号' : '新增称号';
+      $('#drawerMask').classList.add('open');
+      $('#titleDrawer').classList.add('open');
+      $('#titleDrawer').setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(drawConnectors);
+    }
+
+    function closeTitleDrawer() {
+      $('#titleDrawer').classList.remove('open');
+      $('#titleDrawer').setAttribute('aria-hidden', 'true');
+      if (!$('#badgeDrawer').classList.contains('open')) {
+        $('#drawerMask').classList.remove('open');
+        showRequirementView('list');
+      }
+      requestAnimationFrame(drawConnectors);
+    }
+
+    function openSort() {
+      $('#modalMask').classList.add('open');
+      $('#sortModal').classList.add('open');
+      $('#sortModal').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSort() {
+      $('#modalMask').classList.remove('open');
+      $('#sortModal').classList.remove('open');
+      $('#sortModal').setAttribute('aria-hidden', 'true');
+    }
+
+    function openTitleSort() {
+      $('#modalMask').classList.add('open');
+      $('#titleSortModal').classList.add('open');
+      $('#titleSortModal').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeTitleSort() {
+      $('#modalMask').classList.remove('open');
+      $('#titleSortModal').classList.remove('open');
+      $('#titleSortModal').setAttribute('aria-hidden', 'true');
+    }
+
+    function toast(text) {
+      const node = $('#toast');
+      node.textContent = text;
+      node.classList.add('show');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => node.classList.remove('show'), 1500);
+    }
+
+    $$('[data-page-target]').forEach((button) => {
+      button.addEventListener('click', () => {
+        $$('[data-page-target]').forEach((item) => item.classList.toggle('active', item === button));
+        $$('.page-view').forEach((view) => view.classList.toggle('active', view.id === button.dataset.pageTarget));
+        $('#breadcrumbLeaf').textContent = button.textContent.trim().replace(/\d+$/, '');
+      });
+    });
+
+    $$('[data-open-drawer]').forEach((button) => {
+      button.addEventListener('click', () => openDrawer(button.dataset.openDrawer));
+    });
+
+    $$('[data-open-title-drawer]').forEach((button) => {
+      button.addEventListener('click', () => openTitleDrawer(button.dataset.openTitleDrawer));
+    });
+
+    $$('[data-close-drawer]').forEach((node) => {
+      node.addEventListener('click', closeDrawer);
+    });
+
+    $$('[data-close-title-drawer]').forEach((node) => {
+      node.addEventListener('click', closeTitleDrawer);
+    });
+
+    $('#drawerMask').addEventListener('click', () => {
+      closeDrawer();
+      closeTitleDrawer();
+    });
+
+    $$('[data-open-sort]').forEach((button) => {
+      button.addEventListener('click', openSort);
+    });
+
+    $$('[data-open-title-sort]').forEach((button) => {
+      button.addEventListener('click', openTitleSort);
+    });
+
+    $$('[data-close-sort]').forEach((node) => {
+      node.addEventListener('click', closeSort);
+    });
+
+    $$('[data-close-title-sort]').forEach((node) => {
+      node.addEventListener('click', closeTitleSort);
+    });
+
+    $('#modalMask').addEventListener('click', () => {
+      closeSort();
+      closeTitleSort();
+    });
+
+    $('#ownerGroup').addEventListener('change', fillCategories);
+    $('#category').addEventListener('change', () => {
+      syncCategoryDefaults(false);
+      fillConditions(false);
+    });
+    $('#conditionType').addEventListener('change', (event) => {
+      event.currentTarget.dataset.touched = 'true';
+      syncConditionFields(true);
+    });
+    $('#validityGroup').addEventListener('change', (event) => {
+      event.currentTarget.dataset.touched = 'true';
+      syncValidityFields();
+    });
+    $('#matchTitle').addEventListener('change', syncTitlePreview);
+
+    $('#titleOwnerGroup').addEventListener('change', fillTitleCategories);
+    $('#titleCategory').addEventListener('change', () => {
+      syncTitleCategoryDefaults(false);
+      fillTitleConditions(false);
+    });
+    $('#titleConditionType').addEventListener('change', (event) => {
+      event.currentTarget.dataset.touched = 'true';
+      syncTitleConditionFields(true);
+    });
+    $('#titleValidityGroup').addEventListener('change', (event) => {
+      event.currentTarget.dataset.touched = 'true';
+      syncTitleValidityFields();
+    });
+    $('#titleMatchMedal').addEventListener('change', syncMedalPreview);
+    $('#inheritMedalSource').addEventListener('change', syncTitleSourceMode);
+
+    ['categoryTitle', 'target', 'titleCategoryTitle', 'titleTarget'].forEach((id) => {
+      $(`#${id}`).addEventListener('input', (event) => {
+        event.currentTarget.dataset.touched = 'true';
+      });
+      $(`#${id}`).addEventListener('change', (event) => {
+        event.currentTarget.dataset.touched = 'true';
+      });
+    });
+
+    $$('[data-toast]').forEach((button) => {
+      button.addEventListener('click', () => toast(button.dataset.toast));
+    });
+
+    function isNodeVisible(node) {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = window.getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    }
+
+    function calloutNode(name) {
+      const openDrawerTarget = $(`.drawer.open[data-callout="${name}"]`);
+      if (isNodeVisible(openDrawerTarget)) return openDrawerTarget;
+      return $$(`[data-callout="${name}"]`).find(isNodeVisible);
+    }
+
+    function requirementNode(name) {
+      const activeReq = $(`.req-view.active [data-req="${name}"]`);
+      return isNodeVisible(activeReq) ? activeReq : null;
+    }
+
+    function drawConnectors() {
+      const svg = $('#prototypeConnectors');
+      const layer = $('#connectorLayer');
+      if (!svg || !layer || window.matchMedia('(max-width: 980px)').matches) {
+        return;
+      }
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+      layer.innerHTML = '';
+
+      ['list', 'drawer', 'rules', 'source'].forEach((name, index) => {
+        const source = calloutNode(name);
+        const target = requirementNode(name);
+        if (!source || !target) return;
+
+        const sourceRect = source.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        if (sourceRect.right < 0 || sourceRect.left > width || targetRect.right < 0 || targetRect.left > width) return;
+
+        const x1 = Math.min(sourceRect.right, targetRect.left - 12);
+        const y1 = sourceRect.top + Math.min(sourceRect.height / 2, 52);
+        const x2 = targetRect.left;
+        const y2 = targetRect.top + Math.min(targetRect.height / 2, 58);
+        const mid = Math.max(24, (x2 - x1) * 0.42);
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('class', `connector-line${source.classList.contains('callout-active') || target.classList.contains('callout-active') ? ' callout-active' : ''}`);
+        path.setAttribute('data-line', name);
+        path.setAttribute('d', `M ${x1} ${y1} C ${x1 + mid} ${y1}, ${x2 - mid} ${y2}, ${x2} ${y2}`);
+        layer.appendChild(path);
+
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('class', 'connector-dot');
+        dot.setAttribute('cx', x1);
+        dot.setAttribute('cy', y1);
+        dot.setAttribute('r', 7);
+        layer.appendChild(dot);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('class', 'connector-label');
+        text.setAttribute('x', x1);
+        text.setAttribute('y', y1);
+        text.textContent = String(index + 1);
+        layer.appendChild(text);
+      });
+    }
+
+    function setCallout(name, active) {
+      $$(`[data-callout="${name}"], .req-view.active [data-req="${name}"], [data-line="${name}"]`).forEach((node) => {
+        node.classList.toggle('callout-active', active);
+      });
+      drawConnectors();
+    }
+
+    $$('[data-callout]').forEach((node) => {
+      const name = node.dataset.callout;
+      const focusCallout = (event) => {
+        if (event) {
+          event.stopPropagation();
+        }
+        if (name === 'drawer') {
+          showRequirementView('drawer');
+        }
+        if (name === 'rules' || name === 'source' || name === 'list') {
+          showRequirementView(name);
+        }
+        setCallout(name, true);
+      };
+      node.addEventListener('mouseenter', () => {
+        focusCallout();
+      });
+      node.addEventListener('click', focusCallout);
+      node.addEventListener('mouseleave', () => setCallout(name, false));
+    });
+
+    $$('[data-req]').forEach((node) => {
+      const name = node.dataset.req;
+      node.addEventListener('mouseenter', () => setCallout(name, true));
+      node.addEventListener('mouseleave', () => setCallout(name, false));
+    });
+
+    $$('[data-mobile-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.body.classList.toggle('mobile-interface-only', button.dataset.mobileMode === 'interface');
+      });
+    });
+
+    fillCategories();
+    fillTitleCategories();
+    syncTitlePreview();
+    syncMedalPreview();
+    showRequirementView('list');
+    window.addEventListener('resize', drawConnectors);
+    $('#prototypeWorkspace').addEventListener('scroll', drawConnectors, { passive: true });
+    $('#requirementsPanel').addEventListener('scroll', drawConnectors, { passive: true });
+  </script>
+</body>
+</html>
